@@ -7,7 +7,7 @@
     "dist"
   ],
   "main": "dist/index.cjs",
-  "module": "dist/index.mjs",
+  "module": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
@@ -33,6 +33,19 @@
     ]
   },
   "sideEffects": false,
+  "keywords": [
+    "opentelemetry",
+    "observability",
+    "tracing",
+    "monitoring",
+    "nextjs",
+    "context-company"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/context-company/observatory.git",
+    "directory": "packages/otel"
+  },
   "license": "MIT",
   "publishConfig": {
     "access": "public"
