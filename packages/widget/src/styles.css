@@ -219,6 +219,9 @@
   .bottom-0 {
     bottom: calc(var(--spacing) * 0);
   }
+  .bottom-4 {
+    bottom: calc(var(--spacing) * 4);
+  }
   .left-0 {
     left: calc(var(--spacing) * 0);
   }
@@ -931,6 +934,9 @@
   .pr-0\! {
     padding-right: calc(var(--spacing) * 0) !important;
   }
+  .pr-3 {
+    padding-right: calc(var(--spacing) * 3);
+  }
   .pb-0 {
     padding-bottom: calc(var(--spacing) * 0);
   }
@@ -942,6 +948,9 @@
   }
   .pl-0\! {
     padding-left: calc(var(--spacing) * 0) !important;
+  }
+  .pl-3 {
+    padding-left: calc(var(--spacing) * 3);
   }
   .text-center {
     text-align: center;

@@ -171,44 +171,38 @@ function Popover() {
         height: `${popoverDimensionSignal.value.height}px`,
       }}
     >
-      <div
-        onPointerDown={handleDrag}
-        className="px-4 py-3 border-b border-gray-200 flex items-center justify-between cursor-grab"
-      >
-        <div className="flex items-center gap-2 text-sm font-semibold text-gray-900">
-          <Logo />
-          Local Observatory
-        </div>
-        <button
-          onClick={() => (widgetExpandedSignal.value = false)}
-          className="text-gray-500 hover:text-gray-700 cursor-pointer"
-        >
-          <X className="w-4 h-4" />
-        </button>
-      </div>
-
       {selectedTraceIdSignal.value ? (
         <RunViewer />
       ) : (
         <>
-          <div className="flex gap-6 px-4 pt-3 pb-0 border-b border-gray-200">
-            {(["Agent runs", "Tool calls", "Failures"] as Tab[]).map((tab) => (
-              <button
-                key={tab}
-                onClick={() => setActiveTab(tab)}
-                className={cn(
-                  "pb-3 text-sm font-medium transition-colors relative cursor-pointer",
-                  activeTab === tab
-                    ? "text-gray-900"
-                    : "text-gray-500 hover:text-gray-700"
-                )}
-              >
-                {tab}
-                {activeTab === tab && (
-                  <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
-                )}
-              </button>
-            ))}
+          <div className="flex items-center justify-between px-4 pt-3 border-b border-gray-200">
+            <div className="flex gap-6">
+              {(["Agent runs", "Tool calls", "Failures"] as Tab[]).map(
+                (tab) => (
+                  <button
+                    key={tab}
+                    onClick={() => setActiveTab(tab)}
+                    className={cn(
+                      "text-sm font-medium pb-3 transition-colors relative cursor-pointer",
+                      activeTab === tab
+                        ? "text-gray-900"
+                        : "text-gray-500 hover:text-gray-700"
+                    )}
+                  >
+                    {tab}
+                    {activeTab === tab && (
+                      <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-gray-900" />
+                    )}
+                  </button>
+                )
+              )}
+            </div>
+            <button
+              onClick={() => (widgetExpandedSignal.value = false)}
+              className="text-gray-500 hover:text-gray-700 cursor-pointer pb-3"
+            >
+              <X className="w-4 h-4" />
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto">
