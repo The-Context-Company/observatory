@@ -10,12 +10,12 @@ export const RunHeader = ({ run }: { run: EnrichedUIRun }) => {
 
   return (
     <>
-      <div className=" flex items-center justify-between gap-3">
-        <h1 className="text-xl">Agent Run</h1>
+      <div className="flex items-center justify-between gap-3">
+        <h1 className="">Agent Run</h1>
         <X className="w-4 h-4 cursor-pointer" onClick={handleClose} />
       </div>
 
-      <div className="flex items-center text-sm text-gray-500 *:px-[min(1rem,1vw)]">
+      <div className="flex items-center text-xs text-gray-500 *:px-[min(1rem,1vw)]">
         <div className="font-mono pl-0!">{formatDate(run.startTime)}</div>
         <div className="font-mono">|</div>
         <div className="font-mono">{nanosToSeconds(run.durationNs, 5)}s</div>
