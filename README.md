@@ -21,6 +21,7 @@ If you haven't already, add an `instrumentation.[js|ts]` file to your project, u
 See the [Next.js Instrumentation guide](https://nextjs.org/docs/app/guides/instrumentation) for more information on instrumenting your Next.js application.
 
 ```typescript instrumentation.ts
+// instrumentation.ts
 import { registerOTelTCC } from "@contextcompany/otel/nextjs";
 
 export function register() {
@@ -35,10 +36,11 @@ export function register() {
 Add the Local Mode widget to the root layout of your Next.js application.
 
 ```tsx app/layout.tsx
+// app/layout.tsx
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode
+  children: React.ReactNode;
 }) {
   return (
     <html lang="en">
@@ -52,7 +54,7 @@ export default function RootLayout({
       </head>
       <body>{children}</body>
     </html>
-  )
+  );
 }
 ```
 
@@ -61,6 +63,7 @@ export default function RootLayout({
 As of AI SDK v5, telemetry is experimental and requires the `experimental_telemetry` flag to be set to `true`. Ensure you set this flag to `true` for all AI SDK calls you want to instrument.
 
 ```typescript generateText
+// route.ts
 import { generateText } from "ai";
 
 const result = generateText({
