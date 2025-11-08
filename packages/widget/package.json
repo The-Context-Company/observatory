@@ -7,6 +7,9 @@
   "module": "./dist/index.js",
   "browser": "./dist/auto.global.js",
   "types": "./dist/index.d.ts",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",

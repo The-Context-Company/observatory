@@ -18,7 +18,7 @@ export default defineConfig([
     dts: { entry: { "nextjs/index": "src/nextjs/index.ts" } },
     splitting: false,
     treeshake: true,
-    clean: false,
+    clean: true,
     external: ["@opentelemetry/api", "@vercel/otel"],
   },
 ]);

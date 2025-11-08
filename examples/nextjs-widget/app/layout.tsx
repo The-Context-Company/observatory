@@ -26,7 +26,10 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* The Context Company: */}
-        <script src="http://localhost:3001/auto.global.js" async />
+        <script
+          src="https://unpkg.com/@contextcompany/widget/dist/auto.global.js"
+          async
+        />
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

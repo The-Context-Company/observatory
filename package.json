@@ -1,5 +1,8 @@
 {
   "name": "@contextcompany/workspace",
   "version": "1.0.0",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "@changesets/cli": "^2.29.7"
+  }
 }
