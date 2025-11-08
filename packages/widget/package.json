@@ -1,7 +1,7 @@
 {
   "name": "@contextcompany/widget",
   "version": "1.0.0",
-  "description": "The Context Company Widget",
+  "description": "The Context Company local-first AI SDK widget for Next.js",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
   "browser": "./dist/auto.global.js",

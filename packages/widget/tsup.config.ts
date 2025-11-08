@@ -1,4 +1,3 @@
-// packages/widget/tsup.config.ts
 import { defineConfig } from "tsup";
 
 export default defineConfig([
@@ -9,16 +8,18 @@ export default defineConfig([
     platform: "browser",
     target: "es2020",
     globalName: "TCC_Widget",
-    minify: process.env.NODE_ENV === "production",
-    sourcemap: true,
+    minify: true,
+    sourcemap: false,
+    treeshake: true,
+    dts: true,
     clean: true,
     loader: {
       ".css": "text",
-      ".png": "dataurl",
     },
     outExtension: () => ({
       js: ".global.js",
     }),
+    external: ["react", "react-dom"],
   },
   {
     entry: ["src/index.ts"],
@@ -27,7 +28,7 @@ export default defineConfig([
     platform: "browser",
     target: "es2020",
     dts: true,
-    sourcemap: true,
+    sourcemap: false,
     clean: false,
     loader: {
       ".css": "text",
