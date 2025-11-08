@@ -5,7 +5,7 @@ import { UIRun, UIToolCall } from "./types";
 import { getEnrichedRun } from "./utils/store";
 
 // Widget UI
-export const widgetExpandedSignal = signal(true);
+export const widgetExpandedSignal = signal(false);
 export const widgetPositionSignal = signal<{ x: number; y: number }>({
   x: 0,
   y: 0,
