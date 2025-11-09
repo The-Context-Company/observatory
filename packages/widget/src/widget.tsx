@@ -17,6 +17,7 @@ import {
   ChevronUp,
 } from "lucide-preact";
 import { cn } from "./utils/cn";
+import { captureAnonymousEvent } from "./internal/events";
 
 export function Widget() {
   useSyncTCCStore();
@@ -26,11 +27,13 @@ export function Widget() {
       <Draggable
         snapToCorner
         onClick={() => {
-          // if we're opening the widget, mark failures as "seen"
-          if (!widgetExpandedSignal.value) {
-            hasUnseenFailuresSignal.value = false;
-          }
+          const isExpanding = !widgetExpandedSignal.value;
           widgetExpandedSignal.value = !widgetExpandedSignal.value;
+          if (isExpanding) hasUnseenFailuresSignal.value = false;
+          captureAnonymousEvent({
+            event: "widget_expand_event",
+            action: isExpanding ? "expand" : "close",
+          });
         }}
         positionSignal={widgetPositionSignal}
         dimensionsSignal={widgetDimensionsSignal}

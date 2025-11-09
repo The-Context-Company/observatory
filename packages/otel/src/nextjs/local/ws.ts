@@ -2,6 +2,7 @@ import net from "net";
 import { WebSocketServer } from "ws";
 import { tccLocalExporter } from "./runtime";
 import { debug } from "../../internal/logger";
+import { captureAnonymousEvent } from "../telemetry/posthog";
 
 // these are completely arbitrary ports
 const PREFERRED_PORTS = [8081, 3001, 3002, 3003, 3004, 3005, 8000, 8001, 8080];
@@ -72,6 +73,13 @@ export const startWebSocketServer = async () => {
         data: tccLocalExporter.getDataStore(),
       })
     );
+
+    ws.on("message", (data) => {
+      try {
+        const event = JSON.parse(data.toString());
+        captureAnonymousEvent(event);
+      } catch (error) {}
+    });
 
     // subscribe to new items
     const unsubscribe = tccLocalExporter.subscribe((newItems) => {

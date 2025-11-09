@@ -6,6 +6,7 @@ import { type ExportResult, ExportResultCode } from "@opentelemetry/core";
 import { EventEmitter } from "events";
 import { shapeSpansIntoRuns } from "./utils/converters";
 import { type UIRun, type UIStep, type UIToolCall } from "./types";
+import { captureAnonymousEvent, shutdownPosthog } from "../telemetry/posthog";
 
 type LocalCallback = (newItems: {
   runs: UIRun[];
@@ -49,13 +50,37 @@ export class LocalSpanExporter extends EventEmitter implements SpanExporter {
       callback({ runs, steps, toolCalls })
     );
 
+    runs.forEach((run) => {
+      captureAnonymousEvent({
+        event: "agent_run_end",
+        status_code: run.statusCode,
+        duration_ns: run.durationNs,
+      });
+    });
+
+    steps.forEach((step) => {
+      captureAnonymousEvent({
+        event: "step_end",
+        status_code: step.statusCode,
+        duration_ns: step.durationNs,
+      });
+    });
+
+    toolCalls.forEach((toolCall) => {
+      captureAnonymousEvent({
+        event: "tool_call_end",
+        status_code: toolCall.statusCode,
+        duration_ns: toolCall.durationNs,
+      });
+    });
+
     setTimeout(() => resultCallback({ code: ExportResultCode.SUCCESS }), 0);
   }
 
   shutdown(): Promise<void> {
     this._stopped = true;
     this._dataStore = {};
-    return this.forceFlush();
+    return shutdownPosthog().then(() => this.forceFlush());
   }
 
   forceFlush(): Promise<void> {

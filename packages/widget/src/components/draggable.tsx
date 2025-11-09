@@ -18,6 +18,7 @@ import {
   UNDOCKED_HEIGHT,
   UNDOCKED_WIDTH,
 } from "@/constants";
+import { captureAnonymousEvent } from "@/internal/events";
 
 const snapToCornerFn = (
   x: number,
@@ -145,6 +146,12 @@ export function Draggable({
           return;
         }
 
+        if (widgetDockedSignal.value !== null) {
+          captureAnonymousEvent({
+            event: "widget_dock_event",
+            action: "undock",
+          });
+        }
         widgetDockedSignal.value = null;
         dimensionsSignal.value = {
           width: UNDOCKED_WIDTH,
@@ -183,6 +190,10 @@ export function Draggable({
           draggableElement.style.width = `${UNDOCKED_WIDTH}px`;
           draggableElement.style.height = `${UNDOCKED_HEIGHT}px`;
           snapToCornerFn(finalX, finalY, draggableElement);
+          captureAnonymousEvent({
+            event: "widget_dock_event",
+            action: "undock",
+          });
         } else onClick?.();
       }
 
@@ -211,6 +222,10 @@ export function Draggable({
           height: DOCKED_HORIZONTAL_HEIGHT,
         };
       }
+      captureAnonymousEvent({
+        event: "widget_dock_event",
+        action: "dock",
+      });
     };
 
     document.addEventListener("pointermove", handlePointerMove);

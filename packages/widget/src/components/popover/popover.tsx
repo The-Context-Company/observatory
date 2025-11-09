@@ -18,7 +18,7 @@ import FailuresList from "./failures-list";
 import RunViewer from "./run-viewer/run-viewer";
 import { ResizableHandles } from "./ResizableHandle";
 import { X } from "lucide-preact";
-import { Logo } from "@/assets/logo";
+import { captureAnonymousEvent } from "@/internal/events";
 
 type Tab = "Agent runs" | "Tool calls" | "Failures";
 
@@ -75,6 +75,8 @@ function Popover() {
     const handlePointerUp = () => {
       document.removeEventListener("pointermove", handlePointerMove);
       document.removeEventListener("pointerup", handlePointerUp);
+      const { x, y } = draggableElement.getBoundingClientRect();
+      captureAnonymousEvent({ event: "popover_move_event", x, y });
     };
 
     document.addEventListener("pointermove", handlePointerMove);
@@ -175,7 +177,10 @@ function Popover() {
         <RunViewer />
       ) : (
         <>
-          <div className="flex items-center justify-between px-4 pt-3 border-b border-gray-200">
+          <div
+            onPointerDown={handleDrag}
+            className="cursor-grab flex items-center justify-between px-4 pt-3 border-b border-gray-200"
+          >
             <div className="flex gap-6">
               {(["Agent runs", "Tool calls", "Failures"] as Tab[]).map(
                 (tab) => (
@@ -198,7 +203,13 @@ function Popover() {
               )}
             </div>
             <button
-              onClick={() => (widgetExpandedSignal.value = false)}
+              onClick={() => {
+                widgetExpandedSignal.value = false;
+                captureAnonymousEvent({
+                  event: "widget_expand_event",
+                  action: "close",
+                });
+              }}
               className="text-gray-500 hover:text-gray-700 cursor-pointer pb-3"
             >
               <X className="w-4 h-4" />

@@ -1,4 +1,5 @@
 import { initWidget } from "./index";
+import { log } from "./internal/logger";
 
 async function isWebSocketServer(port: number) {
   return new Promise((resolve) => {
@@ -29,9 +30,8 @@ const init = async () => {
   for (const p of PREFERRED_PORTS) {
     if (await isWebSocketServer(p)) {
       port = p.toString();
-      if (debug) {
-        console.log("TCC: Found TCC WebSocket server on port:", port);
-      }
+      // window may not be defined so we use log()
+      if (debug) log(`Found TCC WebSocket server on port: ${port}`);
       break;
     }
   }

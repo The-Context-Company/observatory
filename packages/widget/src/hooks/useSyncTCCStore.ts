@@ -5,8 +5,10 @@ import {
   hasUnseenFailuresSignal,
   tccStoreSignal,
   widgetExpandedSignal,
+  wsSignal,
 } from "@/state";
 import { recursivelyInjectDateFields } from "@/utils/time";
+import { debug } from "@/internal/logger";
 
 export type TCCStore = {
   [traceId: string]: {
@@ -36,16 +38,13 @@ export const useSyncTCCStore = () =>
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:${(window as any).TCC_WSS_PORT}`);
 
-    if (window.TCC_DEBUG) {
-      ws.onopen = () => {
-        console.log("TCC: WebSocket connected");
-      };
-    }
+    ws.onopen = () => {
+      debug("Connected to TCC WebSocket server");
+      wsSignal.value = ws;
+    };
 
     ws.onmessage = (event) => {
-      if (window.TCC_DEBUG) {
-        console.log("TCC: New ws event received");
-      }
+      debug("New ws event received");
 
       try {
         const eventMessage = JSON.parse(event.data) as TCCEvent;
@@ -64,7 +63,7 @@ export const useSyncTCCStore = () =>
             hasUnseenFailuresSignal.value = true;
         }
       } catch (error) {
-        console.error("TCC: Error parsing event message:", error);
+        debug("Error parsing event message:", error);
       }
     };
   }, []);
