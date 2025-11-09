@@ -4,6 +4,10 @@ import { TCCSpanProcessor } from "../TCCSpanProcessor";
 import { tccLocalSpanProcessor } from "./local/runtime";
 import { startWebSocketServer } from "./local/ws";
 import { debug, setDebug } from "../internal/logger";
+import {
+  captureAnonymousEvent,
+  initAnonymousTelemetry,
+} from "./telemetry/posthog";
 
 export type RegisterOpts = {
   url?: string;
@@ -23,6 +27,11 @@ export function registerOTelTCC(opts: RegisterOpts = {}) {
   const apiKey = opts.apiKey ?? process.env.TCC_API_KEY;
 
   if (opts.local) {
+    initAnonymousTelemetry();
+    captureAnonymousEvent({
+      event: "local_mode_start",
+    });
+
     startWebSocketServer();
     spanProcessors.push(tccLocalSpanProcessor());
     // if `local` is true and no apiKey is provided, assume the user just wants to run local mode
