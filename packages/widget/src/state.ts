@@ -3,9 +3,10 @@ import { TCCStore } from "@/hooks/useSyncTCCStore";
 import { Corner } from "@/utils/corners";
 import { UIRun, UIToolCall } from "./types";
 import { getEnrichedRun } from "./utils/store";
+import { UNDOCKED_HEIGHT, UNDOCKED_WIDTH } from "./constants";
 
 // Widget UI
-export const widgetExpandedSignal = signal(true);
+export const widgetExpandedSignal = signal(false);
 export const widgetPositionSignal = signal<{ x: number; y: number }>({
   x: 0,
   y: 0,
@@ -13,10 +14,14 @@ export const widgetPositionSignal = signal<{ x: number; y: number }>({
 export const widgetCornerSignal = signal<Corner>("top-right");
 export const widgetDimensionsSignal = signal<{ width: number; height: number }>(
   {
-    width: 0,
-    height: 0,
+    width: UNDOCKED_WIDTH,
+    height: UNDOCKED_HEIGHT,
   }
 );
+
+export type DockedMode = "left" | "right" | "top" | "bottom";
+export const widgetDockedSignal = signal<DockedMode | null>(null);
+export const hasUnseenFailuresSignal = signal(false);
 
 // Popover UI
 export const popoverDimensionSignal = signal<{ width: number; height: number }>(
@@ -61,7 +66,9 @@ export const failuresSignal = computed(() => {
     .flat()
     .map((toolCall) => ({ ...toolCall, type: "toolCall" })) as FailedToolCall[];
 
-  return [...runs, ...toolCalls].filter((item) => item.statusCode === 2);
+  return [...runs, ...toolCalls]
+    .filter((item) => item.statusCode === 2)
+    .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
 });
 
 // Dropdown & Context Menu

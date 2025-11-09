@@ -1,4 +1,7 @@
-export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
+export const Logo = ({
+  fill,
+  ...props
+}: React.SVGProps<SVGSVGElement> & { fill?: string }) => (
   <svg
     width={props.width ?? 40}
     height={props.height ?? 40}
@@ -11,7 +14,7 @@ export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
       style={{
         fill: "none",
         fillOpacity: 1,
-        stroke: "#1a7ef6",
+        stroke: fill ?? "#1a7ef6",
         strokeWidth: 7.44375,
         strokeLinecap: "round",
         strokeLinejoin: "round",
@@ -26,7 +29,7 @@ export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
       style={{
         fill: "none",
         fillOpacity: 1,
-        stroke: "#ffd806",
+        stroke: fill ?? "#ffd806",
         strokeWidth: 7.44375,
         strokeLinecap: "round",
         strokeLinejoin: "round",
@@ -41,7 +44,7 @@ export const Logo = (props: React.SVGProps<SVGSVGElement>) => (
       style={{
         fill: "none",
         fillOpacity: 1,
-        stroke: "#ff2e55",
+        stroke: fill ?? "#ff2e55",
         strokeWidth: 7.44375,
         strokeLinecap: "round",
         strokeLinejoin: "round",

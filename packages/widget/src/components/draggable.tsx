@@ -3,7 +3,55 @@ import { useCallback, useEffect, useLayoutEffect, useRef } from "preact/hooks";
 import { cn } from "@/utils/cn";
 import { getClosestCorner, getNewCornerPosition } from "@/utils/corners";
 import { Signal } from "@preact/signals";
-import { widgetCornerSignal } from "@/state";
+import {
+  DockedMode,
+  hasUnseenFailuresSignal,
+  widgetCornerSignal,
+  widgetDockedSignal,
+  widgetPositionSignal,
+} from "@/state";
+import {
+  DOCKED_HORIZONTAL_HEIGHT,
+  DOCKED_HORIZONTAL_WIDTH,
+  DOCKED_VERTICAL_HEIGHT,
+  DOCKED_VERTICAL_WIDTH,
+  UNDOCKED_HEIGHT,
+  UNDOCKED_WIDTH,
+} from "@/constants";
+
+const snapToCornerFn = (
+  x: number,
+  y: number,
+  draggableElement: HTMLDivElement
+) => {
+  const closestCorner = getClosestCorner({ x, y });
+
+  const onTransitionEnd = () => {
+    draggableElement.style.transition = "none";
+    draggableElement.removeEventListener("transitionend", onTransitionEnd);
+  };
+
+  draggableElement.addEventListener("transitionend", onTransitionEnd);
+  draggableElement.style.transition =
+    "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+
+  const newCornerPosition = getNewCornerPosition({
+    corner: closestCorner,
+    elementWidth: draggableElement.offsetWidth,
+    elementHeight: draggableElement.offsetHeight,
+  });
+
+  animateDraggableElement(
+    draggableElement,
+    newCornerPosition.x,
+    newCornerPosition.y
+  );
+  widgetCornerSignal.value = closestCorner;
+  widgetPositionSignal.value = {
+    x: newCornerPosition.x,
+    y: newCornerPosition.y,
+  };
+};
 
 const animateDraggableElement = (
   draggableElement: HTMLDivElement,
@@ -15,6 +63,9 @@ const animateDraggableElement = (
   });
 };
 
+// this component is in a weird state, some of it is abstracted
+// and some of it assumes we're always dragging the widget.
+// TODO: choose one or the other
 export function Draggable({
   snapToCorner,
   children,
@@ -25,7 +76,7 @@ export function Draggable({
   ...props
 }: {
   snapToCorner?: boolean;
-  children: JSX.Element;
+  children?: JSX.Element;
   className?: string;
   onClick?: () => void;
   positionSignal: Signal<{ x: number; y: number }>;
@@ -67,14 +118,38 @@ export function Draggable({
         const changeInMouseY = currentMouseY - initialMouseY;
 
         const isOutsideWindowX =
-          currentMouseX < 0 || currentMouseX > window.innerWidth;
+          currentMouseX <= 0 || currentMouseX >= window.innerWidth - 3;
         const isOutsideWindowY =
-          currentMouseY < 0 || currentMouseY > window.innerHeight;
+          currentMouseY <= 0 || currentMouseY >= window.innerHeight - 3;
 
         if (isOutsideWindowX || isOutsideWindowY) {
-          handlePointerUp();
+          let mode: DockedMode = "left";
+          let newX = 0;
+          let newY = currentMouseY;
+
+          if (currentMouseX >= window.innerWidth - 3) {
+            newX = window.innerWidth - DOCKED_VERTICAL_WIDTH;
+            newY = currentMouseY;
+            mode = "right";
+          } else if (currentMouseY <= 0) {
+            newY = 0;
+            newX = currentMouseX - DOCKED_VERTICAL_WIDTH / 2;
+            mode = "top";
+          } else if (currentMouseY >= window.innerHeight - 3) {
+            newY = window.innerHeight - DOCKED_HORIZONTAL_HEIGHT;
+            newX = currentMouseX;
+            mode = "bottom";
+          }
+
+          handleDock(newX, newY, mode);
           return;
         }
+
+        widgetDockedSignal.value = null;
+        dimensionsSignal.value = {
+          width: UNDOCKED_WIDTH,
+          height: UNDOCKED_HEIGHT,
+        };
 
         const x = Math.max(
           0,
@@ -98,42 +173,42 @@ export function Draggable({
       const distance = Math.hypot(deltaX, deltaY);
 
       if (distance < 3) {
-        onClick?.();
+        if (widgetDockedSignal.value !== null) {
+          widgetDockedSignal.value = null;
+          dimensionsSignal.value = {
+            width: UNDOCKED_WIDTH,
+            height: UNDOCKED_HEIGHT,
+          };
+          // set this so that snapToCornerFn() calculates margin correctly
+          draggableElement.style.width = `${UNDOCKED_WIDTH}px`;
+          draggableElement.style.height = `${UNDOCKED_HEIGHT}px`;
+          snapToCornerFn(finalX, finalY, draggableElement);
+        } else onClick?.();
       }
 
-      if (snapToCorner) {
-        const closestCorner = getClosestCorner({
-          x: finalX,
-          y: finalY,
-        });
+      if (snapToCorner) snapToCornerFn(finalX, finalY, draggableElement);
+    };
 
-        const onTransitionEnd = () => {
-          draggableElement.style.transition = "none";
-          draggableElement.removeEventListener(
-            "transitionend",
-            onTransitionEnd
-          );
+    const handleDock = (
+      newX: number,
+      newY: number,
+      mode: DockedMode = "left"
+    ) => {
+      widgetDockedSignal.value = mode;
+      document.removeEventListener("pointermove", handlePointerMove);
+      document.removeEventListener("pointerup", handlePointerUp);
+
+      animateDraggableElement(draggableElement, newX, newY);
+      positionSignal.value = { x: newX, y: newY };
+      if (mode === "left" || mode === "right") {
+        dimensionsSignal.value = {
+          width: DOCKED_VERTICAL_WIDTH,
+          height: DOCKED_VERTICAL_HEIGHT,
         };
-
-        draggableElement.addEventListener("transitionend", onTransitionEnd);
-        draggableElement.style.transition =
-          "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
-
-        const newCornerPosition = getNewCornerPosition({
-          corner: closestCorner,
-          elementWidth: draggableElement.offsetWidth,
-          elementHeight: draggableElement.offsetHeight,
-        });
-
-        animateDraggableElement(
-          draggableElement,
-          newCornerPosition.x,
-          newCornerPosition.y
-        );
-        widgetCornerSignal.value = closestCorner;
-        positionSignal.value = {
-          x: newCornerPosition.x,
-          y: newCornerPosition.y,
+      } else {
+        dimensionsSignal.value = {
+          width: DOCKED_HORIZONTAL_WIDTH,
+          height: DOCKED_HORIZONTAL_HEIGHT,
         };
       }
     };
@@ -205,10 +280,6 @@ export function Draggable({
 
     // populate initial signal values that Popover relies on
     positionSignal.value = { x, y };
-    dimensionsSignal.value = {
-      width: draggableElement.offsetWidth,
-      height: draggableElement.offsetHeight,
-    };
   }, []);
 
   return (
@@ -216,14 +287,25 @@ export function Draggable({
       ref={containerRef}
       className={cn(
         "fixed inset-0 z-[1000]",
-        "rounded-full",
-        "select-none w-fit h-fit",
+        widgetDockedSignal.value === null && "rounded-full",
+        widgetDockedSignal.value === "top" && "rounded-b-lg",
+        widgetDockedSignal.value === "bottom" && "rounded-t-lg",
+        widgetDockedSignal.value === "left" && "rounded-r-lg",
+        widgetDockedSignal.value === "right" && "rounded-l-lg",
+        `select-none`,
         "flex items-center justify-center",
-        "bg-white border shadow-sm border-gray-200",
-        "cursor-pointer hover:bg-gray-100",
+        "border shadow-sm",
+        hasUnseenFailuresSignal.value
+          ? "bg-red-500 border-red-500 hover:bg-red-600 hover:border-red-600"
+          : "bg-white border-gray-200 hover:bg-gray-100 hover:border-gray-300",
+        "cursor-pointer",
         "touch-none",
         className
       )}
+      style={{
+        width: `${dimensionsSignal.value.width}px`,
+        height: `${dimensionsSignal.value.height}px`,
+      }}
       onPointerDown={handleDrag}
       {...props}
     >

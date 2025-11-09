@@ -1,7 +1,11 @@
 import { useEffect } from "preact/hooks";
 import { UIRun, UIStep, UIToolCall } from "../types";
 import { reconcileStore } from "@/utils/store";
-import { tccStoreSignal } from "@/state";
+import {
+  hasUnseenFailuresSignal,
+  tccStoreSignal,
+  widgetExpandedSignal,
+} from "@/state";
 import { recursivelyInjectDateFields } from "@/utils/time";
 
 export type TCCStore = {
@@ -22,7 +26,13 @@ export type TCCEvent =
   | { type: "initialStore"; data: TCCStore }
   | { type: "newItems"; data: NewItems };
 
-export const syncTCCStore = () =>
+const hasFailure = (items: NewItems) => {
+  const { runs, steps, toolCalls } = items;
+  const allItems = [runs, steps, toolCalls].flat();
+  return allItems.some((item) => item.statusCode === 2);
+};
+
+export const useSyncTCCStore = () =>
   useEffect(() => {
     const ws = new WebSocket(`ws://localhost:${(window as any).TCC_WSS_PORT}`);
 
@@ -45,11 +55,14 @@ export const syncTCCStore = () =>
 
         if (eventMessage.type === "initialStore")
           tccStoreSignal.value = data as TCCStore;
-        else if (eventMessage.type === "newItems")
+        else if (eventMessage.type === "newItems") {
           tccStoreSignal.value = reconcileStore(
             tccStoreSignal.value,
             data as NewItems
           );
+          if (!widgetExpandedSignal.value && hasFailure(data as NewItems))
+            hasUnseenFailuresSignal.value = true;
+        }
       } catch (error) {
         console.error("TCC: Error parsing event message:", error);
       }

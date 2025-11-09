@@ -16,11 +16,15 @@ export default function FailuresList() {
     return <Empty label="No failures found 🎉" />;
   }
 
-  return failures.map((failure) =>
-    isToolCall(failure) ? (
-      <ToolCallRow key={failure.traceId} toolCall={failure} failed />
-    ) : (
-      <RunRow key={failure.traceId} run={failure as FailedRun} failed />
-    )
+  return (
+    <div className="text-sm text-gray-500 divide-y divide-gray-200">
+      {failures.map((failure) =>
+        isToolCall(failure) ? (
+          <ToolCallRow key={failure.traceId} toolCall={failure} failed />
+        ) : (
+          <RunRow key={failure.traceId} run={failure as FailedRun} failed />
+        )
+      )}
+    </div>
   );
 }

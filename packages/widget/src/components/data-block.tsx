@@ -52,13 +52,13 @@ function DataBlock({
           <ChevronDown
             className={cn("w-3 h-3", collapsedSignal.value && "-rotate-90")}
           />
-          {label && <p className="text-sm font-medium">{label}</p>}
+          {label && <p className="text-xs font-medium">{label}</p>}
         </div>
         {!collapsedSignal.value && showDropdown && (
           <Dropdown
             trigger={
               <div className="flex items-center gap-2 cursor-pointer text-gray-700 hover:text-black transition-colors w-fit">
-                <p className="text-sm">{viewSignal.value}</p>
+                <p className="text-xs">{viewSignal.value}</p>
                 <ChevronDown className="w-4 h-4" />
               </div>
             }
@@ -97,8 +97,10 @@ function DataBlock({
                 </p>
               )
             ) : viewSignal.value === "Markdown" ? (
-              <div className="prose text-xs">
-                <Markdown>{content ?? "No content"}</Markdown>
+              <div className="text-xs w-[95%]">
+                <Markdown className="prose text-xs w-full">
+                  {content ?? "No content"}
+                </Markdown>
               </div>
             ) : (
               <p className="text-xs font-mono text-gray-700">

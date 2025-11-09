@@ -51,7 +51,7 @@ export const RunRow = ({ run, failed }: { run: UIRun; failed?: boolean }) => {
       >
         <div className="flex items-center justify-between">
           <div className="font-mono text-sm text-gray-900 font-medium">
-            Some Agent Run
+            Agent Run
           </div>
           <div className="flex items-center gap-4">
             <div className="flex items-center gap-3 text-xs">
