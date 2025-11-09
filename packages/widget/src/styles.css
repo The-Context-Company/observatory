@@ -749,9 +749,6 @@
   .cursor-grab {
     cursor: grab;
   }
-  .cursor-move {
-    cursor: move;
-  }
   .cursor-nesw-resize {
     cursor: nesw-resize;
   }

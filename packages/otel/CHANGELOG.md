@@ -1,5 +1,11 @@
 # @contextcompany/otel
 
+## 1.0.10
+
+### Patch Changes
+
+- - added anonymous telemetry events
+
 ## 1.0.9
 
 ### Patch Changes

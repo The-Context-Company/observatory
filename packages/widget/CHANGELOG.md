@@ -1,5 +1,17 @@
 # @contextcompany/widget
 
+## 1.0.3
+
+### Patch Changes
+
+- added anonymous telemetry events
+
+## 1.0.2
+
+### Patch Changes
+
+- republish
+
 ## 1.0.1
 
 ### Patch Changes
