@@ -1,0 +1,8 @@
+export const UNDOCKED_WIDTH = 35;
+export const UNDOCKED_HEIGHT = 35;
+
+export const DOCKED_HORIZONTAL_WIDTH = 45;
+export const DOCKED_HORIZONTAL_HEIGHT = 15;
+
+export const DOCKED_VERTICAL_WIDTH = 15;
+export const DOCKED_VERTICAL_HEIGHT = 45;

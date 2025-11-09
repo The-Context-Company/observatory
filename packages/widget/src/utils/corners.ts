@@ -1,4 +1,8 @@
-import { widgetDimensionsSignal, widgetPositionSignal } from "@/state";
+import {
+  widgetCornerSignal,
+  widgetDimensionsSignal,
+  widgetPositionSignal,
+} from "@/state";
 
 export type Corner = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -99,4 +103,48 @@ export const getPositionFromWidget = ({
   }
 
   return { x, y };
+};
+
+export const animateDraggableElement = (
+  draggableElement: HTMLDivElement,
+  x: number,
+  y: number
+) => {
+  requestAnimationFrame(() => {
+    draggableElement.style.transform = `translate3d(${x}px, ${y}px, 0)`;
+  });
+};
+
+export const snapToCorner = (
+  x: number,
+  y: number,
+  draggableElement: HTMLDivElement
+) => {
+  const closestCorner = getClosestCorner({ x, y });
+
+  const onTransitionEnd = () => {
+    draggableElement.style.transition = "none";
+    draggableElement.removeEventListener("transitionend", onTransitionEnd);
+  };
+
+  draggableElement.addEventListener("transitionend", onTransitionEnd);
+  draggableElement.style.transition =
+    "transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)";
+
+  const newCornerPosition = getNewCornerPosition({
+    corner: closestCorner,
+    elementWidth: draggableElement.offsetWidth,
+    elementHeight: draggableElement.offsetHeight,
+  });
+
+  animateDraggableElement(
+    draggableElement,
+    newCornerPosition.x,
+    newCornerPosition.y
+  );
+  widgetCornerSignal.value = closestCorner;
+  widgetPositionSignal.value = {
+    x: newCornerPosition.x,
+    y: newCornerPosition.y,
+  };
 };
