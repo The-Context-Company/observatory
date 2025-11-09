@@ -10,7 +10,8 @@ let posthog: PostHog | null = null;
 let distinctId: string | null = null;
 
 export const initAnonymousTelemetry = () => {
-  if (process.env.TCC_TELEMETRY_DISABLED === "true" || distinctId) return;
+  if (process.env.TCC_DISABLE_ANONYMOUS_TELEMETRY === "true" || distinctId)
+    return;
 
   distinctId = randomUUID();
 
@@ -25,7 +26,8 @@ export const captureAnonymousEvent = (
   eventData: TCCAnonymousTelemetryEvent
 ) => {
   try {
-    if (process.env.TCC_TELEMETRY_DISABLED === "true" || !distinctId) return;
+    if (process.env.TCC_DISABLE_ANONYMOUS_TELEMETRY === "true" || !distinctId)
+      return;
 
     const { event, ...properties } = eventData;
 

@@ -20,26 +20,27 @@ type ToolCallEndEvent = {
   duration_ns: number;
 };
 
+// below events are sent from widget via ws
 type WidgetDockEvent = {
   event: "widget_dock_event";
   action: "dock" | "undock";
 };
 
-type WidgetResizeEvent = {
-  event: "widget_resize_event";
+type WidgetExpandEvent = {
+  event: "widget_expand_event";
+  expanded: boolean;
+};
+
+type PopoverResizeEvent = {
+  event: "popover_resize_event";
   width: number;
   height: number;
 };
 
-type WidgetMoveEvent = {
-  event: "widget_move_event";
+type PopoverMoveEvent = {
+  event: "popover_move_event";
   x: number;
   y: number;
-};
-
-type WidgetExpandEvent = {
-  event: "widget_expand_event";
-  expanded: boolean;
 };
 
 export type TCCAnonymousTelemetryEvent =
@@ -48,6 +49,6 @@ export type TCCAnonymousTelemetryEvent =
   | StepEndEvent
   | ToolCallEndEvent
   | WidgetDockEvent
-  | WidgetResizeEvent
-  | WidgetMoveEvent
+  | PopoverResizeEvent
+  | PopoverMoveEvent
   | WidgetExpandEvent;

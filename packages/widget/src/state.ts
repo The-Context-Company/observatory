@@ -70,6 +70,7 @@ export const failuresSignal = computed(() => {
     .filter((item) => item.statusCode === 2)
     .sort((a, b) => b.startTime.getTime() - a.startTime.getTime());
 });
+export const wsSignal = signal<WebSocket | null>(null);
 
 // Dropdown & Context Menu
 export const openContextMenuIdSignal = signal<string | null>(null);

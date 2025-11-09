@@ -1,6 +1,7 @@
 import { useCallback, useRef } from "preact/hooks";
 import { popoverDimensionSignal } from "@/state";
 import type { CSSProperties, RefObject } from "preact";
+import { captureAnonymousEvent } from "@/internal/events";
 
 type HandlePosition = "top-left" | "top-right" | "bottom-left" | "bottom-right";
 
@@ -108,6 +109,9 @@ export function ResizableHandle({
         document.removeEventListener("pointerup", handlePointerUp);
         document.body.style.cursor = "";
         document.body.style.userSelect = "";
+
+        const { width, height } = popoverDimensionSignal.value;
+        captureAnonymousEvent({ event: "popover_resize_event", width, height });
       };
 
       const cursor =
