@@ -72,6 +72,12 @@ importers:
       '@opentelemetry/sdk-trace-base':
         specifier: ^2.1.0
         version: 2.2.0(@opentelemetry/api@1.9.0)
+      posthog-node:
+        specifier: ^5.11.2
+        version: 5.11.2
+      ws:
+        specifier: ^8.18.3
+        version: 8.18.3
     devDependencies:
       '@opentelemetry/api':
         specifier: ^1.9.0
@@ -97,18 +103,12 @@ importers:
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
-      posthog-node:
-        specifier: ^5.11.2
-        version: 5.11.2
       tsup:
         specifier: ^8.5.0
         version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(typescript@5.9.3)(yaml@2.8.1)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
-      ws:
-        specifier: ^8.18.3
-        version: 8.18.3
 
   packages/widget:
     dependencies:
