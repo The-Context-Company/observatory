@@ -1,6 +1,6 @@
 # <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Observatory
 
-[The Context Company](https://thecontext.company/) does agent observability with a focus on DX.
+[The Context Company](https://thecontext.company/) does agent observability. **We care deeply about DX; it’s our single biggest priority.**
 
 ## Local mode (AI SDK + Next.js)
 
