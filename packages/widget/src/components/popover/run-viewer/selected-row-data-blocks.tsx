@@ -12,6 +12,13 @@ export function SelectedRowDataBlocks({
 }) {
   return (
     <div className="flex flex-col gap-2">
+      {row.statusCode === 2 && row.statusMessage ? (
+        <DataBlock
+          content={row.statusMessage}
+          label="Error message"
+          color="text-red-500"
+        />
+      ) : undefined}
       {isToolCall(row) && <ToolCallDataBlocks toolCall={row} />}
       {!isToolCall(row) && <LLMCallDataBlocks step={row} />}
       <DataBlock

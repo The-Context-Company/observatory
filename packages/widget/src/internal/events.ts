@@ -24,11 +24,18 @@ type PopoverMoveEvent = {
   y: number;
 };
 
+type RowClickEvent = {
+  event: "row_click_event";
+  row_type: "agent_run" | "tool_call";
+  has_failure: boolean;
+};
+
 export type TCCAnonymousTelemetryEvent =
   | WidgetDockEvent
   | WidgetExpandEvent
   | PopoverResizeEvent
-  | PopoverMoveEvent;
+  | PopoverMoveEvent
+  | RowClickEvent;
 
 export const captureAnonymousEvent = (event: TCCAnonymousTelemetryEvent) => {
   if (!wsSignal.value) return;

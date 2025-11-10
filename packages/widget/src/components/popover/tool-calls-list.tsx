@@ -3,6 +3,7 @@ import { getAgoString } from "@/utils/time";
 import Empty from "./empty";
 import { UIToolCall } from "@/types";
 import { cn } from "@/utils/cn";
+import { captureAnonymousEvent } from "@/internal/events";
 
 export const ToolCallRow = ({
   toolCall,
@@ -26,6 +27,11 @@ export const ToolCallRow = ({
       )}
       onClick={() => {
         selectedTraceIdSignal.value = toolCall.traceId;
+        captureAnonymousEvent({
+          event: "row_click_event",
+          row_type: "tool_call",
+          has_failure: failed ?? false,
+        });
       }}
     >
       <div className="flex items-center justify-between">

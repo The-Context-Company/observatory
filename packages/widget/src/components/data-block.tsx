@@ -28,12 +28,14 @@ function DataBlock({
   className,
   showDropdown = false,
   collapsed = false,
+  color,
 }: {
   label?: string;
   content?: string;
   className?: string;
   showDropdown?: boolean;
   collapsed?: boolean;
+  color?: string;
 }) {
   const isJson = content ? isAttributeJson(content) : false;
 
@@ -50,9 +52,13 @@ function DataBlock({
           className="flex items-center gap-2 cursor-pointer text-gray-700 hover:text-black transition-colors w-fit"
         >
           <ChevronDown
-            className={cn("w-3 h-3", collapsedSignal.value && "-rotate-90")}
+            className={cn(
+              "w-3 h-3",
+              collapsedSignal.value && "-rotate-90",
+              color
+            )}
           />
-          {label && <p className="text-xs font-medium">{label}</p>}
+          {label && <p className={cn("text-xs font-medium", color)}>{label}</p>}
         </div>
         {!collapsedSignal.value && showDropdown && (
           <Dropdown

@@ -43,6 +43,12 @@ type PopoverMoveEvent = {
   y: number;
 };
 
+type RowClickEvent = {
+  event: "row_click_event";
+  row_type: "agent_run" | "tool_call";
+  has_failure: boolean;
+};
+
 export type TCCAnonymousTelemetryEvent =
   | LocalModeStartEvent
   | AgentRunEndEvent
@@ -51,4 +57,5 @@ export type TCCAnonymousTelemetryEvent =
   | WidgetDockEvent
   | PopoverResizeEvent
   | PopoverMoveEvent
-  | WidgetExpandEvent;
+  | WidgetExpandEvent
+  | RowClickEvent;

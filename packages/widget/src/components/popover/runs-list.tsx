@@ -5,6 +5,7 @@ import Empty from "@/components/popover/empty";
 import { UIRun } from "@/types";
 import { cn } from "@/utils/cn";
 import { useEffect, useRef } from "preact/hooks";
+import { captureAnonymousEvent } from "@/internal/events";
 
 // TODO: maybe just compute `failed` with run.statusCode === 2
 export const RunRow = ({ run, failed }: { run: UIRun; failed?: boolean }) => {
@@ -47,6 +48,11 @@ export const RunRow = ({ run, failed }: { run: UIRun; failed?: boolean }) => {
         )}
         onClick={() => {
           selectedTraceIdSignal.value = run.traceId;
+          captureAnonymousEvent({
+            event: "row_click_event",
+            row_type: "agent_run",
+            has_failure: failed ?? false,
+          });
         }}
       >
         <div className="flex items-center justify-between">
