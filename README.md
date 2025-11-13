@@ -50,10 +50,9 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/* add The Context Company widget */}
-        <script
+        <Script {/* from next/script */}
           crossOrigin="anonymous"
           src="//unpkg.com/@contextcompany/widget/dist/auto.global.js"
-          async {/* or use defer instead */}
         />
         {/* other scripts */}
       </head>
