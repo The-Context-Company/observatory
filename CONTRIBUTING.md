@@ -1,6 +1,6 @@
 # <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Contributing to Observatory
 
-Thank you for your interest in contributing to Observatory! We're excited to have you here. Observatory is an AI agent observability platform.
+Thank you for your interest in contributing to Observatory! We're excited to have you here.
 
 This document provides guidelines and instructions for contributing to the project. By participating, you agree to uphold our community standards and make this a welcoming environment for everyone.
 
