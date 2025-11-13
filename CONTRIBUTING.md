@@ -129,10 +129,6 @@ Browser-based visualization widget for real-time AI SDK observability. Built wit
 - `src/components/` - Reusable UI components
 - `src/state.ts` - Global state management with Preact signals
 
-#### `examples/nextjs-widget`
-
-Demonstration Next.js application showing real-world usage. Not published to npm. Use this to test your changes in a realistic environment.
-
 ## Development Workflow
 
 ### Working on a Package
@@ -158,7 +154,6 @@ Each package supports two development modes:
 - **Watch mode only** - Automatically rebuilds when you save files
 - Output goes to the `dist/` folder
 - **No local server included**
-- **When to use:** Testing changes via the example app in `examples/nextjs-widget`
 - Faster and minimal overhead
 
 #### `pnpm dev:all`
@@ -166,7 +161,6 @@ Each package supports two development modes:
 - **Watch mode + local HTTP server**
 - Automatically rebuilds AND serves the built files
 - Each package may serve on a different port (check package-specific documentation)
-- **When to use:** Need to directly test built files in a browser without the example app
 - Ideal for developing browser-loadable scripts or debugging package outputs directly
 
 **Example workflow:**
@@ -261,27 +255,6 @@ If you're adding a new feature, consider adding test cases or documenting test p
 2. **Test your changes** thoroughly
 3. **Update documentation** if needed
 4. **Add a changeset** (see below)
-
-### Creating a Changeset
-
-Observatory uses [Changesets](https://github.com/changesets/changesets) for version management and changelog generation.
-
-When you make changes that should be released (bug fixes, features, breaking changes), add a changeset:
-
-```bash
-pnpm changeset
-```
-
-Follow the prompts:
-
-1. Select which packages are affected
-2. Choose the version bump type:
-   - **patch** - Bug fixes, minor improvements
-   - **minor** - New features, backwards-compatible
-   - **major** - Breaking changes
-3. Describe the changes in a user-friendly way
-
-**Note:** Changes to the `examples/` directory don't require changesets as they aren't published.
 
 ### Opening a Pull Request
 
