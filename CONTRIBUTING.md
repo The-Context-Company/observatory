@@ -13,10 +13,10 @@ This document provides guidelines and instructions for contributing to the proje
 - [Development Workflow](#development-workflow)
 - [Testing](#testing)
 - [Submitting Changes](#submitting-changes)
-- [Code Style Guidelines](#code-style-guidelines)
 - [Commit Message Conventions](#commit-message-conventions)
 - [Review Process](#review-process)
 - [Community](#community)
+- [Questions?](#questions)
 
 ## Code of Conduct
 
