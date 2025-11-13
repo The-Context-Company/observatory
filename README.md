@@ -41,6 +41,8 @@ Add the Local Mode widget to the root layout of your Next.js application.
 
 ```tsx app/layout.tsx
 // app/layout.tsx
+import Script from "next/script";
+
 export default function RootLayout({
   children,
 }: {
