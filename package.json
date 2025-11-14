@@ -4,5 +4,6 @@
   "private": true,
   "dependencies": {
     "@changesets/cli": "^2.29.7"
-  }
+  },
+  "packageManager": "pnpm@10.8.1"
 }
