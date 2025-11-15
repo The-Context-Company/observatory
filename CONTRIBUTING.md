@@ -1,6 +1,6 @@
 # <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Contributing to The Context Company
 
-Thank you for taking the tibe to contribute! We're excited to have you here 🙌
+Thank you for taking the time to contribute! We're excited to have you here 🙌
 
 ## Table of Contents
 
