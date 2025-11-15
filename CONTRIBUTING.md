@@ -1,47 +1,28 @@
-# <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Contributing to Observatory
+# <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Contributing to The Context Company
 
-Thank you for your interest in contributing to Observatory! We're excited to have you here.
-
-This document provides guidelines and instructions for contributing to the project. By participating, you agree to uphold our community standards and make this a welcoming environment for everyone.
+Thank you for taking the tibe to contribute! We're excited to have you here 🙌
 
 ## Table of Contents
 
-- [Code of Conduct](#code-of-conduct)
-- [Ways to Contribute](#ways-to-contribute)
+- [How to Contribute](#ways-to-contribute)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
 - [Development Workflow](#development-workflow)
-- [Testing](#testing)
 - [Submitting Changes](#submitting-changes)
 - [Commit Message Conventions](#commit-message-conventions)
-- [Review Process](#review-process)
-- [Community](#community)
-- [Questions?](#questions)
 
-## Code of Conduct
+## How to Contribute
 
-We are committed to providing a welcoming and inclusive environment. Please be respectful, considerate, and collaborative. Harassment and abusive behavior will not be tolerated.
-
-## Ways to Contribute
-
-There are many ways to contribute to Observatory:
+There are many ways to contribute:
 
 - **Report bugs** - Found a bug? Open an issue with detailed reproduction steps
 - **Suggest features** - Have an idea? We'd love to hear it!
 - **Improve documentation** - Help make our docs clearer and more comprehensive
 - **Write code** - Submit pull requests for bug fixes, features, or improvements
 - **Answer questions** - Help other users in issues and discussions
-- **Share feedback** - Let us know how we can improve the developer experience
+- **Share feedback** - Let us know how we can improve developer experience
 
 ## Getting Started
-
-### Prerequisites
-
-Before you begin, ensure you have the following installed:
-
-- **Node.js** v18.0.0 or higher
-- **pnpm** v9+ (install with `npm install -g pnpm`)
-- **Git**
 
 ### Initial Setup
 
@@ -66,44 +47,16 @@ Before you begin, ensure you have the following installed:
    pnpm install
    ```
 
-### Keeping Your Fork Updated
-
-Regularly sync your fork with the upstream repository:
-
-```bash
-git fetch upstream
-git checkout main
-git merge upstream/main
-```
-
 ## Project Structure
 
 Observatory is a **pnpm monorepo** with the following structure:
 
 ```
 observatory/
-├── .changeset/              # Changeset configuration for versioning
-├── packages/                # Published npm packages
-│   ├── otel/               # @contextcompany/otel - OpenTelemetry integration
-│   │   ├── src/            # Source code
-│   │   │   ├── index.ts                    # Main exports
-│   │   │   ├── TCCSpanProcessor.ts         # Core span processor
-│   │   │   ├── exporters/                  # OTLP exporters
-│   │   │   └── nextjs/                     # Next.js integration
-│   │   ├── package.json
-│   │   └── tsup.config.ts  # Build configuration
-│   └── widget/             # @contextcompany/widget - Browser visualization
-│       ├── src/            # Source code
-│       │   ├── index.ts                    # Widget initialization
-│       │   ├── widget.tsx                  # Main Preact component
-│       │   ├── components/                 # UI components
-│       │   ├── hooks/                      # Preact hooks
-│       │   └── utils/                      # Utility functions
-│       ├── package.json
-│       └── tsup.config.ts
-├── examples/                # Example applications (not published)
-│   └── nextjs-widget/      # Next.js demo app
-└── pnpm-workspace.yaml     # Workspace configuration
+├── packages/
+│   ├── otel/     # @contextcompany/otel - OpenTelemetry integration
+│   └── widget/   # @contextcompany/widget - Preact widget for Local Mode
+└── examples/     # Examples of Local Mode
 ```
 
 ### Package Descriptions
@@ -112,40 +65,26 @@ observatory/
 
 OpenTelemetry instrumentation layer for the Vercel AI SDK. Provides span processors, exporters, and Next.js integration for collecting telemetry data in both local and cloud modes.
 
-**Key files:**
-
-- `src/TCCSpanProcessor.ts` - Filters and processes AI SDK spans
-- `src/nextjs/instrumentation.ts` - Main API (`registerOTelTCC()`)
-- `src/nextjs/local/` - Local mode WebSocket server
-- `src/exporters/` - Custom OTLP exporters
-
 #### `@contextcompany/widget`
 
 Browser-based visualization widget for real-time AI SDK observability. Built with Preact for minimal bundle size and uses Shadow DOM for style isolation.
 
-**Key files:**
+## Submitting changes
 
-- `src/widget.tsx` - Main widget UI
-- `src/components/` - Reusable UI components
-- `src/state.ts` - Global state management with Preact signals
+### Development workflow
 
-## Development Workflow
-
-### Working on a Package
-
-1. **Create a feature branch**:
+1. Fork the repo (see [Initial Setup](#initial-setup))
+2. Create a feature branch
 
    ```bash
    git checkout -b your-name/your-feature-name
    ```
 
-2. **Navigate to the package** you want to work on:
+3. Commit and push to your changes
+4. Open a pull request
+   - please check `Allow edits from maintainers` so we can make small tweaks before merging!
 
-   ```bash
-   cd packages/<package-name>
-   ```
-
-### Understanding Development Commands
+### Helper package scripts
 
 Each package supports two development modes:
 
@@ -153,147 +92,28 @@ Each package supports two development modes:
 
 - **Watch mode only** - Automatically rebuilds when you save files
 - Output goes to the `dist/` folder
-- **No local server included**
-- Faster and minimal overhead
 
 #### `pnpm dev:all`
 
 - **Watch mode + local HTTP server**
-- Automatically rebuilds AND serves the built files
-- Each package may serve on a different port (check package-specific documentation)
-- Ideal for developing browser-loadable scripts or debugging package outputs directly
-
-**Example workflow:**
-
-```bash
-# Working on a package with testing via example app
-cd packages/otel
-pnpm dev                    # Terminal 1: Watch and rebuild
-
-cd examples/nextjs-widget
-pnpm dev                    # Terminal 2: Run consumer app
-```
-
-Or:
-
-```bash
-# Working on a package with direct browser testing
-cd packages/widget
-pnpm dev:all               # Watches, rebuilds, and serves on localhost
-```
-
-### Testing Your Changes
-
-You can test your changes in the example app:
-
-```bash
-cd examples/nextjs-widget
-pnpm dev  # Starts Next.js on http://localhost:3000
-```
-
-The example app uses the local packages via workspace dependencies, so your changes will be reflected after rebuilding.
-
-### Building
-
-Build individual packages:
-
-```bash
-cd packages/otel
-pnpm build
-```
-
-Build all packages from the root:
-
-```bash
-pnpm build
-```
-
-**Note:** The widget package requires CSS compilation. Run `pnpm build:css` first or use `pnpm dev` for watch mode.
-
-### Adding Dependencies
-
-When adding dependencies to a package:
-
-1. Navigate to the package directory
-2. Add the dependency:
-
-   ```bash
-   pnpm add <package-name>
-   # or for dev dependencies
-   pnpm add -D <package-name>
-   ```
-
-3. Rebuild the package to ensure everything works
-
-For cross-package dependencies (e.g., using `@contextcompany/otel` in an example), use workspace protocol:
-
-```json
-{
-  "dependencies": {
-    "@contextcompany/otel": "workspace:*"
-  }
-}
-```
+- Automatically rebuilds AND serves the built files on port 3001 or 3002
+- Lets you use URL imports for testing your local changes outside of the workspace
 
 ## Testing
 
-Currently, Observatory does not have a comprehensive test suite (contributions welcome!). Please manually test your changes:
+We don't yet have a comprehensive test suite (contributions welcome!). Please manually test your changes:
 
 1. **Build the packages** you modified
 2. **Run the example app** to verify functionality
 3. **Test both local and cloud modes** if applicable
-4. **Check for console errors** and warnings
-5. **Test in different browsers** if working on the widget
 
 If you're adding a new feature, consider adding test cases or documenting test procedures in your PR.
 
-## Submitting Changes
-
-### Opening a Pull Request
-
-1. **Push your branch** to your fork:
-
-2. **Open a Pull Request** on GitHub from your fork to `The-Context-Company/observatory:main`
-
-3. **Fill out the PR template** with:
-   - Clear description of changes
-   - Motivation and context
-   - How you tested the changes
-   - Screenshots/videos if applicable (especially for widget changes)
-   - Any breaking changes or migration steps
-
-4. **Use a descriptive PR title** following the [Commit Message Conventions](#commit-message-conventions)
-
-5. **Link related issues if applicable** using keywords like "Fixes #123" or "Closes #456"
-
-### PR Review Process
-
-- A maintainer will review your PR and may request changes
-- Address feedback by pushing additional commits to your branch
-- Once approved, a maintainer will merge your PR
-- Your changes will be included in the next release
-
 ## Commit Message Conventions
 
-While not strictly enforced, we recommend following conventional commit format:
+We recommend the conventional commit format:
 
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
-```
-
-**Types:**
-
-- `feat` - New feature
-- `fix` - Bug fix
-- `docs` - Documentation changes
-- `style` - Code style/formatting
-- `refactor` - Code refactoring
-- `test` - Adding/updating tests
-- `chore` - Maintenance tasks
+`<type>(<scope>): <description>`
 
 **Examples:**
 
@@ -304,50 +124,4 @@ docs: update installation instructions
 chore: upgrade dependencies
 ```
 
-## Review Process
-
-### What We Look For
-
-- **Correctness** - Does the code work as intended?
-- **Code quality** - Is it readable, maintainable, and well-structured?
-- **Performance** - Are there any performance concerns?
-- **Security** - Are there any security vulnerabilities?
-- **Testing** - Has it been adequately tested?
-- **Documentation** - Are changes documented appropriately?
-
-### Review Timeline
-
-- We aim to provide initial feedback within **3-5 business days**
-- Complex changes may take longer
-- Feel free to ping maintainers if your PR hasn't been reviewed after a week
-
-### Addressing Feedback
-
-- Be open to constructive criticism
-- Ask questions if feedback is unclear
-- Push additional commits to address comments
-- Mark conversations as resolved once addressed
-
-## Community
-
-### Getting Help
-
-- **GitHub Issues** - For bug reports and feature requests
-- **GitHub Discussions** - For questions and community discussions
-- **README** - Check the main README for usage documentation
-
-### Recognition
-
-All contributors will be recognized in our commit history, contributors list, and releases. Thank you for making Observatory better!
-
----
-
-## Questions?
-
-If you have questions about contributing, feel free to:
-
-- Open a discussion on GitHub
-- Comment on an existing issue
-- Reach out to the maintainers
-
-**Happy contributing!** We appreciate your time and effort in making Observatory better for everyone.
+**Happy contributing!** We appreciate your time and effort in making The Context Company better for everyone.
