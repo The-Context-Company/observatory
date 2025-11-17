@@ -1,5 +1,11 @@
 # @contextcompany/widget
 
+## 1.0.5
+
+### Patch Changes
+
+- support rtl pages
+
 ## 1.0.4
 
 ### Patch Changes
