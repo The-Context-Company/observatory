@@ -99,7 +99,7 @@ Each package supports two development modes:
 - Automatically rebuilds AND serves the built files on port 3001 or 3002
 - Lets you use URL imports for testing your local changes outside of the workspace
 
-### Testing Changes Locally
+## Testing Changes Locally
 
 We don't have a comprehensive test suite yet (contributions welcome!). For now, please test your changes locally following the instructions below.
 
