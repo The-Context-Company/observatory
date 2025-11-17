@@ -66,6 +66,7 @@ export default function ContextMenu({
   const menuContent = visibleSignal.value && (
     <div
       ref={menuRef}
+      dir="ltr"
       id="tcc-context-menu"
       className={cn(
         "fixed z-500",

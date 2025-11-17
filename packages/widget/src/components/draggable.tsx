@@ -300,8 +300,9 @@ export function Draggable({
   return (
     <div
       ref={containerRef}
+      dir="ltr"
       className={cn(
-        "fixed inset-0 z-[1000]",
+        "fixed z-[1000]",
         widgetDockedSignal.value === null && "rounded-full",
         widgetDockedSignal.value === "top" && "rounded-b-lg",
         widgetDockedSignal.value === "bottom" && "rounded-t-lg",
@@ -318,6 +319,8 @@ export function Draggable({
         className
       )}
       style={{
+        top: 0,
+        left: 0,
         width: `${dimensionsSignal.value.width}px`,
         height: `${dimensionsSignal.value.height}px`,
       }}

@@ -160,8 +160,9 @@ function Popover() {
   return (
     <div
       ref={containerRef}
+      dir="ltr"
       className={cn(
-        "fixed inset-0",
+        "fixed",
         "bg-white border border-gray-200 rounded-lg",
         "z-50 overflow-hidden",
         "flex flex-col",
@@ -169,6 +170,8 @@ function Popover() {
         "animate-fade-in"
       )}
       style={{
+        top: 0,
+        left: 0,
         width: `${popoverDimensionSignal.value.width}px`,
         height: `${popoverDimensionSignal.value.height}px`,
       }}

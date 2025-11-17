@@ -98,6 +98,7 @@ export default function Dropdown({
   const menuContent = visibleSignal.value && (
     <div
       ref={menuRef}
+      dir="ltr"
       id="tcc-dropdown-menu"
       className={cn(
         "fixed z-500",
