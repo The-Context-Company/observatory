@@ -4,6 +4,12 @@ function isValidDateString(maybeDateString: string): boolean {
   return regex.test(maybeDateString);
 }
 
+function debugLog(message: string) {
+  if ((window as any).TCC_DEBUG) {
+    console.log(`[TCC] ${message}`);
+  }
+}
+
 export const recursivelyInjectDateFields = (fields: unknown): unknown => {
   if (Array.isArray(fields)) {
     return fields.map((item) => recursivelyInjectDateFields(item));
@@ -13,7 +19,9 @@ export const recursivelyInjectDateFields = (fields: unknown): unknown => {
       if (typeof value === "string" && isValidDateString(value)) {
         try {
           newFields[key] = new Date(value);
-        } catch {
+        } catch (error) {
+          const errorMsg = error instanceof Error ? error.message : String(error);
+          debugLog(`Failed to parse date string "${value}": ${errorMsg}`);
           newFields[key] = value;
         }
       } else {
