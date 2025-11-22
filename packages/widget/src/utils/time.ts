@@ -1,13 +1,9 @@
+import { debug } from "@/internal/logger";
+
 // Naive check if string is valid date ("valid" here just means it looks like a date string)
 function isValidDateString(maybeDateString: string): boolean {
   const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
   return regex.test(maybeDateString);
-}
-
-function debugLog(message: string) {
-  if ((window as any).TCC_DEBUG) {
-    console.log(`[TCC] ${message}`);
-  }
 }
 
 export const recursivelyInjectDateFields = (fields: unknown): unknown => {
@@ -20,8 +16,9 @@ export const recursivelyInjectDateFields = (fields: unknown): unknown => {
         try {
           newFields[key] = new Date(value);
         } catch (error) {
-          const errorMsg = error instanceof Error ? error.message : String(error);
-          debugLog(`Failed to parse date string "${value}": ${errorMsg}`);
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
+          debug(`Failed to parse date string "${value}": ${errorMsg}`);
           newFields[key] = value;
         }
       } else {
