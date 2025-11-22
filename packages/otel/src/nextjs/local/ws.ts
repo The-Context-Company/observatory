@@ -78,7 +78,12 @@ export const startWebSocketServer = async () => {
       try {
         const event = JSON.parse(data.toString());
         captureAnonymousEvent(event);
-      } catch (error) {}
+      } catch (error) {
+        const errorMsg = error instanceof Error ? error.message : String(error);
+        const dataStr = data.toString();
+        const truncatedData = dataStr.length > 200 ? dataStr.slice(0, 200) + "..." : dataStr;
+        debug(`Failed to parse WebSocket message: ${errorMsg}. Data: ${truncatedData}`);
+      }
     });
 
     // subscribe to new items

@@ -1,6 +1,12 @@
 import { EnrichedUIRun, EnrichedUIStep, UIStep, UIToolCall } from "@/types";
 import { NewItems, TCCStore } from "../hooks/useSyncTCCStore";
 
+function debugLog(message: string) {
+  if ((window as any).TCC_DEBUG) {
+    console.log(`[TCC] ${message}`);
+  }
+}
+
 export const reconcileStore = (
   prev: TCCStore,
   newItems: NewItems
@@ -101,6 +107,9 @@ export const getUserPromptFromPromptAttribute = (prompt: string): string => {
     }
     return prompt;
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    const truncatedPrompt = prompt.length > 100 ? prompt.slice(0, 100) + "..." : prompt;
+    debugLog(`Failed to extract prompt from attribute: ${errorMsg}. Value: ${truncatedPrompt}`);
     return prompt;
   }
 };
