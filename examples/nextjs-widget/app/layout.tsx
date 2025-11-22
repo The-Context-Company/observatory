@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -25,12 +26,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* The Context Company: */}
-        <script
-          src="https://unpkg.com/@contextcompany/widget/dist/auto.global.js"
-          async
-        />
-        {/* <script src="http://localhost:3001/auto.global.js" async /> */}
+        {/* add The Context Company widget when running locally */}
+        {process.env.NODE_ENV === "development" && (
+          <Script src="https://unpkg.com/@contextcompany/widget/dist/auto.global.js" />
+        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
