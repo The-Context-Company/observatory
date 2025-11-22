@@ -62,7 +62,9 @@ export function registerOTelTCC(opts: RegisterOpts = {}) {
     throw new Error("TCC: Dev API Key detected but using production endpoint");
 
   if (opts.local && isProduction)
-    throw new Error("TCC: Local mode detected but using production endpoint");
+    throw new Error(
+      "TCC: Production API Key detected while local mode is enabled"
+    );
 
   const environments = [];
   if (opts.local) environments.push("local");
