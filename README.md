@@ -26,11 +26,10 @@ See the [Next.js Instrumentation guide](https://nextjs.org/docs/app/guides/instr
 
 ```typescript instrumentation.ts
 // instrumentation.ts
-import { registerOTelTCC } from "@contextcompany/otel/nextjs";
-
-export function register() {
+export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    registerOTelTCC({ local: true });
+    const { registerOTelTCC } = await import("@contextcompany/otel/nextjs");
+    registerOTelTCC({ debug: true });
   }
 }
 ```
