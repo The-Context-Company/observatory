@@ -2,6 +2,11 @@
 
 [The Context Company](https://thecontext.company/) does agent observability. **We care deeply about DX; it’s our single biggest priority.**
 
+Observatory is a monorepo containing two core packages for AI agent observability:
+
+- **[@contextcompany/otel](./packages/otel)** - OpenTelemetry integration for instrumenting AI SDK calls
+- **[@contextcompany/widget](./packages/widget)** - Local-first UI overlay for visualizing AI agent traces in real-time
+
 ## Local mode (AI SDK + Next.js)
 
 Local mode allows you to run The Context Company in a local-first way. This is 100% open-source and requires **no account or API key**. To set up local mode, refer to the guide below or [our documentation](https://docs.thecontext.company/frameworks/ai-sdk/local).
@@ -26,11 +31,10 @@ See the [Next.js Instrumentation guide](https://nextjs.org/docs/app/guides/instr
 
 ```typescript instrumentation.ts
 // instrumentation.ts
-import { registerOTelTCC } from "@contextcompany/otel/nextjs";
-
-export function register() {
+export async function register() {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    registerOTelTCC({ local: true });
+    const { registerOTelTCC } = await import("@contextcompany/otel/nextjs");
+    registerOTelTCC({ debug: true });
   }
 }
 ```

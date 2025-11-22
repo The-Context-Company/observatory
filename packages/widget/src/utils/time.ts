@@ -1,3 +1,5 @@
+import { debug } from "@/internal/logger";
+
 // Naive check if string is valid date ("valid" here just means it looks like a date string)
 function isValidDateString(maybeDateString: string): boolean {
   const regex = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\.\d{3}Z$/;
@@ -13,7 +15,10 @@ export const recursivelyInjectDateFields = (fields: unknown): unknown => {
       if (typeof value === "string" && isValidDateString(value)) {
         try {
           newFields[key] = new Date(value);
-        } catch {
+        } catch (error) {
+          const errorMsg =
+            error instanceof Error ? error.message : String(error);
+          debug(`Failed to parse date string "${value}": ${errorMsg}`);
           newFields[key] = value;
         }
       } else {

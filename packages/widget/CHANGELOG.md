@@ -1,5 +1,11 @@
 # @contextcompany/widget
 
+## 1.0.6
+
+### Patch Changes
+
+- log json parse errors
+
 ## 1.0.5
 
 ### Patch Changes
