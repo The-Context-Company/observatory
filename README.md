@@ -4,7 +4,7 @@
 
 Observatory is a monorepo containing two core packages for AI agent observability:
 
-- **[@contextcompany/otel](./packages/otel)** - OpenTelemetry integration for instrumenting AI SDK calls and capturing telemetry data
+- **[@contextcompany/otel](./packages/otel)** - OpenTelemetry integration for instrumenting AI SDK calls
 - **[@contextcompany/widget](./packages/widget)** - Local-first UI overlay for visualizing AI agent traces in real-time
 
 ## Local mode (AI SDK + Next.js)
