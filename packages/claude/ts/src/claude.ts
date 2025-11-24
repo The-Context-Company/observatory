@@ -1,6 +1,8 @@
 // Type definitions
 type SDKMessage = { type: string; [key: string]: any };
-type QueryFn = (...args: unknown[]) => AsyncGenerator<SDKMessage, void, unknown>;
+type QueryFn = (
+  ...args: unknown[]
+) => AsyncGenerator<SDKMessage, void, unknown>;
 type ToolDefinition = {
   name: string;
   description: string;
@@ -21,17 +23,20 @@ export type TCCConfig = {
 
 // Extended type for wrapped SDK that adds tcc parameter
 export type WrappedSDK<T> = T extends { query: infer Q }
-  ? Omit<T, 'query'> & {
+  ? Omit<T, "query"> & {
       query: (params: {
-        prompt: Parameters<Q extends (...args: any) => any ? Q : never>[0]['prompt'];
-        options?: Parameters<Q extends (...args: any) => any ? Q : never>[0]['options'];
+        prompt: Parameters<
+          Q extends (...args: any) => any ? Q : never
+        >[0]["prompt"];
+        options?: Parameters<
+          Q extends (...args: any) => any ? Q : never
+        >[0]["options"];
         tcc?: TCCConfig;
       }) => ReturnType<Q extends (...args: any) => any ? Q : never>;
     }
   : T;
 
-
-function wrapClaudeAgentQuery(queryFn: QueryFn, target: unknown): QueryFn {
+function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
   return new Proxy(queryFn, {
     apply(fn, thisArg, args) {
       const messages: SDKMessage[] = [];
@@ -48,13 +53,13 @@ function wrapClaudeAgentQuery(queryFn: QueryFn, target: unknown): QueryFn {
       // Extract runId - check top level first, then metadata with tcc. prefix
       const runId =
         tccConfig?.runId ??
-        tccConfig?.metadata?.["tcc.runId"] as string | undefined ??
+        (tccConfig?.metadata?.["tcc.runId"] as string | undefined) ??
         crypto.randomUUID();
 
       // Extract sessionId - check top level first, then metadata with tcc. prefix
       const sessionId =
         tccConfig?.sessionId ??
-        tccConfig?.metadata?.["tcc.sessionId"] as string | undefined ??
+        (tccConfig?.metadata?.["tcc.sessionId"] as string | undefined) ??
         null;
 
       // Build final metadata: user metadata only (no tcc.* fields)
@@ -67,9 +72,10 @@ function wrapClaudeAgentQuery(queryFn: QueryFn, target: unknown): QueryFn {
         console.log("[TCC Debug] metadata:", metadata);
       }
 
-      const wrappedGenerator = async function*() {
+      const wrappedGenerator = async function* () {
         try {
-          if (DEBUG_ENABLED) console.log("[TCC Debug] Starting to collect messages");
+          if (DEBUG_ENABLED)
+            console.log("[TCC Debug] Starting to collect messages");
 
           const generator = Reflect.apply(fn, thisArg || target, args);
 
@@ -78,11 +84,13 @@ function wrapClaudeAgentQuery(queryFn: QueryFn, target: unknown): QueryFn {
             messages.push({
               ...message,
               receivedAtMs: Date.now(),
-              tccMetadata: { runId, sessionId },  // Attach to every message
+              tccMetadata: { runId, sessionId }, // Attach to every message
             });
 
             if (DEBUG_ENABLED) {
-              console.log(`[TCC Debug] Collected message type: ${message.type}, total: ${messages.length}`);
+              console.log(
+                `[TCC Debug] Collected message type: ${message.type}, total: ${messages.length}`
+              );
             }
 
             // Pass through transparently
@@ -92,12 +100,15 @@ function wrapClaudeAgentQuery(queryFn: QueryFn, target: unknown): QueryFn {
           // After stream completes, send to auth-tagger
           if (messages.length > 0) {
             if (DEBUG_ENABLED) {
-              console.log(`[TCC Debug] Stream completed with ${messages.length} messages`);
+              console.log(
+                `[TCC Debug] Stream completed with ${messages.length} messages`
+              );
               console.log("[TCC Debug] Sending to auth-tagger...");
             }
 
             // Add user prompt to messages if it's a string
-            const userPrompt = typeof params.prompt === 'string' ? params.prompt : null;
+            const userPrompt =
+              typeof params.prompt === "string" ? params.prompt : null;
 
             sendToAuthTagger({
               messages,
@@ -105,14 +116,15 @@ function wrapClaudeAgentQuery(queryFn: QueryFn, target: unknown): QueryFn {
               runId,
               sessionId,
               userPrompt,
-            }).catch(err =>
+            }).catch((err) =>
               console.error("[TCC] Failed to send messages:", err)
             );
           }
         } catch (error) {
           // On error, try to send partial data
           if (messages.length > 0) {
-            const userPrompt = typeof params.prompt === 'string' ? params.prompt : null;
+            const userPrompt =
+              typeof params.prompt === "string" ? params.prompt : null;
             sendToAuthTagger({
               messages,
               customMetadata: metadata,
@@ -126,12 +138,11 @@ function wrapClaudeAgentQuery(queryFn: QueryFn, target: unknown): QueryFn {
       };
 
       return wrappedGenerator();
-    }
+    },
   }) as QueryFn;
 }
 
-
-function wrapClaudeAgentTool(toolDef: ToolDefinition): ToolDefinition {
+function instrumentTool(toolDef: ToolDefinition): ToolDefinition {
   const originalHandler = toolDef.handler;
 
   return {
@@ -145,7 +156,7 @@ function wrapClaudeAgentTool(toolDef: ToolDefinition): ToolDefinition {
         console.log(`[TCC Debug] Tool result: ${toolDef.name}`, result);
       }
       return result;
-    }
+    },
   };
 }
 
@@ -164,7 +175,8 @@ async function sendToAuthTagger(payload: {
   }
 
   // Default to production endpoint, allow override via TCC_URL
-  let endpoint = process.env.TCC_URL ?? "https://api.thecontext.company/v1/traces";
+  let endpoint =
+    process.env.TCC_URL ?? "https://api.thecontext.company/v1/traces";
 
   // Auto-detect dev environment if using dev API key
   if (apiKey.startsWith("dev_") && !process.env.TCC_URL) {
@@ -180,7 +192,7 @@ async function sendToAuthTagger(payload: {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Authorization": `Bearer ${apiKey}`,
+        Authorization: `Bearer ${apiKey}`,
       },
       body: JSON.stringify(payload),
     });
@@ -191,15 +203,16 @@ async function sendToAuthTagger(payload: {
     }
 
     if (DEBUG_ENABLED) {
-      console.log(`[TCC Debug] Successfully sent ${payload.messages.length} messages to auth-tagger`);
+      console.log(
+        `[TCC Debug] Successfully sent ${payload.messages.length} messages to auth-tagger`
+      );
     }
   } catch (error) {
     console.error("[TCC] Error sending to auth-tagger:", error);
   }
 }
 
-
-export function wrapClaudeAgentSDK<T extends object>(sdk: T): WrappedSDK<T> {
+export function instrumentClaudeAgent<T extends object>(sdk: T): WrappedSDK<T> {
   const cache = new Map<PropertyKey, unknown>();
 
   return new Proxy(sdk, {
@@ -213,7 +226,7 @@ export function wrapClaudeAgentSDK<T extends object>(sdk: T): WrappedSDK<T> {
 
       // Wrap query function
       if (prop === "query" && typeof value === "function") {
-        const wrapped = wrapClaudeAgentQuery(value as QueryFn, target);
+        const wrapped = instrumentQuery(value as QueryFn, target);
         cache.set(prop, wrapped);
         return wrapped;
       }
@@ -222,19 +235,22 @@ export function wrapClaudeAgentSDK<T extends object>(sdk: T): WrappedSDK<T> {
       if (prop === "tool" && typeof value === "function") {
         const wrapped = new Proxy(value, {
           apply(toolFn, thisArg, argArray) {
-            const invocationTarget = thisArg === receiver || thisArg === undefined
-              ? target
-              : thisArg;
+            const invocationTarget =
+              thisArg === receiver || thisArg === undefined ? target : thisArg;
 
             const toolDef = Reflect.apply(toolFn, invocationTarget, argArray);
 
             // Wrap the tool if it has a handler
-            if (toolDef && typeof toolDef === "object" && "handler" in toolDef) {
-              return wrapClaudeAgentTool(toolDef as ToolDefinition);
+            if (
+              toolDef &&
+              typeof toolDef === "object" &&
+              "handler" in toolDef
+            ) {
+              return instrumentTool(toolDef as ToolDefinition);
             }
 
             return toolDef;
-          }
+          },
         });
         cache.set(prop, wrapped);
         return wrapped;
@@ -248,6 +264,6 @@ export function wrapClaudeAgentSDK<T extends object>(sdk: T): WrappedSDK<T> {
       }
 
       return value;
-    }
+    },
   }) as WrappedSDK<T>;
 }
