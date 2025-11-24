@@ -1,0 +1,12 @@
+{
+  "name": "@contextcompany/claude-agent-sdk",
+  "version": "0.1.0",
+  "type": "module",
+  "main": "claude.ts",
+  "exports": {
+    ".": "./claude.ts"
+  },
+  "devDependencies": {
+    "@types/node": "^20"
+  }
+}
