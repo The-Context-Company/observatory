@@ -67,11 +67,17 @@ importers:
         specifier: ^5
         version: 5.9.3
 
-  packages/claude-agent-sdk:
+  packages/claude/ts:
     devDependencies:
       '@types/node':
         specifier: ^20
         version: 20.19.24
+      tsup:
+        specifier: ^8.5.0
+        version: 8.5.0(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   packages/otel:
     dependencies:

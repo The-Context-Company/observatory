@@ -1,0 +1,53 @@
+{
+  "name": "@contextcompany/claude",
+  "version": "0.1.0",
+  "description": "The Context Company instrumentation for Claude Agent SDK",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "pnpm build --watch"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "claude",
+    "anthropic",
+    "agent",
+    "observability",
+    "tracing",
+    "monitoring",
+    "context-company"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-Context-Company/observatory",
+    "directory": "packages/claude/ts"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@anthropic-ai/claude-agent-sdk": ">=0.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}
