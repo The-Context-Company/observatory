@@ -156,12 +156,19 @@ async function sendToAuthTagger(payload: {
   sessionId?: string | null;
   userPrompt?: string | null;
 }): Promise<void> {
-  const endpoint = process.env.TCC_OTLP_URL;
   const apiKey = process.env.TCC_API_KEY;
 
-  if (!endpoint || !apiKey) {
-    console.warn("[TCC] Missing TCC_OTLP_URL or TCC_API_KEY, skipping telemetry");
+  if (!apiKey) {
+    console.warn("[TCC] Missing TCC_API_KEY, skipping telemetry");
     return;
+  }
+
+  // Default to production endpoint, allow override via TCC_URL
+  let endpoint = process.env.TCC_URL ?? "https://api.thecontext.company/v1/traces";
+
+  // Auto-detect dev environment if using dev API key
+  if (apiKey.startsWith("dev_") && !process.env.TCC_URL) {
+    endpoint = "https://dev.thecontext.company/v1/traces";
   }
 
   if (DEBUG_ENABLED) {
