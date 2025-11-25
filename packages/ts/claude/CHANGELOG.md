@@ -1,17 +1,12 @@
 # @contextcompany/claude
 
-## 0.1.2
+## 1.0.0
 
-- Fix default TCC_URL endpoint
-- Improved error messages
+### Minor Changes
 
-## 0.1.1
-
-- Added README.md with usage instructions
-
-## 0.1.0
-
-- Initial release of Claude Agent SDK instrumentation for TS
+- Initial stable release
+- Refactored to use @contextcompany/api for shared utilities
 - Added `instrumentClaudeAgent` for transparent telemetry collection
 - Added `submitFeedback` API for user feedback
 - Support for custom metadata, runId, and sessionId
+- Improved error messages

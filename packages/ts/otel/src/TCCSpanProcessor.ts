@@ -4,6 +4,7 @@ import {
   type ReadableSpan,
   type Span,
 } from "@opentelemetry/sdk-trace-base";
+import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import { OTLPHttpJsonTraceExporter } from "./exporters/json/OTLPHttpJsonTraceExporter";
 import { debug, setDebug } from "./internal/logger";
 import { RunBatchSpanProcessor } from "./RunBatchSpanProcessor";
@@ -21,17 +22,17 @@ export class TCCSpanProcessor implements SpanProcessor {
   constructor(options: TCCSpanProcessorOptions = {}) {
     if (options.debug) setDebug(options.debug);
 
-    const apiKey = options.apiKey || process.env.TCC_API_KEY;
+    const apiKey = options.apiKey || getTCCApiKey();
     if (!apiKey)
       throw new Error(
         "Missing API key: set TCC_API_KEY as an environment variable or provide apiKey in TCCSpanProcessor"
       );
 
-    let url = "https://api.thecontext.company/v1/traces";
-    if (options.otlpUrl) url = options.otlpUrl;
-    else if (process.env.TCC_OTLP_URL) url = process.env.TCC_OTLP_URL;
-    else if (apiKey.startsWith("dev_"))
-      url = "https://dev.thecontext.company/v1/traces";
+    const url = options.otlpUrl ?? getTCCUrl(
+      apiKey,
+      "https://api.thecontext.company/v1/traces",
+      "https://dev.thecontext.company/v1/traces"
+    );
 
     debug(`Using OTLP URL: ${url}`);
 

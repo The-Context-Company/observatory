@@ -1,5 +1,12 @@
 # @contextcompany/otel
 
+## 1.0.12
+
+### Patch Changes
+
+- Refactored to use @contextcompany/api for shared utilities
+- Changed TCC_OTLP_URL to TCC_URL environment variable
+
 ## 1.0.11
 
 ### Patch Changes

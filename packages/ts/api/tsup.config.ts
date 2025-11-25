@@ -7,5 +7,4 @@ export default defineConfig({
   splitting: false,
   treeshake: true,
   clean: true,
-  external: ["@anthropic-ai/claude-agent-sdk"],
 });

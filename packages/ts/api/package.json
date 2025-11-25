@@ -1,0 +1,47 @@
+{
+  "name": "@contextcompany/api",
+  "version": "1.0.0",
+  "description": "The Context Company core API utilities",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "pnpm build --watch"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "contextcompany",
+    "observability",
+    "tracing",
+    "feedback"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-Context-Company/observatory",
+    "directory": "packages/ts/api"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}

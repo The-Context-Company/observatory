@@ -1,5 +1,6 @@
 import { type SpanProcessor } from "@opentelemetry/sdk-trace-base";
 import { type Configuration, registerOTel } from "@vercel/otel";
+import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import { TCCSpanProcessor } from "../TCCSpanProcessor";
 import { tccLocalSpanProcessor } from "./local/runtime";
 import { startWebSocketServer } from "./local/ws";
@@ -24,7 +25,7 @@ export function registerOTelTCC(opts: RegisterOpts = {}) {
 
   const spanProcessors = [];
 
-  const apiKey = opts.apiKey ?? process.env.TCC_API_KEY;
+  const apiKey = opts.apiKey ?? getTCCApiKey();
 
   if (opts.local) {
     initAnonymousTelemetry();
@@ -49,11 +50,11 @@ export function registerOTelTCC(opts: RegisterOpts = {}) {
       "TCC: Missing API key. Set TCC_API_KEY as an environment variable or provide apiKey in registerOTelTCC"
     );
 
-  let url = "https://api.thecontext.company/v1/traces";
-  if (opts.url) url = opts.url;
-  else if (process.env.TCC_OTLP_URL) url = process.env.TCC_OTLP_URL;
-  else if (apiKey && apiKey.startsWith("dev_"))
-    url = "https://dev.thecontext.company/v1/traces";
+  const url = opts.url ?? getTCCUrl(
+    apiKey,
+    "https://api.thecontext.company/v1/traces",
+    "https://dev.thecontext.company/v1/traces"
+  );
 
   const isProduction = url === "https://api.thecontext.company/v1/traces";
 

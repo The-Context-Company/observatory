@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/claude",
-  "version": "0.1.2",
+  "version": "1.0.0",
   "description": "The Context Company instrumentation for Claude Agent SDK",
   "type": "module",
   "files": [
@@ -34,7 +34,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",
-    "directory": "packages/claude/ts"
+    "directory": "packages/ts/claude"
   },
   "license": "MIT",
   "publishConfig": {
@@ -45,6 +45,9 @@
   },
   "peerDependencies": {
     "@anthropic-ai/claude-agent-sdk": ">=0.1.0"
+  },
+  "dependencies": {
+    "@contextcompany/api": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20",

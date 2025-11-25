@@ -9,7 +9,7 @@ export default defineConfig([
     splitting: false,
     treeshake: true,
     clean: true,
-    external: ["@opentelemetry/api", "@vercel/otel"],
+    external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
   },
   // @contextcompany/otel/nextjs
   {
@@ -19,7 +19,7 @@ export default defineConfig([
     splitting: false,
     treeshake: true,
     clean: true,
-    external: ["@opentelemetry/api", "@vercel/otel"],
+    external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
   },
   // @contextcompany/otel/nextjs auto script
   {
@@ -37,6 +37,6 @@ export default defineConfig([
     outExtension: () => ({
       js: ".global.js",
     }),
-    external: ["@opentelemetry/api", "@vercel/otel"],
+    external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
   },
 ]);

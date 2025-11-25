@@ -17,11 +17,10 @@ export async function submitFeedback(params: {
     return;
   }
 
-  const feedbackUrl =
-    process.env.TCC_FEEDBACK_URL ??
-    "https://api.thecontext.company/v1/feedback";
+  const { getTCCApiKey, getTCCFeedbackUrl } = await import("./config");
 
-  const apiKey = process.env.TCC_API_KEY;
+  const feedbackUrl = getTCCFeedbackUrl();
+  const apiKey = getTCCApiKey();
 
   if (!apiKey) {
     console.error(

@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/otel",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "description": "The Context Company OpenTelemetry integration",
   "type": "module",
   "files": [
@@ -27,13 +27,6 @@
     "serve": "npx serve dist -p 3002 --cors",
     "dev:all": "concurrently \"pnpm build --watch\" \"pnpm serve\""
   },
-  "tsup": {
-    "bundle": true,
-    "external": [
-      "@opentelemetry/api",
-      "@vercel/otel"
-    ]
-  },
   "sideEffects": false,
   "keywords": [
     "opentelemetry",
@@ -46,7 +39,7 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",
-    "directory": "packages/otel"
+    "directory": "packages/ts/otel"
   },
   "license": "MIT",
   "publishConfig": {
@@ -68,6 +61,7 @@
     }
   },
   "dependencies": {
+    "@contextcompany/api": "workspace:*",
     "@opentelemetry/sdk-trace-base": "^2.1.0",
     "ws": "^8.18.3",
     "posthog-node": "^5.11.2"

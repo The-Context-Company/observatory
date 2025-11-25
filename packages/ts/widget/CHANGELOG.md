@@ -1,5 +1,11 @@
 # @contextcompany/widget
 
+## 1.0.7
+
+### Patch Changes
+
+- Repository restructure (no functional changes)
+
 ## 1.0.6
 
 ### Patch Changes
