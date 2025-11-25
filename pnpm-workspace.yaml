@@ -1,5 +1,5 @@
 packages:
-  - "packages/*"
-  - "packages/claude/ts"
+  - "packages/ts/*"
+  - "packages/python/*"
   - "examples/*"
   - "personal-examples/*"

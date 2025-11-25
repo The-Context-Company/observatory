@@ -11,7 +11,7 @@
   "dependencies": {
     "@ai-sdk/openai": "^2.0.64",
     "@ai-sdk/react": "^2.0.89",
-    "@contextcompany/otel": "1.0.11",
+    "@contextcompany/otel": "workspace:*",
     "@vercel/otel": "^2.0.1",
     "ai": "^5.0.89",
     "next": "16.0.1",
