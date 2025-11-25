@@ -1,8 +1,12 @@
 # @contextcompany/claude
 
+## 0.1.2
+
+- Fix default TCC_URL endpoint
+- Improved error messages
+
 ## 0.1.1
 
-- More clear logging in debug mode
 - Added README.md with usage instructions
 
 ## 0.1.0
