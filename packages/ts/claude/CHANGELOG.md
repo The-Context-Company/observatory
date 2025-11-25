@@ -2,8 +2,6 @@
 
 ## 1.0.0
 
-### Minor Changes
-
 - Initial stable release
 - Refactored to use @contextcompany/api for shared utilities
 - Added `instrumentClaudeAgent` for transparent telemetry collection

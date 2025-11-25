@@ -61,7 +61,7 @@
     }
   },
   "dependencies": {
-    "@contextcompany/api": "workspace:*",
+    "@contextcompany/api": "^1.0.1",
     "@opentelemetry/sdk-trace-base": "^2.1.0",
     "ws": "^8.18.3",
     "posthog-node": "^5.11.2"

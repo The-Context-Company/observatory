@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Context Company core API utilities",
   "type": "module",
   "files": [

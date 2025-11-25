@@ -1,8 +1,11 @@
 # @contextcompany/api
 
-## 1.0.0
+## 1.0.1
 
-### Minor Changes
+- Updated README.md
+
+
+## 1.0.0
 
 - Initial release of core API utilities
 - Added `submitFeedback` for user feedback submission
