@@ -1,10 +1,11 @@
 {
   "name": "@contextcompany/claude",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "The Context Company instrumentation for Claude Agent SDK",
   "type": "module",
   "files": [
-    "dist"
+    "dist",
+    "README.md"
   ],
   "main": "dist/index.cjs",
   "module": "dist/index.js",

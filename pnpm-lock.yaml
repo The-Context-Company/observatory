@@ -68,6 +68,10 @@ importers:
         version: 5.9.3
 
   packages/claude/ts:
+    dependencies:
+      '@anthropic-ai/claude-agent-sdk':
+        specifier: '>=0.1.0'
+        version: 0.1.50(zod@4.1.12)
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -185,6 +189,9 @@ importers:
       '@anthropic-ai/claude-agent-sdk':
         specifier: ^0.1.0
         version: 0.1.50(zod@3.25.76)
+      '@contextcompany/claude':
+        specifier: ^0.1.1
+        version: 0.1.1(@anthropic-ai/claude-agent-sdk@0.1.50(zod@3.25.76))
       dotenv:
         specifier: ^17.2.2
         version: 17.2.3
@@ -371,6 +378,12 @@ packages:
 
   '@changesets/write@0.4.0':
     resolution: {integrity: sha512-CdTLvIOPiCNuH71pyDu3rA+Q0n65cmAbXnwWH84rKGiFumFzkmHNT8KHTMEchcxN+Kl8I54xGUhJ7l3E7X396Q==}
+
+  '@contextcompany/claude@0.1.1':
+    resolution: {integrity: sha512-W98h8To3Cs/p9IdIu4ZVbdDEO+i1EuxFCkB2d0xd8vTd39RHeuHSU0a4xYQjsU3ah8i6EDfhZi7hsfRZIn1ehw==}
+    engines: {node: '>=18.0.0'}
+    peerDependencies:
+      '@anthropic-ai/claude-agent-sdk': '>=0.1.0'
 
   '@contextcompany/otel@1.0.11':
     resolution: {integrity: sha512-sN5GVefgp1kYRKoQ3XAvKPGUq8vCI7clPq0P3LJs7EEA5o4DJXVIFc+Gxq1lJXnNU9Ib2duNRRHltCVERp9A3A==}
@@ -3427,6 +3440,17 @@ snapshots:
       '@img/sharp-linux-x64': 0.33.5
       '@img/sharp-win32-x64': 0.33.5
 
+  '@anthropic-ai/claude-agent-sdk@0.1.50(zod@4.1.12)':
+    dependencies:
+      zod: 4.1.12
+    optionalDependencies:
+      '@img/sharp-darwin-arm64': 0.33.5
+      '@img/sharp-darwin-x64': 0.33.5
+      '@img/sharp-linux-arm': 0.33.5
+      '@img/sharp-linux-arm64': 0.33.5
+      '@img/sharp-linux-x64': 0.33.5
+      '@img/sharp-win32-x64': 0.33.5
+
   '@babel/code-frame@7.27.1':
     dependencies:
       '@babel/helper-validator-identifier': 7.28.5
@@ -3672,6 +3696,10 @@ snapshots:
       fs-extra: 7.0.1
       human-id: 4.1.2
       prettier: 2.8.8
+
+  '@contextcompany/claude@0.1.1(@anthropic-ai/claude-agent-sdk@0.1.50(zod@3.25.76))':
+    dependencies:
+      '@anthropic-ai/claude-agent-sdk': 0.1.50(zod@3.25.76)
 
   '@contextcompany/otel@1.0.11(@opentelemetry/api@1.9.0)(@vercel/otel@2.1.0(@opentelemetry/api-logs@0.208.0)(@opentelemetry/api@1.9.0)(@opentelemetry/instrumentation@0.208.0(@opentelemetry/api@1.9.0))(@opentelemetry/resources@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-logs@0.207.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-metrics@2.2.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0)))':
     dependencies:

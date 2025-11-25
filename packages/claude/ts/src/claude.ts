@@ -97,13 +97,13 @@ function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
             yield message;
           }
 
-          // After stream completes, send to auth-tagger
+          // After stream completes, send telemetry
           if (messages.length > 0) {
             if (DEBUG_ENABLED) {
               console.log(
                 `[TCC Debug] Stream completed with ${messages.length} messages`
               );
-              console.log("[TCC Debug] Sending to auth-tagger...");
+              console.log("[TCC Debug] Sending telemetry data...");
             }
 
             // Add user prompt to messages if it's a string
@@ -117,7 +117,7 @@ function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
               sessionId,
               userPrompt,
             }).catch((err) =>
-              console.error("[TCC] Failed to send messages:", err)
+              console.error("[TCC] Failed to send telemetry:", err)
             );
           }
         } catch (error) {
@@ -176,11 +176,11 @@ async function sendToAuthTagger(payload: {
 
   // Default to production endpoint, allow override via TCC_URL
   let endpoint =
-    process.env.TCC_URL ?? "https://api.thecontext.company/v1/traces";
+    process.env.TCC_URL ?? "https://api.thecontext.company/v1/claude";
 
   // Auto-detect dev environment if using dev API key
   if (apiKey.startsWith("dev_") && !process.env.TCC_URL) {
-    endpoint = "https://dev.thecontext.company/v1/traces";
+    endpoint = "https://dev.thecontext.company/v1/claude";
   }
 
   if (DEBUG_ENABLED) {
@@ -204,11 +204,11 @@ async function sendToAuthTagger(payload: {
 
     if (DEBUG_ENABLED) {
       console.log(
-        `[TCC Debug] Successfully sent ${payload.messages.length} messages to auth-tagger`
+        `[TCC Debug] Successfully sent ${payload.messages.length} messages`
       );
     }
   } catch (error) {
-    console.error("[TCC] Error sending to auth-tagger:", error);
+    console.error("[TCC] Error sending telemetry:", error);
   }
 }
 
