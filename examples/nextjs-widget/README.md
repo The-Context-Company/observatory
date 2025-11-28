@@ -22,15 +22,6 @@ The standout feature of this example is the **local widget** that provides insta
 - **In-Browser Dashboard**: No need to switch to external tools while developing
 - **Local-First**: All telemetry stays on your machine during development
 
-### AI Chat Interface
-
-A minimal chat implementation demonstrating:
-
-- **getWeather**: Mock tool that returns weather for a city
-- **createTicket**: Mock tool that intentionally throws an error (for error tracking demo)
-- Multi-step execution with `stepCountIs(10)`
-- Streaming responses
-
 ## Getting Started
 
 ### Prerequisites
