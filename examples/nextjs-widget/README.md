@@ -63,6 +63,10 @@ OPENAI_API_KEY=your_openai_api_key_here
 
 ```bash
 npm run dev
+# or
+pnpm dev
+# or
+yarn dev
 ```
 
 5. **Open your browser:**
