@@ -1,0 +1,12 @@
+# TCC OpenTelemetry SDK with LangChain
+# support (local editable install)
+-e ../../packages/tcc-otel-python[langchain]
+
+# LangChain and LangGraph
+langchain>=0.3.16
+langchain-openai>=0.3.2
+langchain-core>=0.3.32
+langgraph>=0.2.70
+
+# Environment variables
+python-dotenv>=1.0.1

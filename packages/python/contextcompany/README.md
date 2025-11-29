@@ -1,0 +1,3 @@
+- Documentation: https://docs.thecontext.company
+- Website: https://www.thecontext.company
+- Contact: founders@thecontext.company
