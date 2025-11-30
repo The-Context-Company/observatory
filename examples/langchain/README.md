@@ -1,40 +1,39 @@
-# LangChain Agent Example (Python)
+# LangChain Agent Example
 
-A Python application demonstrating LangChain agent capabilities with multiple specialized agents and tool usage, instrumented with OpenTelemetry to send traces to The Context Company platform.
+A simple Python weather agent built with **pure LangChain** (using `AgentExecutor` and `create_react_agent`), instrumented with The Context Company (TCC) for full observability.
+
+> **Note:** This example uses pure LangChain agents, not LangGraph. For a LangGraph example, see the separate `langgraph/` folder.
+
+## What This Example Demonstrates
+
+This example shows how to:
+- Build a LangChain ReAct agent with custom tools
+- Use `AgentExecutor` for agent execution
+- Instrument your agent with TCC for automatic trace collection
+- Track individual AI calls with unique run IDs
+- Track conversation sessions with session IDs
+- Submit user feedback (thumbs up/down) for specific runs
+- Add custom metadata for filtering and grouping in the TCC dashboard
 
 ## Features
 
-This application includes **3 specialized agents**, each with their own set of tools:
-
-### 🎫 Support Agent (Default)
-Handles customer support tasks with 5 tools:
-- `get_user_profile` - Retrieve user account information
-- `create_ticket` - Create new support tickets
-- `update_ticket_status` - Update ticket status
-- `update_account_status` - Manage account settings
-- `search_tickets` - Search existing tickets
-
-### ✈️ Travel Agent
-Helps plan trips with 5 tools:
-- `get_destination_info` - Get destination details
-- `get_weather_forecast` - Check weather conditions
-- `find_hotels` - Search hotels by budget
-- `get_attractions` - Discover attractions and activities
-- `calculate_trip_budget` - Calculate trip costs
-
-### 📚 Documentation Agent
-Assists with documentation queries with 4 tools:
-- `search_docs` - Search documentation by keywords
-- `get_documentation` - Retrieve full documentation articles
-- `list_categories` - List all doc categories
-- `find_related_docs` - Find related articles
+- **Simple Weather Agent** - Ask about current weather or forecasts
+- **Two Tools** - `get_weather` and `get_forecast` with mock data
+- **Pure LangChain** - Uses `AgentExecutor` and `create_react_agent` (not LangGraph)
+- **Full Observability** - Automatic tracking of:
+  - LLM calls (model, tokens, latency)
+  - Tool executions (inputs, outputs, duration)
+  - Agent reasoning steps (ReAct pattern)
+  - Errors and exceptions
+- **Feedback System** - Give thumbs up/down after agent responses
+- **Session Tracking** - Track entire conversations with unique session IDs
 
 ## Setup
 
 ### 1. Install Dependencies
 
 ```bash
-# Create virtual environment
+# Create and activate virtual environment
 python -m venv venv
 source venv/bin/activate  # On Windows: venv\Scripts\activate
 
@@ -54,152 +53,256 @@ Edit `.env` and add your API keys:
 # Required: OpenAI API key
 OPENAI_API_KEY=sk-proj-your_openai_api_key_here
 
-# Required: TCC API key
+# Required: TCC API key (get yours at https://thecontext.company)
 TCC_API_KEY=your_tcc_api_key_here
 
-# Optional: TCC endpoint (defaults to production)
-TCC_OTLP_URL=http://localhost:8787/v1/traces
+# Optional: Custom TCC endpoint (defaults to production)
+# TCC_URL=http://localhost:8787/v1/traces
 ```
 
-**Note**: The Context Company platform supports both JSON and protobuf formats. The Python SDK sends protobuf by default, which is automatically handled by the TCC endpoint.
-
-## Running
+## Running the Example
 
 ### Interactive Mode
+
+Start a conversation with the weather agent:
 
 ```bash
 python main.py
 ```
 
-This starts an interactive chat session where you can talk to the agent.
+**Example interaction:**
+
+```
+🌤️  LangChain Weather Agent Example
+============================================================
+This agent can help you check weather conditions!
+
+Commands:
+  • Type your weather question naturally
+  • Type 'up' to give thumbs up feedback on the last response
+  • Type 'down' to give thumbs down feedback
+  • Type 'exit' or 'quit' to end the session
+============================================================
+
+[Session ID: a1b2c3d4-...]
+
+👤 You: What's the weather like in San Francisco?
+
+🤖 Agent:
+[Run ID: e5f6g7h8-...]
+
+> Entering new AgentExecutor chain...
+Thought: I need to use the get_weather tool to check the weather in San Francisco
+Action: get_weather
+Action Input: San Francisco
+Observation: {'location': 'San Francisco', 'temperature_f': 65, 'conditions': 'Partly cloudy', 'humidity': 70}
+Thought: I now know the final answer
+Final Answer: The current weather in San Francisco is partly cloudy with a temperature of 65°F and 70% humidity.
+
+> Finished chain.
+
+The current weather in San Francisco is partly cloudy with a temperature of 65°F and 70% humidity.
+
+👤 You: up
+👍 Submitting thumbs up feedback...
+✅ Feedback submitted successfully!
+```
 
 ### Single Query Mode
 
+Run a single query and exit:
+
 ```bash
-python main.py "Look up user-001's account information"
+python main.py "What's the weather forecast for Tokyo?"
 ```
 
-## Switching Agents
+## How TCC Integration Works
 
-Edit `main.py` and change the agent configuration:
+### 1. Initialize Instrumentation
 
 ```python
-# Support Agent (default)
-agent = create_support_agent()
+from contextcompany.langchain import instrument_langchain
 
-# Travel Agent
-# agent = create_travel_agent()
-
-# Documentation Agent
-# agent = create_documentation_agent()
+# TCC: Initialize OpenTelemetry instrumentation
+# This must be called BEFORE importing LangChain components
+# Automatically reads TCC_API_KEY and TCC_URL from environment
+instrument_langchain()
 ```
+
+### 2. Create LangChain Agent
+
+```python
+from langchain.agents import AgentExecutor, create_react_agent
+from langchain_core.prompts import PromptTemplate
+from langchain_openai import ChatOpenAI
+
+# Initialize LLM and tools
+llm = ChatOpenAI(model="gpt-4o", temperature=0.7)
+tools = [get_weather, get_forecast]
+
+# Create ReAct prompt template
+prompt = PromptTemplate.from_template(template)
+
+# Create the agent and executor
+agent = create_react_agent(llm, tools, prompt)
+agent_executor = AgentExecutor(
+    agent=agent,
+    tools=tools,
+    verbose=True,
+    handle_parsing_errors=True,
+    max_iterations=10
+)
+```
+
+### 3. Track Individual Runs
+
+```python
+import uuid
+
+# TCC: Generate unique IDs for tracking
+run_id = str(uuid.uuid4())        # Track this specific AI call
+session_id = str(uuid.uuid4())    # Track the conversation
+
+# Pass metadata when invoking the agent
+result = agent_executor.invoke(
+    {"input": user_input},
+    {
+        "metadata": {
+            # TCC: Special tracking IDs
+            "tcc.runId": run_id,          # Required for feedback
+            "tcc.sessionId": session_id,  # Optional: group runs by session
+
+            # TCC: Add your own custom metadata
+            "agentName": "weather-agent",
+            "environment": "production",
+            "userId": "user-123",
+        }
+    }
+)
+```
+
+### 4. Submit Feedback
+
+```python
+from contextcompany import submit_feedback
+
+# TCC: Submit user feedback for a specific run
+submit_feedback(
+    run_id=run_id,
+    score="thumbs_up"  # or "thumbs_down"
+)
+```
+
+## What Gets Traced
+
+TCC automatically captures:
+
+- **✅ LLM Calls** - Model name, prompt, completion, token usage
+- **✅ Tool Executions** - Tool name, inputs, outputs, duration
+- **✅ Agent Steps** - ReAct reasoning (Thought/Action/Observation cycles)
+- **✅ Errors** - Exceptions and failures
+- **✅ Custom Metadata** - Your own tags for filtering/grouping
 
 ## Example Queries
 
-### Support Agent
-- "I need help with ticket ticket-001"
-- "Can you look up user-002's account information?"
-- "Create a high priority technical ticket for user-001 about login issues"
-- "Search for all open tickets"
+Try asking the agent:
+- "What's the weather in Tokyo?"
+- "Give me a 5-day forecast for London"
+- "How's the weather in New York?"
+- "What should I wear in San Francisco today?"
 
-### Travel Agent
-- "I want to plan a trip to Tokyo"
-- "What's the weather like in Paris?"
-- "Find me budget hotels in Bali"
-- "Calculate the budget for a 5-day trip to Paris with a hotel at $180/night"
-
-### Documentation Agent
-- "How do I get started with authentication?"
-- "Search for information about webhooks"
-- "Show me the API reference documentation"
-- "Find articles related to error-handling"
-
-## Architecture
-
-### Directory Structure
+## Code Structure
 
 ```
-langchain-agent/
-├── tcc_otel/              # TCC OpenTelemetry package (will be pip installable)
-│   ├── __init__.py
-│   ├── instrumentation.py
-│   └── pyproject.toml
-├── agents/                 # Agent definitions
-│   ├── __init__.py
-│   ├── support.py         # Support agent tools & config
-│   ├── travel.py          # Travel agent tools & config
-│   └── documentation.py   # Documentation agent tools & config
-├── main.py                # Main entry point
-├── requirements.txt       # Python dependencies
-├── .env.example          # Environment variables template
-└── README.md             # This file
+langchain/
+├── main.py              # Main application with TCC integration
+├── requirements.txt     # Python dependencies (pure LangChain)
+├── .env.example        # Environment variables template
+└── README.md           # This file
 ```
 
-### OpenTelemetry Instrumentation
+## Key Files Explained
 
-This example uses the `tcc_otel` package to instrument LangChain with OpenTelemetry. The package:
+### `main.py`
 
-1. Configures OpenTelemetry SDK with TCC endpoint
-2. Instruments LangChain using `opentelemetry-instrumentation-langchain`
-3. Exports traces to TCC via OTLP/HTTP
-4. Automatically captures:
-   - LLM calls (model, tokens, latency)
-   - Tool executions (inputs, outputs, duration)
-   - Agent reasoning steps
-   - Chain executions
+All-in-one file containing:
+- **Tool Definitions** (`@tool` decorated functions)
+- **Agent Creation** (`create_weather_agent()` using `AgentExecutor`)
+- **ReAct Prompt Template** (standard LangChain ReAct format)
+- **TCC Integration** (instrumentation + feedback)
+- **Interactive CLI** (with session and run tracking)
 
-### What Gets Traced
+### `requirements.txt`
 
-All LangChain operations are automatically instrumented:
-- ✅ **LLM calls** - OpenAI API requests and responses
-- ✅ **Tool executions** - Every tool call with inputs and outputs
-- ✅ **Agent reasoning** - ReAct agent thought process
-- ✅ **Token usage** - Input/output tokens per call
-- ✅ **Latency metrics** - Duration of each operation
-- ✅ **Error tracking** - Failures and exceptions
+Dependencies:
+- `contextcompany[langchain]` - TCC OpenTelemetry SDK with LangChain support
+- `langchain` - LLM orchestration framework (pure LangChain)
+- `langchain-openai` - OpenAI integration for LangChain
+- `langchain-core` - Core LangChain components
+- `python-dotenv` - Environment variable management
 
-### LangChain Span Structure
+**Note:** This example uses pure LangChain without LangGraph.
 
-LangChain spans use OpenTelemetry semantic conventions:
+## Architecture Notes
 
-**LLM Call Attributes:**
-- `gen_ai.request.model` - Model name (e.g., "gpt-4")
-- `gen_ai.usage.input_tokens` - Prompt tokens
-- `gen_ai.usage.output_tokens` - Completion tokens
-- `gen_ai.completion` - Full response text
+### LangChain vs LangGraph
 
-**Tool Call Attributes:**
-- `traceloop.entity.name` - Tool name
-- `traceloop.entity.input` - JSON string of tool arguments
-- `traceloop.entity.output` - JSON string of tool result
+This example uses **pure LangChain** with:
+- `create_react_agent()` - Creates a ReAct-style agent
+- `AgentExecutor` - Executes the agent with tool calling
+- `PromptTemplate` - Defines the ReAct prompt format
 
-**Agent/Chain Attributes:**
-- `traceloop.workflow.name` - Workflow/agent name
-- `traceloop.entity.input` - Input messages
-- `traceloop.entity.output` - Output messages
+**Not using LangGraph** (for a LangGraph example, see the separate folder).
 
-## Mock Data
+### ReAct Pattern
 
-All tools use **hardcoded mock data** for simplicity:
-- 3 mock users (user-001, user-002, user-003)
-- 2 initial mock tickets
-- 3 destinations (Paris, Tokyo, Bali) with hotels and attractions
-- 6 documentation articles
+The agent uses the ReAct (Reasoning + Acting) pattern:
+1. **Thought** - Agent thinks about what to do
+2. **Action** - Agent decides which tool to use
+3. **Action Input** - Agent provides tool input
+4. **Observation** - Tool returns result
+5. Repeat until agent has final answer
 
-## Technologies
+## Notes
 
-- **Python 3.11+** - Programming language
-- **LangChain** - LLM orchestration framework
-- **OpenAI GPT-4** - Language model
-- **OpenTelemetry** - Observability instrumentation
-- **OTLP** - OpenTelemetry Protocol for trace export
+- All weather data is **mocked** for demonstration purposes
+- The agent uses **GPT-4o** by default (configurable in code)
+- TCC sends traces via **OTLP/HTTP** in protobuf format
+- **Session IDs** help you group related runs in the TCC dashboard
+- **Run IDs** are required for feedback submission
+- Agent output is verbose (`verbose=True`) to show ReAct steps
 
-## tcc_otel Package
+## Troubleshooting
 
-The `tcc_otel` package in this example will eventually be published to PyPI as `contextcompany-otel` for easy installation:
+**Agent not responding?**
+- Check that `OPENAI_API_KEY` is set correctly
+- Ensure you have credits in your OpenAI account
 
-```bash
-pip install contextcompany-otel
-```
+**Traces not appearing in TCC dashboard?**
+- Verify `TCC_API_KEY` is correct
+- Check network connectivity to TCC endpoint
+- Look for error messages in console output
 
-For now, it's included in this example directory and demonstrates the instrumentation pattern.
+**Feedback not working?**
+- Ensure you used a `run_id` when invoking the agent
+- Check that the `run_id` matches what was sent to TCC
+
+**Agent parsing errors?**
+- The example has `handle_parsing_errors=True` to handle LLM format mistakes
+- If you see repeated parsing errors, the LLM may need a better prompt
+
+## Next Steps
+
+- Explore the TCC dashboard to see your traces
+- Add more tools to the agent
+- Customize the ReAct prompt template
+- Add your own metadata for filtering
+- Try different LLM models
+- Check out the LangGraph example for graph-based agents
+
+## Learn More
+
+- [The Context Company Documentation](https://docs.thecontext.company)
+- [LangChain Documentation](https://python.langchain.com/)
+- [LangChain Agents Guide](https://python.langchain.com/docs/modules/agents/)
+- [ReAct Pattern Paper](https://arxiv.org/abs/2210.03629)
