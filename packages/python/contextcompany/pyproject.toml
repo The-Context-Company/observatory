@@ -3,16 +3,16 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "tcc-otel"
+name = "contextcompany"
 version = "0.1.0"
-description = "The Context Company OpenTelemetry SDK for Python"
+description = "The Context Company AI Agent Observability SDK for Python"
 readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
     {name = "The Context Company", email = "support@thecontext.company"},
 ]
-keywords = ["opentelemetry", "observability", "langchain", "llm", "tracing"]
+keywords = ["observability", "ai", "agents", "langchain", "llm", "tracing", "monitoring"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Developers",
@@ -27,14 +27,14 @@ classifiers = [
     "Topic :: System :: Monitoring",
 ]
 dependencies = [
-    "opentelemetry-api>=1.29.0",
-    "opentelemetry-sdk>=1.29.0",
-    "opentelemetry-exporter-otlp>=1.29.0",
     "requests>=2.31.0",
 ]
 
 [project.optional-dependencies]
 langchain = [
+    "opentelemetry-api>=1.29.0",
+    "opentelemetry-sdk>=1.29.0",
+    "opentelemetry-exporter-otlp>=1.29.0",
     "opentelemetry-instrumentation-langchain>=0.47.3",
 ]
 dev = [
@@ -46,8 +46,8 @@ dev = [
 [project.urls]
 Homepage = "https://thecontext.company"
 Documentation = "https://docs.thecontext.company"
-Repository = "https://github.com/contextcompany/tcc"
-Issues = "https://github.com/contextcompany/tcc/issues"
+Repository = "https://github.com/The-Context-Company/observatory"
+Issues = "https://github.com/The-Context-Company/observatory/issues"
 
 [tool.hatch.build.targets.wheel]
-packages = ["tcc_otel"]
+packages = ["contextcompany"]

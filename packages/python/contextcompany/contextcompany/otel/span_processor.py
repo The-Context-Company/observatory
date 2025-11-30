@@ -6,7 +6,7 @@ from opentelemetry.trace import Span
 from opentelemetry.context import Context
 
 
-class LangChainRunIdSpanProcessor(SpanProcessor):
+class RunIdSpanProcessor(SpanProcessor):
     """Generates temporary run_id and propagates to child spans."""
 
     def __init__(self):

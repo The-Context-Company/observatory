@@ -16,4 +16,4 @@ def get_api_key(api_key: Optional[str] = None) -> str:
 
 
 def get_endpoint(endpoint: Optional[str] = None) -> str:
-    return endpoint or os.getenv("TCC_OTLP_URL", DEFAULT_ENDPOINT)
+    return endpoint or os.getenv("TCC_URL", DEFAULT_ENDPOINT)

@@ -1,13 +1,12 @@
+"""LangChain instrumentation for The Context Company."""
+
 from typing import Optional
 
 from opentelemetry.instrumentation.langchain import LangchainInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
 
-from ._base import setup_instrumentation
-from .config import (
-    get_api_key,
-    get_endpoint,
-)
+from .base import setup_instrumentation
+from ..config import get_api_key, get_endpoint
 
 
 def instrument_langchain(
@@ -31,3 +30,6 @@ def instrument_langchain(
     print(f"TCC: Exporting traces to: {resolved_endpoint}")
 
     return provider
+
+
+__all__ = ["instrument_langchain"]

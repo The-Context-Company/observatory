@@ -4,9 +4,8 @@ from opentelemetry import trace
 from opentelemetry.sdk.trace import TracerProvider
 from opentelemetry.sdk.resources import Resource
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
-from .span_processor import LangChainRunIdSpanProcessor
+from ..otel import RunIdSpanProcessor, TraceBatchSpanProcessor
 from .exporter import RunIdFixingExporter
-from .batch_processor import TraceBatchSpanProcessor
 
 
 def create_tracer_provider(resource_attributes: Optional[dict] = None) -> TracerProvider:
@@ -27,7 +26,7 @@ def setup_instrumentation(
     resource_attributes: Optional[dict] = None,
 ) -> TracerProvider:
     provider = create_tracer_provider(resource_attributes)
-    provider.add_span_processor(LangChainRunIdSpanProcessor())
+    provider.add_span_processor(RunIdSpanProcessor())
 
     base_exporter = create_otlp_exporter(endpoint, api_key)
     fixing_exporter = RunIdFixingExporter(base_exporter)
