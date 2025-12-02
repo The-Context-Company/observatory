@@ -1,0 +1,29 @@
+{
+  "name": "mastra",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "tsx src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "engines": {
+    "node": ">=22.13.0"
+  },
+  "dependencies": {
+    "@mastra/core": "^0.24.6",
+    "@mastra/otel-exporter": "^0.3.3",
+    "@opentelemetry/exporter-trace-otlp-http": "^0.54.2",
+    "dotenv": "^16.4.7",
+    "zod": "^4.1.13"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^5.9.3",
+    "tsx": "^4.19.2"
+  }
+}
