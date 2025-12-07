@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "dev": "tsx src/index.ts",
     "start": "tsx src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -16,8 +17,7 @@
   },
   "dependencies": {
     "@mastra/core": "^0.24.6",
-    "@mastra/otel-exporter": "^0.3.3",
-    "@opentelemetry/exporter-trace-otlp-http": "^0.54.2",
+    "@contextcompany/mastra": "workspace:*",
     "dotenv": "^16.4.7",
     "zod": "^4.1.13"
   },

@@ -1,46 +1,86 @@
-import 'dotenv/config';
-import { mastra } from './mastra/index.js';
+import "dotenv/config";
+import { mastra } from "./mastra/index.js";
+import * as readline from "readline";
+import { randomUUID } from "crypto";
 
 async function main() {
-  const agent = mastra.getAgent('weatherAgent');
+  const agent = mastra.getAgent("weatherAgent");
 
   if (!agent) {
-    console.error('Weather agent not found');
+    console.error("Weather agent not found");
     process.exit(1);
   }
 
-  // Get query from command line args or use default
-  const query = process.argv.slice(2).join(' ') || 'What is the weather in San Francisco?';
+  console.log("\n🌤️  Mastra Weather Agent with TCC");
+  console.log("Ask about weather in any city!");
+  console.log('Type "exit" or "quit" to end the session\n');
 
-  console.log(`\n🌤️  Weather Agent\n${'='.repeat(60)}\n`);
-  console.log(`Query: ${query}\n`);
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
 
-  try {
-    // Stream the agent's response
-    const response = await agent.stream([
-      {
-        role: 'user',
-        content: query,
-      },
-    ]);
+  const ask = (question: string): Promise<string> => {
+    return new Promise((resolve) => rl.question(question, resolve));
+  };
 
-    console.log('Agent Response:\n');
+  // TCC: Generate session ID to track this conversation
+  const sessionId = randomUUID();
+  let queryCount = 0;
 
-    // Print the streamed text to terminal
-    for await (const chunk of response.textStream) {
-      process.stdout.write(chunk);
+  console.log(`[Session ID: ${sessionId}]\n`);
+
+  while (true) {
+    const userInput = await ask("You: ");
+    const trimmed = userInput.trim();
+
+    if (!trimmed) continue;
+
+    if (trimmed.toLowerCase() === "exit" || trimmed.toLowerCase() === "quit") {
+      console.log("\n👋 Goodbye!\n");
+      rl.close();
+      break;
     }
 
-    console.log('\n');
-  } catch (error) {
-    console.error('Error:', error);
-    process.exit(1);
-  }
+    try {
+      queryCount++;
 
-  // Wait for traces to be exported
-  console.log('⏳ Waiting for traces to be exported...');
-  await new Promise(resolve => setTimeout(resolve, 2000)); // Reduced from 6s
-  console.log('✅ Traces sent to TCC\n');
+      // TCC: Generate unique run ID for this AI call
+      const tccRunId = randomUUID();
+      console.log(`[Run ID: ${tccRunId}]`);
+
+      const response = await agent.stream(
+        [{ role: "user", content: trimmed }],
+        {
+          // TCC: Pass metadata to track and filter this execution
+          tracingOptions: {
+            metadata: {
+              "tcc.runId": tccRunId, // TCC: Unique ID for this AI call
+              "tcc.sessionId": sessionId, // TCC: Session tracking across multiple queries
+
+              // TCC: Add your own custom metadata for filtering in dashboard
+              userId: "user-123",
+              queryNumber: queryCount,
+              environment: "development",
+            },
+          },
+        }
+      );
+
+      console.log("\nAgent: ");
+
+      for await (const chunk of response.textStream) {
+        process.stdout.write(chunk);
+      }
+
+      console.log("\n");
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
+    // Wait briefly for traces to be exported
+    await new Promise((resolve) => setTimeout(resolve, 500));
+  }
 }
 
 main();
