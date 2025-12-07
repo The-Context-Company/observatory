@@ -9,9 +9,7 @@ export const mastra = new Mastra({
     configs: {
       otel: {
         serviceName: "mastra-weather-agent",
-        exporters: [
-          new TCCMastraExporter({ debug: process.env.TCC_DEBUG === "true" }),
-        ],
+        exporters: [new TCCMastraExporter({})],
       },
     },
   },
