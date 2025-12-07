@@ -1,18 +1,14 @@
-import { Agent } from "@mastra/core/agent";
-import { weatherTool } from "../tools/weather-tool";
+import { Agent } from '@mastra/core/agent';
+import { getLocationTool, getWeatherTool } from '../tools/weather-tool';
 
 export const weatherAgent = new Agent({
-  name: "Weather Agent",
-  instructions: `
-      You are a helpful weather assistant that provides accurate weather information.
+  name: 'Weather Agent',
+  instructions: `You are a helpful weather assistant.
 
-      Your primary function is to help users get weather details for specific locations. When responding:
-      - Always ask for a location if none is provided
-      - Include relevant details like humidity, wind conditions, and precipitation
-      - Keep responses concise but informative
+Use get-location to suggest a random city, or get-weather to check weather for a specific location.
+Available cities: Tampa, San Francisco, New York, London, Tokyo, Sydney.
 
-      Use the weatherTool to fetch current weather data.
-`,
-  model: "openai/gpt-4o-mini",
-  tools: { weatherTool },
+Keep responses concise and friendly.`,
+  model: 'openai/gpt-4o-mini',
+  tools: { getLocationTool, getWeatherTool },
 });
