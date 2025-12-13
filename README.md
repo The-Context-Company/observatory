@@ -26,7 +26,7 @@ pnpm add @contextcompany/otel @vercel/otel @opentelemetry/api
 
 #### Step 2: Add instrumentation to Next.js
 
-If you haven't already, add an `instrumentation.[js|ts]` file to your project, under the `app` directory. Call the `registerOTelTCC` function to instrument your AI SDK calls. Under the hood, this function calls the `registerOtel` from `@vercel/otel`.
+If you haven't already, add an `instrumentation.[js|ts]` file in the **root directory** of your project (or inside the `src` folder if you're using one). Call the `registerOTelTCC` function to instrument your AI SDK calls.
 
 See the [Next.js Instrumentation guide](https://nextjs.org/docs/app/guides/instrumentation) for more information on instrumenting your Next.js application.
 
