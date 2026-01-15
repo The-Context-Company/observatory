@@ -157,6 +157,7 @@ function Popover() {
     });
   }, [selectedTraceIdSignal.value]);
 
+  // Close popover on Escape key 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
