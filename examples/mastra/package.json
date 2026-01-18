@@ -16,14 +16,17 @@
     "node": ">=22.13.0"
   },
   "dependencies": {
-    "@mastra/core": "^0.24.6",
     "@contextcompany/mastra": "workspace:*",
+    "@mastra/core": "^0.24.6",
     "dotenv": "^16.4.7",
     "zod": "^4.1.13"
   },
   "devDependencies": {
+    "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@types/node": "^24.10.1",
-    "typescript": "^5.9.3",
-    "tsx": "^4.19.2"
+    "prettier": "^3.8.0",
+    "prettier-plugin-tailwindcss": "^0.7.2",
+    "tsx": "^4.19.2",
+    "typescript": "^5.9.3"
   }
 }
