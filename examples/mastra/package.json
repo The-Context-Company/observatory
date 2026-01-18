@@ -16,14 +16,14 @@
     "node": ">=22.13.0"
   },
   "dependencies": {
-    "@contextcompany/mastra": "workspace:*",
     "@mastra/core": "^0.24.6",
+    "@contextcompany/mastra": "workspace:*",
     "dotenv": "^16.4.7",
     "zod": "^4.1.13"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "tsx": "^4.19.2",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "tsx": "^4.19.2"
   }
 }
