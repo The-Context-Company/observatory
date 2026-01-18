@@ -11,6 +11,16 @@ importers:
       '@changesets/cli':
         specifier: ^2.29.7
         version: 2.29.7(@types/node@24.10.1)
+    devDependencies:
+      '@ianvs/prettier-plugin-sort-imports':
+        specifier: ^4.7.0
+        version: 4.7.0(prettier@3.8.0)
+      prettier:
+        specifier: ^3.8.0
+        version: 3.8.0
+      prettier-plugin-tailwindcss:
+        specifier: ^0.7.2
+        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
 
   examples/claude-agent-sdk:
     dependencies:
@@ -27,18 +37,9 @@ importers:
         specifier: ^3.23.0
         version: 3.25.76
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@types/node':
         specifier: ^20
         version: 20.19.25
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tsx:
         specifier: ^4.19.0
         version: 4.20.6
@@ -61,18 +62,9 @@ importers:
         specifier: ^4.1.13
         version: 4.1.13
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@types/node':
         specifier: ^24.10.1
         version: 24.10.1
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tsx:
         specifier: ^4.19.2
         version: 4.20.6
@@ -116,9 +108,6 @@ importers:
       '@eslint/eslintrc':
         specifier: ^3
         version: 3.3.1
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.17
@@ -137,12 +126,6 @@ importers:
       eslint-config-next:
         specifier: 15.5.4
         version: 15.5.4(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tailwindcss:
         specifier: ^4
         version: 4.1.17
@@ -180,9 +163,6 @@ importers:
         specifier: ^4.1.12
         version: 4.1.13
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@tailwindcss/postcss':
         specifier: ^4
         version: 4.1.17
@@ -201,12 +181,6 @@ importers:
       eslint-config-next:
         specifier: 16.0.1
         version: 16.0.1(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3)
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tailwindcss:
         specifier: ^4
         version: 4.1.17
@@ -216,18 +190,9 @@ importers:
 
   packages/ts/api:
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@types/node':
         specifier: ^20
         version: 20.19.25
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tsup:
         specifier: ^8.5.0
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
@@ -244,18 +209,9 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@types/node':
         specifier: ^20
         version: 20.19.25
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tsup:
         specifier: ^8.5.0
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
@@ -269,21 +225,12 @@ importers:
         specifier: ^1.0.1
         version: 1.0.1
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@mastra/core':
         specifier: ^0.24.6
         version: 0.24.6(openapi-types@12.1.3)(react@19.2.0)(zod@4.1.13)
       '@types/node':
         specifier: ^20
         version: 20.19.25
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tsup:
         specifier: ^8.5.0
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
@@ -306,9 +253,6 @@ importers:
         specifier: ^8.18.3
         version: 8.18.3
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -333,12 +277,6 @@ importers:
       concurrently:
         specifier: ^9.2.1
         version: 9.2.1
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       tsup:
         specifier: ^8.5.0
         version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
@@ -370,9 +308,6 @@ importers:
         specifier: ^3.3.1
         version: 3.4.0
     devDependencies:
-      '@ianvs/prettier-plugin-sort-imports':
-        specifier: ^4.7.0
-        version: 4.7.0(prettier@3.8.0)
       '@tailwindcss/typography':
         specifier: ^0.5.19
         version: 0.5.19(tailwindcss@4.1.17)
@@ -391,12 +326,6 @@ importers:
       postcss-cli:
         specifier: ^11.0.1
         version: 11.0.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)
-      prettier:
-        specifier: ^3.8.0
-        version: 3.8.0
-      prettier-plugin-tailwindcss:
-        specifier: ^0.7.2
-        version: 0.7.2(@ianvs/prettier-plugin-sort-imports@4.7.0(prettier@3.8.0))(prettier@3.8.0)
       react:
         specifier: npm:@preact/compat
         version: '@preact/compat@18.3.1(preact@10.27.2)'
@@ -8130,7 +8059,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1)):
+  eslint-module-utils@2.12.1(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1)):
     dependencies:
       debug: 3.2.7
     optionalDependencies:
@@ -8152,7 +8081,7 @@ snapshots:
       doctrine: 2.1.0
       eslint: 9.39.1(jiti@2.6.1)
       eslint-import-resolver-node: 0.3.9
-      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1(eslint-plugin-import@2.32.0)(eslint@9.39.1(jiti@2.6.1)))(eslint@9.39.1(jiti@2.6.1))
+      eslint-module-utils: 2.12.1(@typescript-eslint/parser@8.48.0(eslint@9.39.1(jiti@2.6.1))(typescript@5.9.3))(eslint-import-resolver-node@0.3.9)(eslint-import-resolver-typescript@3.10.1)(eslint@9.39.1(jiti@2.6.1))
       hasown: 2.0.2
       is-core-module: 2.16.1
       is-glob: 4.0.3
