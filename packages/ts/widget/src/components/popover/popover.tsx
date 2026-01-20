@@ -162,6 +162,10 @@ function Popover() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         widgetExpandedSignal.value = false;
+        captureAnonymousEvent({
+          event: "widget_expand_event",
+          action: "close",
+        })
       }
     };
     document.addEventListener("keydown", handleKeyDown);
