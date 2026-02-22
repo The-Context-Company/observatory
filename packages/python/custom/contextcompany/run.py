@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from ..config import get_api_key, get_url
+from .config import get_api_key, get_url
 
 _SENTINEL = object()
 
