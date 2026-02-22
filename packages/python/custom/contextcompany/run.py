@@ -1,3 +1,4 @@
+import uuid
 from datetime import datetime, timezone
 from typing import Any, Dict, Optional
 
@@ -16,20 +17,25 @@ def _now_iso() -> str:
 class Run:
     def __init__(
         self,
+        run_id: Optional[str] = None,
         session_id: Optional[str] = None,
         conversational: Optional[bool] = None,
-        run_id: Optional[str] = None,
     ) -> None:
-        self._ended = False
-        self._prompt: object = _SENTINEL
-        self._response: Optional[str] = None
-        self._status_code: Optional[int] = None
-        self._status_message: Optional[str] = None
-        self._start_time: str = _now_iso()
-        self._run_id = run_id
+        self._run_id = run_id or str(uuid.uuid4())
         self._session_id = session_id
         self._conversational = conversational
-        self._metadata: Optional[Dict[str, Any]] = None
+
+        self._start_time: str = _now_iso()
+
+        self._prompt: object = _SENTINEL
+        self._response: Optional[str] = None
+
+        self._status_code: int = 0
+        self._status_message: Optional[str] = None
+        
+        self._metadata: Optional[Dict[str, str]] = None
+
+        self._ended = False
 
     def prompt(self, text: str) -> "Run":
         self._prompt = text
@@ -45,7 +51,7 @@ class Run:
             self._status_message = message
         return self
 
-    def metadata(self, json: Optional[Dict[str, Any]] = None, **kwargs: Any) -> "Run":
+    def metadata(self, json: Optional[Dict[str, str]] = None, **kwargs: str) -> "Run":
         if self._metadata is None:
             self._metadata = {}
         if json is not None:
@@ -70,14 +76,12 @@ class Run:
         end_time = _now_iso()
 
         payload: Dict[str, Any] = {
+            "run_id": self._run_id,
             "start_time": self._start_time,
             "end_time": end_time,
             "prompt": self._prompt,
-            "status_code": self._status_code if self._status_code is not None else 0,
+            "status_code": self._status_code,
         }
-
-        if self._run_id is not None:
-            payload["run_id"] = self._run_id
         if self._session_id is not None:
             payload["session_id"] = self._session_id
         if self._conversational is not None:
