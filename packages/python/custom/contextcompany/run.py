@@ -19,7 +19,6 @@ class Run:
         session_id: Optional[str] = None,
         conversational: Optional[bool] = None,
         run_id: Optional[str] = None,
-        metadata: Optional[Dict[str, Any]] = None,
     ) -> None:
         self._ended = False
         self._prompt: object = _SENTINEL
@@ -30,7 +29,7 @@ class Run:
         self._run_id = run_id
         self._session_id = session_id
         self._conversational = conversational
-        self._metadata = metadata
+        self._metadata: Optional[Dict[str, Any]] = None
 
     def prompt(self, text: str) -> "Run":
         self._prompt = text
@@ -44,6 +43,14 @@ class Run:
         self._status_code = code
         if message is not None:
             self._status_message = message
+        return self
+
+    def metadata(self, json: Optional[Dict[str, Any]] = None, **kwargs: Any) -> "Run":
+        if self._metadata is None:
+            self._metadata = {}
+        if json is not None:
+            self._metadata.update(json)
+        self._metadata.update(kwargs)
         return self
 
     def error(self, status_message: str = "") -> None:
@@ -107,11 +114,9 @@ def run(
     session_id: Optional[str] = None,
     conversational: Optional[bool] = None,
     run_id: Optional[str] = None,
-    metadata: Optional[Dict[str, Any]] = None,
 ) -> Run:
     return Run(
         session_id=session_id,
         conversational=conversational,
         run_id=run_id,
-        metadata=metadata,
     )
