@@ -5,7 +5,7 @@ build-backend = "hatchling.build"
 [project]
 name = "contextcompany"
 version = "0.1.0"
-description = "The Context Company - Custom AI Agent Observability SDK for Python"
+description = "The Context Company AI Agent Observability SDK for Python"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
@@ -28,6 +28,9 @@ classifiers = [
 dependencies = [
     "requests>=2.31.0",
 ]
+
+[project.optional-dependencies]
+custom = []
 
 [project.urls]
 Homepage = "https://thecontext.company"

@@ -4,10 +4,7 @@ from typing import Any, Dict, Optional
 
 import requests
 
-from ..config import get_api_key, get_endpoint
-
-PROD_ENDPOINT = "https://api.thecontext.company/v1/custom"
-DEV_ENDPOINT = "https://dev.thecontext.company/v1/custom"
+from ..config import get_api_key, get_url
 
 _SENTINEL = object()
 
@@ -15,19 +12,6 @@ _SENTINEL = object()
 def _now_iso() -> str:
     dt = datetime.now(timezone.utc)
     return dt.strftime("%Y-%m-%dT%H:%M:%S.") + f"{dt.microsecond // 1000:03d}Z"
-
-
-def _get_custom_endpoint() -> str:
-    endpoint = get_endpoint()
-    # If the user set TCC_URL explicitly, use that
-    if endpoint != "https://api.thecontext.company/v1/traces":
-        return endpoint
-    # Otherwise, route to the custom endpoint with dev/prod detection
-    import os
-    api_key = os.getenv("TCC_API_KEY", "")
-    if api_key.startswith("dev_"):
-        return DEV_ENDPOINT
-    return PROD_ENDPOINT
 
 
 class Run:
@@ -111,7 +95,10 @@ class Run:
 
         try:
             api_key = get_api_key()
-            endpoint = _get_custom_endpoint()
+            endpoint = get_url(
+                "https://api.thecontext.company/v1/custom",
+                "https://dev.thecontext.company/v1/custom",
+            )
 
             resp = requests.post(
                 endpoint,
