@@ -27,7 +27,7 @@ def orchestrate(user_message: str, session_id: str) -> None:
     r.metadata(agent="router", model="gpt-4o", framework="in-house-a2a")
 
     try:
-        router_response, router_tools = call_agent("router", user_message)
+        router_response, router_tools = call_agent("router", user_message, tcc_run=r)
     except Exception as e:
         r.error(str(e))
         print(f"  Router error: {e}")
@@ -62,7 +62,7 @@ def orchestrate(user_message: str, session_id: str) -> None:
     )
 
     try:
-        response, tool_results = call_agent(handoff_target, user_message)
+        response, tool_results = call_agent(handoff_target, user_message, tcc_run=specialist)
 
         for t in tool_results:
             print(f"  [{t['tool']}] {t['args']} -> {t['result']}")
