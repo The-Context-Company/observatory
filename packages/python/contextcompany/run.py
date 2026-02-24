@@ -37,6 +37,14 @@ class Run:
 
         self._ended = False
 
+    @property
+    def run_id(self) -> str:
+        return self._run_id
+
+    def step(self, step_id: Optional[str] = None) -> "Step":
+        from .step import Step
+        return Step(run_id=self._run_id, step_id=step_id)
+
     def prompt(self, text: str) -> "Run":
         self._prompt = text
         return self
@@ -76,6 +84,7 @@ class Run:
         end_time = _now_iso()
 
         payload: Dict[str, Any] = {
+            "type": "run",
             "run_id": self._run_id,
             "start_time": self._start_time,
             "end_time": end_time,
