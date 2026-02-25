@@ -4,9 +4,17 @@ type Sentinel = typeof _SENTINEL;
 export { _SENTINEL };
 export type { Sentinel };
 
+let _debugEnabled = false;
+
+export function setDebug(enabled: boolean): void {
+  _debugEnabled = enabled;
+}
+
 export function _debug(...args: unknown[]): void {
-  const env = process.env.TCC_DEBUG?.toLowerCase();
-  if (env !== "true" && env !== "1") return;
+  const fromEnv =
+    process.env.TCC_DEBUG?.toLowerCase() === "true" ||
+    process.env.TCC_DEBUG === "1";
+  if (!_debugEnabled && !fromEnv) return;
 
   const parts = args.map((arg) =>
     typeof arg === "object" && arg !== null
