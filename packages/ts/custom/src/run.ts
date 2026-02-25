@@ -1,4 +1,5 @@
 import { Step } from "./step";
+import { ToolCall } from "./tool-call";
 import { _SENTINEL, _debug, _nowIso, _sendPayload } from "./utils";
 import type { Sentinel } from "./utils";
 
@@ -41,6 +42,10 @@ export class Run {
 
   step(stepId?: string): Step {
     return new Step(this._runId, stepId);
+  }
+
+  toolCall(toolCallId?: string): ToolCall {
+    return new ToolCall(this._runId, toolCallId);
   }
 
   prompt(text: string): this {
