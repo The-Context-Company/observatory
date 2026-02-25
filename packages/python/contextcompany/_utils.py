@@ -5,11 +5,8 @@ from typing import Any
 
 _SENTINEL = object()
 
-_DEBUG_ENABLED = os.getenv("TCC_DEBUG", "").lower() in ("true", "1")
-
-
 def _debug(*args: Any) -> None:
-    if not _DEBUG_ENABLED:
+    if os.getenv("TCC_DEBUG", "").lower() not in ("true", "1"):
         return
     parts = []
     for arg in args:
