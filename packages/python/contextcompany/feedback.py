@@ -7,7 +7,6 @@ def submit_feedback(
     run_id: str,
     score: Optional[Literal["thumbs_up", "thumbs_down"]] = None,
     text: Optional[str] = None,
-    api_key: Optional[str] = None,
     endpoint: Optional[str] = None,
 ) -> bool:
     # Validate inputs
@@ -22,8 +21,8 @@ def submit_feedback(
         )
 
     # Get API key
-    resolved_api_key = api_key or os.getenv("TCC_API_KEY")
-    if not resolved_api_key:
+    api_key = os.getenv("TCC_API_KEY")
+    if not api_key:
         print("[TCC] Cannot submit feedback: TCC_API_KEY environment variable is not set")
         return False
 
@@ -51,7 +50,7 @@ def submit_feedback(
             json=payload,
             headers={
                 "Content-Type": "application/json",
-                "Authorization": f"Bearer {resolved_api_key}",
+                "Authorization": f"Bearer {api_key}",
             },
             timeout=10,
         )
