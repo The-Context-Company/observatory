@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 import requests
 
 from .config import get_api_key, get_url
-from ._utils import _now_iso, _SENTINEL
+from ._utils import _now_iso, _SENTINEL, _debug
 
 
 class Step:
@@ -37,23 +37,33 @@ class Step:
 
         self._ended = False
 
+        _debug("Step created")
+        _debug("step_id:", self._step_id)
+        _debug("run_id:", self._run_id)
+        _debug("start_time:", self._start_time)
+
     def prompt(self, text: str) -> "Step":
         self._prompt = text
+        _debug("Step prompt set:", text[:200] if len(text) > 200 else text)
         return self
 
     def response(self, text: str) -> "Step":
         self._response = text
+        _debug("Step response set:", text[:200] if len(text) > 200 else text)
         return self
 
     def model(self, requested: Optional[str] = None, used: Optional[str] = None) -> "Step":
         if requested is not None:
             self._model_requested = requested
+            _debug("Step model_requested:", requested)
         if used is not None:
             self._model_used = used
+            _debug("Step model_used:", used)
         return self
 
     def finish_reason(self, reason: str) -> "Step":
         self._finish_reason = reason
+        _debug("Step finish_reason:", reason)
         return self
 
     def tokens(
@@ -68,23 +78,32 @@ class Step:
             self._prompt_cached_tokens = prompt_cached
         if completion is not None:
             self._completion_tokens = completion
+        _debug("Step tokens:", {
+            "prompt_uncached": self._prompt_uncached_tokens,
+            "prompt_cached": self._prompt_cached_tokens,
+            "completion": self._completion_tokens,
+        })
         return self
 
     def cost(self, real_total: float) -> "Step":
         self._real_total_cost = real_total
+        _debug("Step real_total_cost:", real_total)
         return self
 
     def tool_definitions(self, definitions: str) -> "Step":
         self._tool_definitions = definitions
+        _debug("Step tool_definitions set:", definitions[:200] if len(definitions) > 200 else definitions)
         return self
 
     def status(self, code: int, message: Optional[str] = None) -> "Step":
         self._status_code = code
         if message is not None:
             self._status_message = message
+        _debug("Step status set:", code, message)
         return self
 
     def error(self, status_message: str = "") -> None:
+        _debug("Step error:", status_message)
         self._status_code = 2
         if status_message:
             self._status_message = status_message
@@ -133,6 +152,9 @@ class Step:
         if self._tool_definitions is not None:
             payload["tool_definitions"] = self._tool_definitions
 
+        _debug("Sending step...")
+        _debug("Payload:", payload)
+
         try:
             api_key = get_api_key()
             endpoint = get_url(
@@ -152,6 +174,8 @@ class Step:
 
             if not resp.ok:
                 print(f"[TCC] Failed to send step: {resp.status_code} {resp.text}")
+            else:
+                _debug("Successfully sent step (step_id=" + self._step_id + ")")
 
         except Exception as e:
             print(f"[TCC] Failed to send step: {e}")

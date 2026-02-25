@@ -4,7 +4,7 @@ from typing import Any, Dict, Optional
 import requests
 
 from .config import get_api_key, get_url
-from ._utils import _now_iso, _SENTINEL
+from ._utils import _now_iso, _SENTINEL, _debug
 
 
 class Run:
@@ -30,6 +30,12 @@ class Run:
 
         self._ended = False
 
+        _debug("Run created")
+        _debug("run_id:", self._run_id)
+        _debug("session_id:", self._session_id)
+        _debug("conversational:", self._conversational)
+        _debug("start_time:", self._start_time)
+
     @property
     def run_id(self) -> str:
         return self._run_id
@@ -40,16 +46,19 @@ class Run:
 
     def prompt(self, text: str) -> "Run":
         self._prompt = text
+        _debug("Run prompt set:", text[:200] if len(text) > 200 else text)
         return self
 
     def response(self, text: str) -> "Run":
         self._response = text
+        _debug("Run response set:", text[:200] if len(text) > 200 else text)
         return self
 
     def status(self, code: int, message: Optional[str] = None) -> "Run":
         self._status_code = code
         if message is not None:
             self._status_message = message
+        _debug("Run status set:", code, message)
         return self
 
     def metadata(self, json: Optional[Dict[str, str]] = None, **kwargs: str) -> "Run":
@@ -58,9 +67,11 @@ class Run:
         if json is not None:
             self._metadata.update(json)
         self._metadata.update(kwargs)
+        _debug("Run metadata:", self._metadata)
         return self
 
     def error(self, status_message: str = "") -> None:
+        _debug("Run error:", status_message)
         self._status_code = 2
         if status_message:
             self._status_message = status_message
@@ -95,6 +106,9 @@ class Run:
         if self._metadata is not None:
             payload["metadata"] = self._metadata
 
+        _debug("Sending run...")
+        _debug("Payload:", payload)
+
         try:
             api_key = get_api_key()
             endpoint = get_url(
@@ -114,6 +128,8 @@ class Run:
 
             if not resp.ok:
                 print(f"[TCC] Failed to send run: {resp.status_code} {resp.text}")
+            else:
+                _debug("Successfully sent run (run_id=" + self._run_id + ")")
 
         except Exception as e:
             print(f"[TCC] Failed to send run: {e}")
