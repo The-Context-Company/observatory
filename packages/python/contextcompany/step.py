@@ -1,10 +1,7 @@
 import uuid
 from typing import Any, Dict, Optional
 
-import requests
-
-from .config import get_api_key, get_url
-from ._utils import _now_iso, _SENTINEL, _debug
+from ._utils import _now_iso, _SENTINEL, _debug, _send_payload
 
 
 class Step:
@@ -103,11 +100,17 @@ class Step:
         return self
 
     def error(self, status_message: str = "") -> None:
+        if self._ended:
+            raise RuntimeError("[TCC] Step has already ended")
+
         _debug("Step error:", status_message)
         self._status_code = 2
         if status_message:
             self._status_message = status_message
-        self.end()
+        self._ended = True
+
+        payload = self._build_payload()
+        _send_payload(payload, "step")
 
     def end(self) -> None:
         if self._ended:
@@ -120,6 +123,11 @@ class Step:
             raise ValueError("[TCC] Cannot end step: response is required. Call s.response(...) before s.end()")
 
         self._ended = True
+
+        payload = self._build_payload()
+        _send_payload(payload, "step")
+
+    def _build_payload(self) -> Dict[str, Any]:
         end_time = _now_iso()
 
         payload: Dict[str, Any] = {
@@ -128,11 +136,13 @@ class Step:
             "step_id": self._step_id,
             "start_time": self._start_time,
             "end_time": end_time,
-            "prompt": self._prompt,
-            "response": self._response,
             "status_code": self._status_code,
         }
 
+        if self._prompt is not _SENTINEL:
+            payload["prompt"] = self._prompt
+        if self._response is not _SENTINEL:
+            payload["response"] = self._response
         if self._model_requested is not None:
             payload["model_requested"] = self._model_requested
         if self._model_used is not None:
@@ -152,33 +162,7 @@ class Step:
         if self._tool_definitions is not None:
             payload["tool_definitions"] = self._tool_definitions
 
-        _debug("Sending step...")
-        _debug("Payload:", payload)
-
-        try:
-            api_key = get_api_key()
-            endpoint = get_url(
-                "https://api.thecontext.company/v1/custom",
-                "https://dev.thecontext.company/v1/custom",
-            )
-
-            resp = requests.post(
-                endpoint,
-                json=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {api_key}",
-                },
-                timeout=10,
-            )
-
-            if not resp.ok:
-                print(f"[TCC] Failed to send step: {resp.status_code} {resp.text}")
-            else:
-                _debug("Successfully sent step (step_id=" + self._step_id + ")")
-
-        except Exception as e:
-            print(f"[TCC] Failed to send step: {e}")
+        return payload
 
 
 def step(

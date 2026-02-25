@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "contextcompany"
-version = "0.1.2"
+version = "0.1.3"
 description = "The Context Company AI Agent Observability SDK for Python"
 requires-python = ">=3.9"
 license = {text = "MIT"}

@@ -1,10 +1,7 @@
 import uuid
 from typing import Any, Dict, Optional
 
-import requests
-
-from .config import get_api_key, get_url
-from ._utils import _now_iso, _SENTINEL, _debug
+from ._utils import _now_iso, _SENTINEL, _debug, _send_payload
 
 
 class Run:
@@ -71,11 +68,17 @@ class Run:
         return self
 
     def error(self, status_message: str = "") -> None:
+        if self._ended:
+            raise RuntimeError("[TCC] Run has already ended")
+
         _debug("Run error:", status_message)
         self._status_code = 2
         if status_message:
             self._status_message = status_message
-        self.end()
+        self._ended = True
+
+        payload = self._build_payload()
+        _send_payload(payload, "run")
 
     def end(self) -> None:
         if self._ended:
@@ -85,6 +88,11 @@ class Run:
             raise ValueError("[TCC] Cannot end run: prompt is required. Call r.prompt(...) before r.end()")
 
         self._ended = True
+
+        payload = self._build_payload()
+        _send_payload(payload, "run")
+
+    def _build_payload(self) -> Dict[str, Any]:
         end_time = _now_iso()
 
         payload: Dict[str, Any] = {
@@ -92,9 +100,11 @@ class Run:
             "run_id": self._run_id,
             "start_time": self._start_time,
             "end_time": end_time,
-            "prompt": self._prompt,
             "status_code": self._status_code,
         }
+
+        if self._prompt is not _SENTINEL:
+            payload["prompt"] = self._prompt
         if self._session_id is not None:
             payload["session_id"] = self._session_id
         if self._conversational is not None:
@@ -106,33 +116,7 @@ class Run:
         if self._metadata is not None:
             payload["metadata"] = self._metadata
 
-        _debug("Sending run...")
-        _debug("Payload:", payload)
-
-        try:
-            api_key = get_api_key()
-            endpoint = get_url(
-                "https://api.thecontext.company/v1/custom",
-                "https://dev.thecontext.company/v1/custom",
-            )
-
-            resp = requests.post(
-                endpoint,
-                json=payload,
-                headers={
-                    "Content-Type": "application/json",
-                    "Authorization": f"Bearer {api_key}",
-                },
-                timeout=10,
-            )
-
-            if not resp.ok:
-                print(f"[TCC] Failed to send run: {resp.status_code} {resp.text}")
-            else:
-                _debug("Successfully sent run (run_id=" + self._run_id + ")")
-
-        except Exception as e:
-            print(f"[TCC] Failed to send run: {e}")
+        return payload
 
 
 def run(
