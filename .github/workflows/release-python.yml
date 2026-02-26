@@ -32,6 +32,7 @@ jobs:
       - name: Semantic release version + tag
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PYTHONPATH: ${{ github.workspace }}/packages/python
         run: semantic-release version
 
       - name: Build package
