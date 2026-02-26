@@ -1,260 +1,65 @@
-# <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Contributing to The Context Company
+# Contributing
 
-Thank you for taking the time to contribute! We're excited to have you here 🙌
+## Setup
 
-## Table of Contents
-
-- [How to Contribute](#ways-to-contribute)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Development Workflow](#development-workflow)
-
-## How to Contribute
-
-There are many ways to contribute:
-
-- **Report bugs** - Found a bug? Open an issue with detailed reproduction steps
-- **Suggest features** - Have an idea? We'd love to hear it!
-- **Improve documentation** - Help make our docs clearer and more comprehensive
-- **Write code** - Submit pull requests for bug fixes, features, or improvements
-- **Answer questions** - Help other users in issues and discussions
-- **Share feedback** - Let us know how we can improve developer experience
-
-## Getting Started
-
-### Initial Setup
-
-1. **Fork the repository** to your GitHub account
-
-2. **Clone your fork** locally:
-
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/observatory.git
-   cd observatory
-   ```
-
-3. **Add the upstream remote**:
-
-   ```bash
-   git remote add upstream https://github.com/The-Context-Company/observatory.git
-   ```
-
-4. **Install dependencies**:
-
-   ```bash
-   pnpm install
-   ```
+```bash
+git clone https://github.com/YOUR_USERNAME/observatory.git
+cd observatory
+pnpm install
+```
 
 ## Project Structure
 
-Observatory is a **pnpm monorepo** with the following structure:
-
 ```
-observatory/
-├── packages/
-│   ├── otel/     # @contextcompany/otel - OpenTelemetry integration
-│   ├── widget/   # @contextcompany/widget - Preact widget for Local Mode
-│   └── claude/   # @contextcompany/claude - Claude Agent SDK instrumentation
-│       ├── ts/       # TypeScript implementation
-│       └── python/   # Python implementation (coming soon)
-└── examples/     # Examples of Local Mode
+packages/ts/otel/      # @contextcompany/otel
+packages/ts/widget/    # @contextcompany/widget
+packages/ts/claude/    # @contextcompany/claude
+packages/ts/mastra/    # @contextcompany/mastra
+packages/ts/custom/    # @contextcompany/custom
+packages/ts/api/       # @contextcompany/api
+packages/python/       # contextcompany (Python SDK)
+examples/              # Example apps
 ```
 
-### Package Descriptions
+## Dev Scripts
 
-#### `@contextcompany/otel`
+- `pnpm dev` — watch mode, rebuilds on save
+- `pnpm dev:all` — watch mode + local HTTP server (ports 3001/3002)
 
-OpenTelemetry instrumentation layer for the Vercel AI SDK. Provides span processors, exporters, and Next.js integration for collecting telemetry data in both local and cloud modes.
+## Commit Messages
 
-#### `@contextcompany/widget`
+Format: `type(scope): description`
 
-Browser-based visualization widget for real-time AI SDK observability. Built with Preact for minimal bundle size and uses Shadow DOM for style isolation.
+| Prefix | Version bump |
+|--------|-------------|
+| `fix(scope):` | patch |
+| `perf(scope):` | patch |
+| `feat(scope):` | minor |
+| `feat(scope)!:` | major |
+| `docs:` `chore:` `refactor:` `test:` `ci:` `style:` | no release |
 
-#### `@contextcompany/claude`
+Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `api`, `python`
 
-Instrumentation wrapper for the Claude Agent SDK. Provides transparent telemetry collection and feedback submission for Claude-powered agents. Currently supports TypeScript, with Python support coming soon.
+Omit scope for repo-wide changes: `chore: upgrade dependencies`
 
-## Development workflow
-
-### Helper package scripts
-
-Each package supports two development modes:
-
-`pnpm dev`:
-- **Watch mode only** - Automatically rebuilds when you save files
-- Output goes to the `dist/` folder
-
-`pnpm dev:all`:
-- **Watch mode + local HTTP server**
-- Automatically rebuilds AND serves the built files on port 3001 or 3002
-- Lets you use URL imports for testing your local changes outside of the workspace
-
-### Testing Changes Locally
-
-We don't have a comprehensive test suite yet (contributions welcome!). For now, please test your changes locally following the instructions below.
-
-#### Testing `@contextcompany/otel` changes
-
-1. **Ensure the example app uses the workspace version**:
-   In `examples/nextjs-widget/package.json`, use the workspace version for `@contextcompany/otel`:
-
-   ```json
-   {
-     "dependencies": {
-       "@contextcompany/otel": "workspace:*"
-     }
-   }
-   ```
-
-2. **Start the otel dev server** in watch mode:
-
-   ```bash
-   cd packages/otel
-   pnpm dev
-   ```
-
-3. **Run the example app**:
-
-   ```bash
-   cd examples/nextjs-widget
-   pnpm dev
-   ```
-
-4. **Make changes and restart**:
-   - After making changes in the otel package, restart the Next.js app so instrumentation runs again.
-
-#### Testing `@contextcompany/widget` changes
-
-1. **Start the widget dev server** with hot reloading:
-
-   ```bash
-   cd packages/widget
-   pnpm dev:all
-   ```
-
-   This serves the built widget files on `http://localhost:3001`
-
-2. **Update the example app** to use localhost:
-   In `examples/nextjs-widget/app/layout.tsx`, comment out the unpkg script and uncomment the localhost one:
-
-   ```tsx
-   {
-     /* <script src="https://unpkg.com/@contextcompany/widget/dist/auto.global.js" async /> */
-   }
-   <script src="http://localhost:3001/auto.global.js" async />;
-   ```
-
-3. **Run the example app**:
-   ```bash
-   cd examples/nextjs-widget
-   pnpm dev
-   ```
-
-Now you can make changes to the widget package and see them reflected in real-time in the example app!
-
-#### Testing `@contextcompany/claude` changes
-
-1. **Navigate to the TypeScript package**:
-
-   ```bash
-   cd packages/claude/ts
-   ```
-
-2. **Build in watch mode**:
-
-   ```bash
-   pnpm dev
-   ```
-
-3. **Test in your own project**:
-   Since this package wraps the Claude Agent SDK, you'll need to test it in a project that uses `@anthropic-ai/claude-agent-sdk`. You can use the workspace version:
-
-   ```json
-   {
-     "dependencies": {
-       "@contextcompany/claude": "workspace:*"
-     }
-   }
-   ```
-
-4. **Make changes and rebuild**:
-   - Changes to the package require a rebuild
-   - The `pnpm dev` watch mode will automatically rebuild on file changes
-
-### Commit Messages
-
-Every commit message must follow this format:
+Examples:
 
 ```
-type(scope): short description
-```
-
-**This matters because commit messages automatically control version bumps and changelogs.** The CI reads your commit type to decide whether to publish a patch, minor, or major release.
-
-#### Quick reference
-
-| Prefix | What it means | Version bump |
-|--------|---------------|--------------|
-| `fix(scope):` | Bug fix | **patch** (0.1.0 → 0.1.1) |
-| `perf(scope):` | Performance improvement | **patch** |
-| `feat(scope):` | New feature | **minor** (0.1.0 → 0.2.0) |
-| `feat(scope)!:` | Breaking change | **major** (0.1.0 → 1.0.0) |
-| `docs:` | Documentation only | no release |
-| `chore:` | Maintenance / deps | no release |
-| `refactor(scope):` | Code change, no new behavior | no release |
-| `test(scope):` | Adding or fixing tests | no release |
-| `ci:` | CI/CD changes | no release |
-| `style:` | Formatting, whitespace | no release |
-
-#### Scopes
-
-Use the package name you're changing as the scope:
-
-| Scope | Package |
-|-------|---------|
-| `otel` | `@contextcompany/otel` |
-| `widget` | `@contextcompany/widget` |
-| `claude` | `@contextcompany/claude` |
-| `mastra` | `@contextcompany/mastra` |
-| `custom` | `@contextcompany/custom` |
-| `api` | `@contextcompany/api` |
-| `python` | `contextcompany` (Python SDK) |
-
-Omit the scope for repo-wide changes (e.g., `chore: upgrade dependencies`).
-
-#### Examples
-
-```bash
-# Bug fixes → patch release
 fix(widget): prevent popover from rendering off-screen
-fix(python): handle None metadata without crashing
-
-# New features → minor release
-feat(otel): add custom span attribute support
 feat(python): add trace_id field to runs
-
-# Breaking changes → major release
-feat(python)!: rename Run.end() to Run.finish()
 feat(otel)!: drop Node 16 support
-
-# No release
-docs: update README setup instructions
 chore: upgrade typescript to 5.9
-refactor(widget): extract popover into separate component
-test(claude): add unit tests for proxy instrumentation
 ```
 
-### How Releases Work
+## Releases
 
-You **never** edit version numbers manually. CI handles everything on merge to `main`:
+Never edit versions manually. CI publishes on merge to `main`:
 
-- **TypeScript packages** — uses [Changesets](https://github.com/changesets/changesets). When you change a TS package, add a changeset file via `pnpm changeset`. CI opens a "Version Packages" PR; merging it publishes to npm.
-- **Python package** — uses [python-semantic-release](https://python-semantic-release.readthedocs.io/). CI reads your commit messages automatically. A `fix(python):` commit publishes a patch; `feat(python):` publishes a minor.
+- **TypeScript** — add a changeset via `pnpm changeset`, CI handles the rest
+- **Python** — CI reads commit messages automatically (`fix(python):` → patch, `feat(python):` → minor)
 
-The two pipelines are completely independent. A TS-only merge won't touch Python, and vice versa.
+The two pipelines are independent. TS merges don't touch Python and vice versa.
 
-### Submitting Changes
+## Submitting
 
-Open a pull request, and please check `Allow edits from maintainers` so we can make small tweaks before merging!
-
-**Happy hacking!** We appreciate your time and effort in making The Context Company better for everyone.
+Open a PR with `Allow edits from maintainers` checked.
