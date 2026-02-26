@@ -1,0 +1,44 @@
+name: Create Python Release PR
+
+on:
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-pr:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: packages/python
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install tools
+        run: pip install python-semantic-release
+
+      - name: Bump version + changelog
+        env:
+          PYTHONPATH: ${{ github.workspace }}/packages/python
+        run: semantic-release version --no-push --no-commit --no-tag --no-vcs-release
+
+      - name: Create release PR
+        uses: peter-evans/create-pull-request@v7
+        with:
+          branch: release/python-${{ github.run_id }}
+          title: "chore(python-release): bump version"
+          commit-message: "chore(python-release): bump version and changelog"
+          body: |
+            Automated Python release PR.
+            - Bumps version in `pyproject.toml` and `__init__.py`
+            - Updates changelog
+          labels: release
