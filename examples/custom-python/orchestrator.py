@@ -24,7 +24,10 @@ def orchestrate(user_message: str, session_id: str) -> None:
     # Instruments the router's full lifecycle (prompt in -> routing decision out)
     # =====================================================================
     tcc_run_router = tcc.run(session_id=session_id, conversational=True)
-    tcc_run_router.prompt(user_message)
+    tcc_run_router.prompt(
+        user_prompt=user_message,
+        system_prompt=AGENTS["router"]["system_prompt"],
+    )
     tcc_run_router.metadata(agent="router", model="gpt-4o", framework="in-house-a2a")
 
     try:
@@ -58,7 +61,10 @@ def orchestrate(user_message: str, session_id: str) -> None:
     # Instruments the specialist's full lifecycle (prompt in -> final answer out)
     # =====================================================================
     tcc_run_specialist = tcc.run(session_id=session_id, conversational=True)
-    tcc_run_specialist.prompt(user_message)
+    tcc_run_specialist.prompt(
+        user_prompt=user_message,
+        system_prompt=AGENTS[handoff_target]["system_prompt"],
+    )
     tcc_run_specialist.metadata(
         agent=handoff_target,
         model=AGENTS[handoff_target]["model"],

@@ -1,6 +1,6 @@
 import json
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 from ._utils import _now_iso, _SENTINEL, _debug, _send_payload
 
@@ -76,6 +76,20 @@ class Run:
         self._metadata.update(kwargs)
         _debug("Run metadata:", self._metadata)
         return self
+
+    def feedback(
+        self,
+        score: Optional[Literal["thumbs_up", "thumbs_down"]] = None,
+        text: Optional[str] = None,
+        endpoint: Optional[str] = None,
+    ) -> bool:
+        from .feedback import submit_feedback
+        return submit_feedback(
+            run_id=self._run_id,
+            score=score,
+            text=text,
+            endpoint=endpoint,
+        )
 
     def error(self, status_message: str = "") -> None:
         if self._ended:
