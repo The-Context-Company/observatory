@@ -81,14 +81,12 @@ class Run:
         self,
         score: Optional[Literal["thumbs_up", "thumbs_down"]] = None,
         text: Optional[str] = None,
-        endpoint: Optional[str] = None,
     ) -> bool:
         from .feedback import submit_feedback
         return submit_feedback(
             run_id=self._run_id,
             score=score,
             text=text,
-            endpoint=endpoint,
         )
 
     def error(self, status_message: str = "") -> None:
