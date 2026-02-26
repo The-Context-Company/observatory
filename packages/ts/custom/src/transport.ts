@@ -22,8 +22,10 @@ function resolveUrl(apiKey: string): string {
 }
 
 export function isDebug(): boolean {
-  const { debug: flag } = getConfig();
-  if (flag) return true;
+  const config = getConfig();
+  if ("debug" in config && config.debug !== undefined) {
+    return config.debug === true;
+  }
   if (typeof process !== "undefined" && process.env) {
     const env = process.env.TCC_DEBUG;
     return env === "true" || env === "1";

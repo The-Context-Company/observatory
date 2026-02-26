@@ -119,7 +119,6 @@ export class Run {
 
   async end(): Promise<void> {
     if (this._ended) throw new Error("[TCC] Run already ended");
-    this._clearTimeout();
 
     if (this._prompt === undefined) {
       throw new Error(
@@ -141,6 +140,7 @@ export class Run {
       );
     }
 
+    this._clearTimeout();
     this._ended = true;
     this._endTime ??= new Date().toISOString();
     debug("Run ended", { runId: this._runId });
