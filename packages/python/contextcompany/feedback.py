@@ -7,7 +7,6 @@ def submit_feedback(
     run_id: str,
     score: Optional[Literal["thumbs_up", "thumbs_down"]] = None,
     text: Optional[str] = None,
-    endpoint: Optional[str] = None,
 ) -> bool:
     # Validate inputs
     if not score and not text:
@@ -29,8 +28,7 @@ def submit_feedback(
     # Get endpoint
     from .config import get_url
     feedback_url = (
-        endpoint
-        or os.getenv("TCC_FEEDBACK_URL")
+        os.getenv("TCC_FEEDBACK_URL")
         or get_url(
             "https://api.thecontext.company/v1/feedback",
             "https://dev.thecontext.company/v1/feedback",

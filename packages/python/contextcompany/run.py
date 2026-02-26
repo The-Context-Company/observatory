@@ -1,5 +1,6 @@
+import json
 import uuid
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Literal, Optional
 
 from ._utils import _now_iso, _SENTINEL, _debug, _send_payload
 
@@ -41,9 +42,14 @@ class Run:
         from .step import Step
         return Step(run_id=self._run_id, step_id=step_id)
 
-    def prompt(self, text: str) -> "Run":
-        self._prompt = text
-        _debug("Run prompt set:", text[:200] if len(text) > 200 else text)
+    def prompt(self, user_prompt: str, system_prompt: Optional[str] = None) -> "Run":
+        prompt_obj: Dict[str, str] = {"user_prompt": user_prompt}
+        if system_prompt is not None:
+            prompt_obj["system_prompt"] = system_prompt
+        self._prompt = prompt_obj
+
+        preview = str(self._prompt)
+        _debug("Run prompt set:", preview[:200] if len(preview) > 200 else preview)
         return self
 
     def response(self, text: str) -> "Run":
@@ -58,14 +64,26 @@ class Run:
         _debug("Run status set:", code, message)
         return self
 
-    def metadata(self, json: Optional[Dict[str, str]] = None, **kwargs: str) -> "Run":
+    def metadata(self, data: Optional[Dict[str, str]] = None, **kwargs: str) -> "Run":
         if self._metadata is None:
             self._metadata = {}
-        if json is not None:
-            self._metadata.update(json)
+        if data is not None:
+            self._metadata.update(data)
         self._metadata.update(kwargs)
         _debug("Run metadata:", self._metadata)
         return self
+
+    def feedback(
+        self,
+        score: Optional[Literal["thumbs_up", "thumbs_down"]] = None,
+        text: Optional[str] = None,
+    ) -> bool:
+        from .feedback import submit_feedback
+        return submit_feedback(
+            run_id=self._run_id,
+            score=score,
+            text=text,
+        )
 
     def error(self, status_message: str = "") -> None:
         if self._ended:
