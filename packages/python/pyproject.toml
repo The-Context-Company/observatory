@@ -45,7 +45,7 @@ tag_format = "python-v{version}"
 commit_message = "chore(python-release): {version}"
 major_on_zero = false
 build_command = "python -m build"
-commit_parser = "scope_parser.PythonScopeParser"
+commit_parser = "scope_parser:PythonScopeParser"
 version_toml = ["pyproject.toml:project.version"]
 version_variables = ["contextcompany/__init__.py:__version__"]
 
@@ -58,5 +58,5 @@ patch_tags = ["fix", "perf"]
 type = "github"
 token = { env = "GH_TOKEN" }
 
-[tool.semantic_release.changelog]
+[tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
