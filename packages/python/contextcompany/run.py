@@ -46,7 +46,7 @@ class Run:
         prompt_obj: Dict[str, str] = {"user_prompt": user_prompt}
         if system_prompt is not None:
             prompt_obj["system_prompt"] = system_prompt
-        self._prompt = json.dumps(prompt_obj)
+        self._prompt = prompt_obj
 
         preview = str(self._prompt)
         _debug("Run prompt set:", preview[:200] if len(preview) > 200 else preview)
