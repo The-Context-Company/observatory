@@ -43,14 +43,10 @@ class Run:
         return Step(run_id=self._run_id, step_id=step_id)
 
     def prompt(self, user_prompt: str, system_prompt: Optional[str] = None) -> "Run":
+        prompt_obj: Dict[str, str] = {"user_prompt": user_prompt}
         if system_prompt is not None:
-            messages = [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt},
-            ]
-            self._prompt = json.dumps(messages)
-        else:
-            self._prompt = user_prompt
+            prompt_obj["system_prompt"] = system_prompt
+        self._prompt = json.dumps(prompt_obj)
 
         preview = str(self._prompt)
         _debug("Run prompt set:", preview[:200] if len(preview) > 200 else preview)
