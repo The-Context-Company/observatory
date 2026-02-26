@@ -42,14 +42,8 @@ export class Run {
         this.error("Run timed out — auto-flushed").catch(() => {});
       }, timeoutMs);
 
-      // Don't let the timer keep the Node process alive
-      if (
-        this._timeout &&
-        typeof this._timeout === "object" &&
-        "unref" in this._timeout
-      ) {
-        (this._timeout as NodeJS.Timeout).unref();
-      }
+      if (typeof this._timeout === "object" && "unref" in this._timeout)
+        (this._timeout as NodeJS.Timeout).unref(); // avoid keeping Node process alive
     }
 
     debug("Run created", { runId: this._runId });
@@ -123,12 +117,6 @@ export class Run {
     await this._send();
   }
 
-  /**
-   * End the run and send it (along with all attached steps/toolCalls) to the
-   * ingestion API. All child steps and tool calls must be ended first.
-   *
-   * Can be awaited to confirm delivery, or called fire-and-forget.
-   */
   async end(): Promise<void> {
     if (this._ended) throw new Error("[TCC] Run already ended");
     this._clearTimeout();

@@ -104,10 +104,6 @@ function buildToolCallPayload(
   return payload;
 }
 
-// ---------------------------------------------------------------------------
-// Public factory functions
-// ---------------------------------------------------------------------------
-
 /**
  * Send a complete run (with optional nested steps and tool calls) in a single
  * request. Use this when all data is already available.

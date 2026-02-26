@@ -68,10 +68,10 @@ export class Step {
     if (typeof config === "string") {
       this._modelRequested = config;
       this._modelUsed = config;
-    } else {
-      if (config.requested !== undefined) this._modelRequested = config.requested;
-      if (config.used !== undefined) this._modelUsed = config.used;
+      return this;
     }
+    if (config.requested !== undefined) this._modelRequested = config.requested;
+    if (config.used !== undefined) this._modelUsed = config.used;
     return this;
   }
 
