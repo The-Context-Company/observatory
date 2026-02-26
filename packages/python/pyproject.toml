@@ -44,7 +44,6 @@ branch = "main"
 tag_format = "python-v{version}"
 commit_message = "chore(python-release): {version}"
 major_on_zero = false
-build_command = "python -m build"
 commit_parser = "scope_parser:PythonScopeParser"
 version_toml = ["pyproject.toml:project.version"]
 version_variables = ["contextcompany/__init__.py:__version__"]
@@ -56,7 +55,7 @@ patch_tags = ["fix", "perf"]
 
 [tool.semantic_release.remote]
 type = "github"
-token = { env = "GH_TOKEN" }
+token = { env = "GH_TOKEN", default = "" }
 
 [tool.semantic_release.changelog.default_templates]
 changelog_file = "CHANGELOG.md"
