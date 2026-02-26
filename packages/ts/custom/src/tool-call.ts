@@ -1,5 +1,16 @@
 import { _debug, _nowIso, _sendPayload } from "./utils";
 
+export type ToolCallConfig = {
+  toolCallId?: string;
+  startTime?: Date;
+  name?: string;
+  args?: string | Record<string, unknown>;
+  result?: string | Record<string, unknown>;
+  endTime?: Date;
+  statusCode?: number;
+  statusMessage?: string;
+};
+
 export class ToolCall {
   private _runId: string;
   private _toolCallId: string;
@@ -13,17 +24,48 @@ export class ToolCall {
   private _args: string | null = null;
   private _result: string | null = null;
 
+  private _endTime: string | null = null;
   private _ended = false;
 
-  constructor(runId: string, toolCallId?: string) {
+  constructor(
+    runId: string,
+    toolCallIdOrConfig?: string | ToolCallConfig,
+    startTime?: Date
+  ) {
     this._runId = runId;
-    this._toolCallId = toolCallId ?? crypto.randomUUID();
-    this._startTime = _nowIso();
+
+    if (typeof toolCallIdOrConfig === "string") {
+      this._toolCallId = toolCallIdOrConfig;
+      this._startTime = startTime?.toISOString() ?? _nowIso();
+    } else if (toolCallIdOrConfig && typeof toolCallIdOrConfig === "object") {
+      const config = toolCallIdOrConfig;
+      this._toolCallId = config.toolCallId ?? crypto.randomUUID();
+      this._startTime = config.startTime?.toISOString() ?? startTime?.toISOString() ?? _nowIso();
+      this.set(config);
+    } else {
+      this._toolCallId = crypto.randomUUID();
+      this._startTime = startTime?.toISOString() ?? _nowIso();
+    }
 
     _debug("ToolCall created");
     _debug("tool_call_id:", this._toolCallId);
     _debug("run_id:", this._runId);
     _debug("start_time:", this._startTime);
+  }
+
+  /** Set multiple fields at once. Use instead of chaining .name(), .args(), .result(), etc. */
+  set(config: Omit<ToolCallConfig, "toolCallId" | "startTime">): this {
+    if (config.name !== undefined) this._toolName = config.name;
+    if (config.args !== undefined)
+      this._args = typeof config.args === "string" ? config.args : JSON.stringify(config.args);
+    if (config.result !== undefined)
+      this._result =
+        typeof config.result === "string" ? config.result : JSON.stringify(config.result);
+    if (config.endTime !== undefined) this._endTime = config.endTime.toISOString();
+    if (config.statusCode !== undefined) this._statusCode = config.statusCode;
+    if (config.statusMessage !== undefined) this._statusMessage = config.statusMessage;
+    _debug("ToolCall set:", config);
+    return this;
   }
 
   name(toolName: string): this {
@@ -47,6 +89,12 @@ export class ToolCall {
       "ToolCall result set:",
       this._result.length > 200 ? this._result.slice(0, 200) : this._result
     );
+    return this;
+  }
+
+  endTime(date: Date): this {
+    this._endTime = date.toISOString();
+    _debug("ToolCall endTime set:", this._endTime);
     return this;
   }
 
@@ -93,7 +141,7 @@ export class ToolCall {
   }
 
   private _buildPayload(): Record<string, unknown> {
-    const endTime = _nowIso();
+    const endTime = this._endTime ?? _nowIso();
 
     const payload: Record<string, unknown> = {
       type: "tool_call",
@@ -121,6 +169,10 @@ export class ToolCall {
   }
 }
 
-export function toolCall(runId: string, toolCallId?: string): ToolCall {
-  return new ToolCall(runId, toolCallId);
+export function toolCall(
+  runId: string,
+  toolCallIdOrConfig?: string | ToolCallConfig,
+  startTime?: Date
+): ToolCall {
+  return new ToolCall(runId, toolCallIdOrConfig, startTime);
 }

@@ -78,12 +78,18 @@ s.end();  // or s.error("msg")
 A **tool call** is one tool execution within a run. Create via `run.toolCall()`.
 
 ```ts
+// Builder pattern (dot notation)
 const tc = r.toolCall();  // or toolCall(runId, toolCallId?)
-
 tc.name("search");
 tc.args({ query: "SF weather" });
 tc.result(JSON.stringify(results));
 tc.end();  // or tc.error("msg")
+
+// Pass all data at once
+r.toolCall({ name: "search", args: { query: "SF weather" }, result: results }).end();
+// or use .set() for partial updates
+tc.set({ name: "search", args: { query: "SF weather" }, result: results });
+tc.end();
 ```
 
 ### Feedback

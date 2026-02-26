@@ -1,5 +1,5 @@
 import { Step } from "./step";
-import { ToolCall } from "./tool-call";
+import { ToolCall, type ToolCallConfig } from "./tool-call";
 import { _SENTINEL, _debug, _nowIso, _sendPayload } from "./utils";
 import type { Sentinel } from "./utils";
 
@@ -17,17 +17,19 @@ export class Run {
 
   private _metadata: Record<string, string> | null = null;
 
+  private _endTime: string | null = null;
   private _ended = false;
 
   constructor(params?: {
     runId?: string;
     sessionId?: string;
     conversational?: boolean;
+    startTime?: Date;
   }) {
     this._runId = params?.runId ?? crypto.randomUUID();
     this._sessionId = params?.sessionId ?? null;
     this._conversational = params?.conversational ?? null;
-    this._startTime = _nowIso();
+    this._startTime = params?.startTime?.toISOString() ?? _nowIso();
 
     _debug("Run created");
     _debug("run_id:", this._runId);
@@ -44,8 +46,8 @@ export class Run {
     return new Step(this._runId, stepId);
   }
 
-  toolCall(toolCallId?: string): ToolCall {
-    return new ToolCall(this._runId, toolCallId);
+  toolCall(toolCallIdOrConfig?: string | ToolCallConfig, startTime?: Date): ToolCall {
+    return new ToolCall(this._runId, toolCallIdOrConfig, startTime);
   }
 
   prompt(text: string): this {
@@ -69,6 +71,12 @@ export class Run {
       this._statusMessage = message;
     }
     _debug("Run status set:", code, message);
+    return this;
+  }
+
+  endTime(date: Date): this {
+    this._endTime = date.toISOString();
+    _debug("Run endTime set:", this._endTime);
     return this;
   }
 
@@ -120,7 +128,7 @@ export class Run {
   }
 
   private _buildPayload(): Record<string, unknown> {
-    const endTime = _nowIso();
+    const endTime = this._endTime ?? _nowIso();
 
     const payload: Record<string, unknown> = {
       type: "run",
@@ -157,6 +165,7 @@ export function run(params?: {
   runId?: string;
   sessionId?: string;
   conversational?: boolean;
+  startTime?: Date;
 }): Run {
   return new Run(params);
 }
