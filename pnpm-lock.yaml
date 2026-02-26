@@ -47,6 +47,25 @@ importers:
         specifier: ^5.5.0
         version: 5.9.3
 
+  examples/custom-ts:
+    dependencies:
+      '@contextcompany/custom':
+        specifier: workspace:*
+        version: link:../../packages/ts/custom
+      dotenv:
+        specifier: ^17.2.2
+        version: 17.2.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.25
+      tsx:
+        specifier: ^4.19.0
+        version: 4.20.6
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
   examples/mastra:
     dependencies:
       '@contextcompany/mastra':

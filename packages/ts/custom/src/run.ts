@@ -1,171 +1,209 @@
+import { getConfig } from "./config";
 import { Step } from "./step";
-import { ToolCall, type ToolCallConfig } from "./tool-call";
-import { _SENTINEL, _debug, _nowIso, _sendPayload } from "./utils";
-import type { Sentinel } from "./utils";
+import { ToolCall } from "./tool-call";
+import { debug, send } from "./transport";
+import type { RunOptions, StepOptions, ToolCallOptions } from "./types";
+
+const DEFAULT_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+
+const UNSET = Symbol("UNSET");
 
 export class Run {
   private _runId: string;
   private _sessionId: string | null;
   private _conversational: boolean | null;
   private _startTime: string;
+  private _endTime: string | null = null;
 
-  private _prompt: string | Sentinel = _SENTINEL;
+  private _prompt: string | typeof UNSET = UNSET;
   private _response: string | null = null;
 
-  private _statusCode: number = 0;
+  private _statusCode = 0;
   private _statusMessage: string | null = null;
 
   private _metadata: Record<string, string> | null = null;
 
-  private _endTime: string | null = null;
+  private _steps: Step[] = [];
+  private _toolCalls: ToolCall[] = [];
+
   private _ended = false;
+  private _timeout: ReturnType<typeof setTimeout> | null = null;
 
-  constructor(params?: {
-    runId?: string;
-    sessionId?: string;
-    conversational?: boolean;
-    startTime?: Date;
-  }) {
-    this._runId = params?.runId ?? crypto.randomUUID();
-    this._sessionId = params?.sessionId ?? null;
-    this._conversational = params?.conversational ?? null;
-    this._startTime = params?.startTime?.toISOString() ?? _nowIso();
+  constructor(options?: RunOptions) {
+    this._runId = options?.runId ?? crypto.randomUUID();
+    this._sessionId = options?.sessionId ?? null;
+    this._conversational = options?.conversational ?? null;
+    this._startTime = (options?.startTime ?? new Date()).toISOString();
 
-    _debug("Run created");
-    _debug("run_id:", this._runId);
-    _debug("session_id:", this._sessionId);
-    _debug("conversational:", this._conversational);
-    _debug("start_time:", this._startTime);
+    const timeoutMs =
+      options?.timeout ?? getConfig().runTimeout ?? DEFAULT_TIMEOUT_MS;
+
+    if (timeoutMs > 0) {
+      this._timeout = setTimeout(() => {
+        if (this._ended) return;
+        this.error("Run timed out — auto-flushed").catch(() => {});
+      }, timeoutMs);
+
+      // Don't let the timer keep the Node process alive
+      if (
+        this._timeout &&
+        typeof this._timeout === "object" &&
+        "unref" in this._timeout
+      ) {
+        (this._timeout as NodeJS.Timeout).unref();
+      }
+    }
+
+    debug("Run created", { runId: this._runId });
   }
 
   get runId(): string {
     return this._runId;
   }
 
-  step(stepId?: string): Step {
-    return new Step(this._runId, stepId);
-  }
-
-  toolCall(toolCallIdOrConfig?: string | ToolCallConfig, startTime?: Date): ToolCall {
-    return new ToolCall(this._runId, toolCallIdOrConfig, startTime);
-  }
-
   prompt(text: string): this {
     this._prompt = text;
-    _debug("Run prompt set:", text.length > 200 ? text.slice(0, 200) : text);
     return this;
   }
 
   response(text: string): this {
     this._response = text;
-    _debug(
-      "Run response set:",
-      text.length > 200 ? text.slice(0, 200) : text
-    );
+    return this;
+  }
+
+  metadata(...entries: Record<string, string>[]): this {
+    if (!this._metadata) this._metadata = {};
+    for (const entry of entries) {
+      Object.assign(this._metadata, entry);
+    }
     return this;
   }
 
   status(code: number, message?: string): this {
     this._statusCode = code;
-    if (message !== undefined) {
-      this._statusMessage = message;
-    }
-    _debug("Run status set:", code, message);
+    if (message !== undefined) this._statusMessage = message;
     return this;
   }
 
   endTime(date: Date): this {
     this._endTime = date.toISOString();
-    _debug("Run endTime set:", this._endTime);
     return this;
   }
 
-  metadata(json?: Record<string, string>, ...entries: Record<string, string>[]): this {
-    if (this._metadata === null) {
-      this._metadata = {};
-    }
-    if (json !== undefined) {
-      Object.assign(this._metadata, json);
-    }
-    for (const entry of entries) {
-      Object.assign(this._metadata, entry);
-    }
-    _debug("Run metadata:", this._metadata);
-    return this;
+  step(stepIdOrOptions?: string | StepOptions): Step {
+    const opts: StepOptions | undefined =
+      typeof stepIdOrOptions === "string"
+        ? { stepId: stepIdOrOptions }
+        : stepIdOrOptions;
+    const s = new Step(this._runId, opts);
+    this._steps.push(s);
+    return s;
   }
 
-  error(statusMessage: string = ""): void {
-    if (this._ended) {
-      throw new Error("[TCC] Run has already ended");
-    }
+  toolCall(nameOrOptions?: string | ToolCallOptions): ToolCall {
+    const tc = new ToolCall(this._runId, nameOrOptions);
+    this._toolCalls.push(tc);
+    return tc;
+  }
 
-    _debug("Run error:", statusMessage);
+  async error(message = ""): Promise<void> {
+    if (this._ended) throw new Error("[TCC] Run already ended");
+    this._clearTimeout();
     this._statusCode = 2;
-    if (statusMessage) {
-      this._statusMessage = statusMessage;
-    }
+    if (message) this._statusMessage = message;
     this._ended = true;
+    this._endTime ??= new Date().toISOString();
 
-    const payload = this._buildPayload();
-    _sendPayload(payload, "run").catch(() => {});
+    for (const s of this._steps) {
+      if (!s.ended) s.error("Parent run errored");
+    }
+    for (const tc of this._toolCalls) {
+      if (!tc.ended) tc.error("Parent run errored");
+    }
+
+    debug("Run error", { runId: this._runId, message });
+    await this._send();
   }
 
-  end(): void {
-    if (this._ended) {
-      throw new Error("[TCC] Run has already ended");
+  /**
+   * End the run and send it (along with all attached steps/toolCalls) to the
+   * ingestion API. All child steps and tool calls must be ended first.
+   *
+   * Can be awaited to confirm delivery, or called fire-and-forget.
+   */
+  async end(): Promise<void> {
+    if (this._ended) throw new Error("[TCC] Run already ended");
+    this._clearTimeout();
+
+    if (this._prompt === UNSET) {
+      throw new Error(
+        "[TCC] Run requires a prompt. Call .prompt() before .end()"
+      );
     }
 
-    if (this._prompt === _SENTINEL) {
+    const unendedSteps = this._steps.filter((s) => !s.ended);
+    if (unendedSteps.length > 0) {
       throw new Error(
-        "[TCC] Cannot end run: prompt is required. Call r.prompt(...) before r.end()"
+        `[TCC] ${unendedSteps.length} step(s) not ended. Call .end() on all steps before ending the run.`
+      );
+    }
+
+    const unendedToolCalls = this._toolCalls.filter((tc) => !tc.ended);
+    if (unendedToolCalls.length > 0) {
+      throw new Error(
+        `[TCC] ${unendedToolCalls.length} tool call(s) not ended. Call .end() on all tool calls before ending the run.`
       );
     }
 
     this._ended = true;
+    this._endTime ??= new Date().toISOString();
+    debug("Run ended", { runId: this._runId });
+    await this._send();
+  }
 
-    const payload = this._buildPayload();
-    _sendPayload(payload, "run").catch(() => {});
+  private _clearTimeout(): void {
+    if (this._timeout !== null) {
+      clearTimeout(this._timeout);
+      this._timeout = null;
+    }
+  }
+
+  private async _send(): Promise<void> {
+    const runPayload = this._buildPayload();
+    const stepPayloads = this._steps.map((s) => s._toPayload());
+    const toolCallPayloads = this._toolCalls.map((tc) => tc._toPayload());
+
+    const items = [runPayload, ...stepPayloads, ...toolCallPayloads];
+
+    if (items.length === 1) {
+      await send(runPayload);
+    } else {
+      await send({ type: "batch", items });
+    }
   }
 
   private _buildPayload(): Record<string, unknown> {
-    const endTime = this._endTime ?? _nowIso();
-
     const payload: Record<string, unknown> = {
       type: "run",
       run_id: this._runId,
       start_time: this._startTime,
-      end_time: endTime,
+      end_time: this._endTime ?? new Date().toISOString(),
       status_code: this._statusCode,
     };
 
-    if (this._prompt !== _SENTINEL) {
-      payload.prompt = this._prompt;
-    }
-    if (this._sessionId !== null) {
-      payload.session_id = this._sessionId;
-    }
-    if (this._conversational !== null) {
+    if (this._prompt !== UNSET) payload.prompt = this._prompt;
+    if (this._sessionId !== null) payload.session_id = this._sessionId;
+    if (this._conversational !== null)
       payload.conversational = this._conversational;
-    }
-    if (this._response !== null) {
-      payload.response = this._response;
-    }
-    if (this._statusMessage !== null) {
+    if (this._response !== null) payload.response = this._response;
+    if (this._statusMessage !== null)
       payload.status_message = this._statusMessage;
-    }
-    if (this._metadata !== null) {
-      payload.metadata = this._metadata;
-    }
+    if (this._metadata !== null) payload.metadata = this._metadata;
 
     return payload;
   }
 }
 
-export function run(params?: {
-  runId?: string;
-  sessionId?: string;
-  conversational?: boolean;
-  startTime?: Date;
-}): Run {
-  return new Run(params);
+export function run(options?: RunOptions): Run {
+  return new Run(options);
 }
