@@ -1,5 +1,3 @@
-// Mock tool implementations — in production these would hit real services.
-
 const KNOWLEDGE_BASE: Record<string, string[]> = {
   revenue: ["Q3 2024 Report.pdf", "Revenue Dashboard", "Forecast Model v4"],
   churn: ["Churn Analysis Deck", "Retention Playbook", "Cohort Breakdown"],
@@ -11,10 +9,16 @@ const DB_ROWS = [
   { quarter: "Q2", revenue: 3_560_000, churn_rate: 0.044, nps: 65 },
 ];
 
-export type ToolResult = { tool: string; args: Record<string, unknown>; result: string };
+export type ToolResult = {
+  tool: string;
+  args: Record<string, unknown>;
+  result: string;
+};
 
 export function searchKnowledgeBase(query: string): string {
-  const key = Object.keys(KNOWLEDGE_BASE).find((k) => query.toLowerCase().includes(k));
+  const key = Object.keys(KNOWLEDGE_BASE).find((k) =>
+    query.toLowerCase().includes(k)
+  );
   const results = key ? KNOWLEDGE_BASE[key] : ["No results found"];
   return JSON.stringify({ query, results });
 }
@@ -33,13 +37,17 @@ export function createTicket(title: string, priority = "medium"): string {
   });
 }
 
-const TOOL_HANDLERS: Record<string, (args: Record<string, unknown>) => string> = {
-  search_knowledge_base: (a) => searchKnowledgeBase(a.query as string),
-  query_database: (a) => queryDatabase(a.sql as string),
-  create_ticket: (a) => createTicket(a.title as string, a.priority as string),
-};
+const TOOL_HANDLERS: Record<string, (args: Record<string, unknown>) => string> =
+  {
+    search_knowledge_base: (a) => searchKnowledgeBase(a.query as string),
+    query_database: (a) => queryDatabase(a.sql as string),
+    create_ticket: (a) => createTicket(a.title as string, a.priority as string),
+  };
 
-export function executeTool(name: string, args: Record<string, unknown>): string {
+export function executeTool(
+  name: string,
+  args: Record<string, unknown>
+): string {
   const handler = TOOL_HANDLERS[name];
   if (!handler) return JSON.stringify({ error: `Unknown tool: ${name}` });
   return handler(args);
@@ -79,7 +87,10 @@ export const TOOL_DEFINITIONS = [
         type: "object",
         properties: {
           title: { type: "string" },
-          priority: { type: "string", enum: ["low", "medium", "high", "critical"] },
+          priority: {
+            type: "string",
+            enum: ["low", "medium", "high", "critical"],
+          },
         },
         required: ["title"],
       },

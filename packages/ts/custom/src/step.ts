@@ -21,16 +21,14 @@ export type StepPayload = {
   tool_definitions?: string;
 };
 
-const UNSET = Symbol("UNSET");
-
 export class Step {
   private _runId: string;
   private _stepId: string;
   private _startTime: string;
   private _endTime: string | null = null;
 
-  private _prompt: string | typeof UNSET = UNSET;
-  private _response: string | typeof UNSET = UNSET;
+  private _prompt: string | undefined = undefined;
+  private _response: string | undefined = undefined;
 
   private _modelRequested: string | null = null;
   private _modelUsed: string | null = null;
@@ -120,12 +118,12 @@ export class Step {
 
   end(): void {
     if (this._ended) throw new Error("[TCC] Step already ended");
-    if (this._prompt === UNSET) {
+    if (this._prompt === undefined) {
       throw new Error(
         "[TCC] Step requires a prompt. Call .prompt() before .end()"
       );
     }
-    if (this._response === UNSET) {
+    if (this._response === undefined) {
       throw new Error(
         "[TCC] Step requires a response. Call .response() before .end()"
       );
@@ -143,8 +141,8 @@ export class Step {
       step_id: this._stepId,
       start_time: this._startTime,
       end_time: this._endTime ?? new Date().toISOString(),
-      prompt: this._prompt === UNSET ? "" : this._prompt,
-      response: this._response === UNSET ? "" : this._response,
+      prompt: this._prompt ?? "",
+      response: this._response ?? "",
       status_code: this._statusCode,
     };
 

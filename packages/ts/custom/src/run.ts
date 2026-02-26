@@ -6,8 +6,6 @@ import type { RunOptions, StepOptions, ToolCallOptions } from "./types";
 
 const DEFAULT_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
 
-const UNSET = Symbol("UNSET");
-
 export class Run {
   private _runId: string;
   private _sessionId: string | null;
@@ -15,7 +13,7 @@ export class Run {
   private _startTime: string;
   private _endTime: string | null = null;
 
-  private _prompt: string | typeof UNSET = UNSET;
+  private _prompt: string | undefined = undefined;
   private _response: string | null = null;
 
   private _statusCode = 0;
@@ -135,7 +133,7 @@ export class Run {
     if (this._ended) throw new Error("[TCC] Run already ended");
     this._clearTimeout();
 
-    if (this._prompt === UNSET) {
+    if (this._prompt === undefined) {
       throw new Error(
         "[TCC] Run requires a prompt. Call .prompt() before .end()"
       );
@@ -191,7 +189,7 @@ export class Run {
       status_code: this._statusCode,
     };
 
-    if (this._prompt !== UNSET) payload.prompt = this._prompt;
+    if (this._prompt !== undefined) payload.prompt = this._prompt;
     if (this._sessionId !== null) payload.session_id = this._sessionId;
     if (this._conversational !== null)
       payload.conversational = this._conversational;
