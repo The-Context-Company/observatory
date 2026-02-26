@@ -1,11 +1,11 @@
+import { configure, run, sendRun } from "@contextcompany/custom";
 import { config } from "dotenv";
-import { run, sendRun, configure } from "@contextcompany/custom";
 import { runAgent } from "./agent";
 import { TOOL_DEFINITIONS } from "./tools";
 
 config();
 
-configure({ debug: true });
+configure({ debug: true, url: "http://localhost:8787/custom" });
 
 // ═══════════════════════════════════════════════════════════════════════════
 // Pattern 1: Builder — instrument as you go
@@ -63,7 +63,9 @@ async function builderExample() {
     await r.end();
 
     console.log(`\nAgent: ${response}`);
-    console.log(`✓ Run ${r.runId} sent (batch: 1 run + ${llmCalls.length} steps + ${toolResults.length} tool calls)`);
+    console.log(
+      `✓ Run ${r.runId} sent (batch: 1 run + ${llmCalls.length} steps + ${toolResults.length} tool calls)`
+    );
   } catch (e) {
     await r.error(String(e));
     console.error("Agent error:", e);
@@ -115,7 +117,8 @@ async function factoryExample() {
 
   await sendRun({
     prompt: "Create a ticket to investigate the churn spike",
-    response: "Done — created ticket ENG-4521 (high priority) assigned to the oncall team.",
+    response:
+      "Done — created ticket ENG-4521 (high priority) assigned to the oncall team.",
     startTime: now,
     endTime: later,
     sessionId: crypto.randomUUID(),
@@ -126,7 +129,10 @@ async function factoryExample() {
       {
         prompt: JSON.stringify([
           { role: "system", content: "You are an Action Agent." },
-          { role: "user", content: "Create a ticket to investigate the churn spike" },
+          {
+            role: "user",
+            content: "Create a ticket to investigate the churn spike",
+          },
         ]),
         response: "",
         model: { requested: "gpt-4o", used: "gpt-4o-2024-08-06" },
@@ -138,10 +144,17 @@ async function factoryExample() {
       {
         prompt: JSON.stringify([
           { role: "system", content: "You are an Action Agent." },
-          { role: "user", content: "Create a ticket to investigate the churn spike" },
-          { role: "tool", content: '{"ticket_id":"ENG-4521","status":"created"}' },
+          {
+            role: "user",
+            content: "Create a ticket to investigate the churn spike",
+          },
+          {
+            role: "tool",
+            content: '{"ticket_id":"ENG-4521","status":"created"}',
+          },
         ]),
-        response: "Done — created ticket ENG-4521 (high priority) assigned to the oncall team.",
+        response:
+          "Done — created ticket ENG-4521 (high priority) assigned to the oncall team.",
         model: "gpt-4o",
         finishReason: "stop",
         tokens: { uncached: 420, cached: 280, completion: 45 },
@@ -155,7 +168,11 @@ async function factoryExample() {
       {
         name: "create_ticket",
         args: { title: "Investigate Q2→Q3 churn spike", priority: "high" },
-        result: { ticket_id: "ENG-4521", status: "created", assigned_to: "oncall-team" },
+        result: {
+          ticket_id: "ENG-4521",
+          status: "created",
+          assigned_to: "oncall-team",
+        },
         startTime: new Date(now.getTime() + 800),
         endTime: new Date(now.getTime() + 850),
       },
