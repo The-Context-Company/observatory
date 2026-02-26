@@ -37,3 +37,25 @@ Issues = "https://github.com/The-Context-Company/observatory/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["contextcompany"]
+
+# ── Semantic Release ──────────────────────────────────────────────
+[tool.semantic_release]
+branch = "main"
+tag_format = "python-v{version}"
+commit_message = "chore(python-release): {version}"
+major_on_zero = false
+build_command = "python -m build"
+version_toml = ["pyproject.toml:project.version"]
+version_variables = ["contextcompany/__init__.py:__version__"]
+
+[tool.semantic_release.commit_parser_options]
+allowed_tags = ["feat", "fix", "perf", "refactor", "docs", "test", "chore", "build", "ci", "style"]
+minor_tags = ["feat"]
+patch_tags = ["fix", "perf"]
+
+[tool.semantic_release.remote]
+type = "github"
+token = { env = "GH_TOKEN" }
+
+[tool.semantic_release.changelog]
+changelog_file = "CHANGELOG.md"

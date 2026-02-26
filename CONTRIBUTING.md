@@ -181,20 +181,77 @@ Now you can make changes to the widget package and see them reflected in real-ti
    - Changes to the package require a rebuild
    - The `pnpm dev` watch mode will automatically rebuild on file changes
 
-### Commit Message Conventions
+### Commit Messages
 
-Please use the [conventional commits](https://www.conventionalcommits.org/en/v1.0.0/) format for commit messages:
-
-`<type>(<scope>): <description>`
-
-**Examples:**
+Every commit message must follow this format:
 
 ```
-feat(otel): add support for custom span attributes
-fix(widget): resolve drag-and-drop positioning bug
-docs: update installation instructions
-chore: upgrade dependencies
+type(scope): short description
 ```
+
+**This matters because commit messages automatically control version bumps and changelogs.** The CI reads your commit type to decide whether to publish a patch, minor, or major release.
+
+#### Quick reference
+
+| Prefix | What it means | Version bump |
+|--------|---------------|--------------|
+| `fix(scope):` | Bug fix | **patch** (0.1.0 → 0.1.1) |
+| `perf(scope):` | Performance improvement | **patch** |
+| `feat(scope):` | New feature | **minor** (0.1.0 → 0.2.0) |
+| `feat(scope)!:` | Breaking change | **major** (0.1.0 → 1.0.0) |
+| `docs:` | Documentation only | no release |
+| `chore:` | Maintenance / deps | no release |
+| `refactor(scope):` | Code change, no new behavior | no release |
+| `test(scope):` | Adding or fixing tests | no release |
+| `ci:` | CI/CD changes | no release |
+| `style:` | Formatting, whitespace | no release |
+
+#### Scopes
+
+Use the package name you're changing as the scope:
+
+| Scope | Package |
+|-------|---------|
+| `otel` | `@contextcompany/otel` |
+| `widget` | `@contextcompany/widget` |
+| `claude` | `@contextcompany/claude` |
+| `mastra` | `@contextcompany/mastra` |
+| `custom` | `@contextcompany/custom` |
+| `api` | `@contextcompany/api` |
+| `python` | `contextcompany` (Python SDK) |
+
+Omit the scope for repo-wide changes (e.g., `chore: upgrade dependencies`).
+
+#### Examples
+
+```bash
+# Bug fixes → patch release
+fix(widget): prevent popover from rendering off-screen
+fix(python): handle None metadata without crashing
+
+# New features → minor release
+feat(otel): add custom span attribute support
+feat(python): add trace_id field to runs
+
+# Breaking changes → major release
+feat(python)!: rename Run.end() to Run.finish()
+feat(otel)!: drop Node 16 support
+
+# No release
+docs: update README setup instructions
+chore: upgrade typescript to 5.9
+refactor(widget): extract popover into separate component
+test(claude): add unit tests for proxy instrumentation
+```
+
+### How Releases Work
+
+You **never** edit version numbers manually. CI handles everything on merge to `main`:
+
+- **TypeScript packages** — uses [Changesets](https://github.com/changesets/changesets). When you change a TS package, add a changeset file via `pnpm changeset`. CI opens a "Version Packages" PR; merging it publishes to npm.
+- **Python package** — uses [python-semantic-release](https://python-semantic-release.readthedocs.io/). CI reads your commit messages automatically. A `fix(python):` commit publishes a patch; `feat(python):` publishes a minor.
+
+The two pipelines are completely independent. A TS-only merge won't touch Python, and vice versa.
 
 ### Submitting Changes
 
