@@ -27,21 +27,17 @@ jobs:
           python-version: "3.11"
 
       - name: Install tools
-        run: pip install python-semantic-release build twine
+        run: pip install python-semantic-release build
 
       - name: Semantic release version + tag
-        id: semrel
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          semantic-release version
-          echo "released=$?" >> "$GITHUB_OUTPUT"
+        run: semantic-release version
 
       - name: Build package
         run: python -m build
 
       - name: Publish to PyPI
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: twine upload dist/*
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          packages-dir: packages/python/dist/
