@@ -5,5 +5,5 @@ from .step import step
 from .feedback import submit_feedback
 from .config import get_api_key, get_url
 
-__version__ = "0.1.3"
+__version__ = "1.0.0"
 __all__ = ["run", "step", "submit_feedback", "get_api_key", "get_url"]
