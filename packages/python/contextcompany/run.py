@@ -68,11 +68,11 @@ class Run:
         _debug("Run status set:", code, message)
         return self
 
-    def metadata(self, *args: Dict[str, str], **kwargs: str) -> "Run":
+    def metadata(self, data: Optional[Dict[str, str]] = None, **kwargs: str) -> "Run":
         if self._metadata is None:
             self._metadata = {}
-        if args:
-            self._metadata.update(args[0])
+        if data is not None:
+            self._metadata.update(data)
         self._metadata.update(kwargs)
         _debug("Run metadata:", self._metadata)
         return self
