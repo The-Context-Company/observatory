@@ -1,6 +1,7 @@
 import type { ToolCallOptions } from "./types";
 import { debug } from "./transport";
 
+/** @internal Wire-format payload for a tool call. */
 export type ToolCallPayload = {
   type: "tool_call";
   run_id: string;
@@ -14,6 +15,24 @@ export type ToolCallPayload = {
   result?: string;
 };
 
+/**
+ * A tool call represents a single tool/function invocation within a
+ * {@link Run}.
+ *
+ * Tool calls are created via {@link Run.toolCall | run.toolCall()} and
+ * are automatically batched with the parent run when it is sent.
+ *
+ * A tool name must be set (either in the constructor or via
+ * {@link ToolCall.name | .name()}) before calling {@link ToolCall.end | .end()}.
+ *
+ * @example
+ * ```ts
+ * const tc = r.toolCall("get_weather");
+ * tc.args({ city: "San Francisco" });
+ * tc.result({ temp: 72, unit: "F" });
+ * tc.end();
+ * ```
+ */
 export class ToolCall {
   private _runId: string;
   private _toolCallId: string;
@@ -46,36 +65,75 @@ export class ToolCall {
     debug("ToolCall created", { toolCallId: this._toolCallId, runId });
   }
 
+  /** Whether this tool call has been finalized via `.end()` or `.error()`. */
   get ended(): boolean {
     return this._ended;
   }
 
+  /**
+   * Set the tool name (e.g. `"search"`, `"get_weather"`).
+   * Must be set before {@link ToolCall.end | .end()} — either here or via
+   * the constructor.
+   *
+   * @returns `this` for chaining.
+   */
   name(toolName: string): this {
     this._name = toolName;
     return this;
   }
 
+  /**
+   * Set the arguments passed to the tool. Objects are auto-serialized to JSON.
+   *
+   * @param value - A JSON string or a plain object.
+   * @returns `this` for chaining.
+   */
   args(value: string | Record<string, unknown>): this {
     this._args = typeof value === "string" ? value : JSON.stringify(value);
     return this;
   }
 
+  /**
+   * Set the return value from the tool. Objects are auto-serialized to JSON.
+   *
+   * @param value - A JSON string or a plain object.
+   * @returns `this` for chaining.
+   */
   result(value: string | Record<string, unknown>): this {
     this._result = typeof value === "string" ? value : JSON.stringify(value);
     return this;
   }
 
+  /**
+   * Override the tool call's end time. By default, the end time is captured
+   * automatically when `.end()` or `.error()` is called.
+   *
+   * @returns `this` for chaining.
+   */
   endTime(date: Date): this {
     this._endTime = date.toISOString();
     return this;
   }
 
+  /**
+   * Set the outcome status code and an optional human-readable message.
+   *
+   * @param code - `0` for success, `2` for error.
+   * @param message - Optional status message.
+   * @returns `this` for chaining.
+   */
   status(code: number, message?: string): this {
     this._statusCode = code;
     if (message !== undefined) this._statusMessage = message;
     return this;
   }
 
+  /**
+   * Mark this tool call as errored (status code `2`).
+   *
+   * @param message - Optional error message.
+   * @throws If the tool call has already been ended.
+   */
   error(message = ""): void {
     if (this._ended) throw new Error("[TCC] ToolCall already ended");
     this._statusCode = 2;
@@ -85,6 +143,13 @@ export class ToolCall {
     debug("ToolCall error", { toolCallId: this._toolCallId, message });
   }
 
+  /**
+   * Finalize this tool call. A tool name must have been set (via the
+   * constructor or {@link ToolCall.name | .name()}) before calling this.
+   *
+   * @throws If the tool call has already been ended.
+   * @throws If no tool name was set.
+   */
   end(): void {
     if (this._ended) throw new Error("[TCC] ToolCall already ended");
     if (this._name === null) {

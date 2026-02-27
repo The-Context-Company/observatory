@@ -4,8 +4,33 @@ import { ToolCall } from "./tool-call";
 import { debug, send } from "./transport";
 import type { RunOptions, StepOptions, ToolCallOptions } from "./types";
 
-const DEFAULT_TIMEOUT_MS = 20 * 60 * 1000; // 20 minutes
+const DEFAULT_TIMEOUT_MS = 20 * 60 * 1000;
 
+/**
+ * A run represents a single end-to-end agent invocation — from user prompt
+ * to final response. Use the builder methods to attach data incrementally,
+ * then call {@link Run.end | .end()} to finalize and send everything in one
+ * batch.
+ *
+ * Create a run via the {@link run} factory function:
+ *
+ * @example
+ * ```ts
+ * import { run } from "@contextcompany/custom";
+ *
+ * const r = run({ sessionId: "sess_123" });
+ * r.prompt("What's the weather?");
+ *
+ * const s = r.step();
+ * s.prompt(JSON.stringify(messages));
+ * s.response(assistantContent);
+ * s.model("gpt-4o");
+ * s.end();
+ *
+ * r.response("72°F in San Francisco.");
+ * await r.end();
+ * ```
+ */
 export class Run {
   private _runId: string;
   private _sessionId: string | null;
@@ -43,26 +68,50 @@ export class Run {
       }, timeoutMs);
 
       if (typeof this._timeout === "object" && "unref" in this._timeout)
-        (this._timeout as NodeJS.Timeout).unref(); // avoid keeping Node process alive
+        (this._timeout as NodeJS.Timeout).unref();
     }
 
     debug("Run created", { runId: this._runId });
   }
 
+  /** The unique identifier for this run. */
   get runId(): string {
     return this._runId;
   }
 
+  /**
+   * Set the user prompt / input that initiated the run.
+   * Must be called before {@link Run.end | .end()}.
+   *
+   * @returns `this` for chaining.
+   */
   prompt(text: string): this {
     this._prompt = text;
     return this;
   }
 
+  /**
+   * Set the agent's final response to the user.
+   *
+   * @returns `this` for chaining.
+   */
   response(text: string): this {
     this._response = text;
     return this;
   }
 
+  /**
+   * Attach arbitrary key-value metadata to the run. Multiple calls are
+   * merged together. Values must be strings.
+   *
+   * @example
+   * ```ts
+   * r.metadata({ agent: "weather-bot", version: "1.2.0" });
+   * ```
+   *
+   * @param entries - One or more `Record<string, string>` objects to merge.
+   * @returns `this` for chaining.
+   */
   metadata(...entries: Record<string, string>[]): this {
     if (!this._metadata) this._metadata = {};
     for (const entry of entries) {
@@ -71,17 +120,44 @@ export class Run {
     return this;
   }
 
+  /**
+   * Set the outcome status code and an optional human-readable message.
+   *
+   * @param code - `0` for success, `2` for error.
+   * @param message - Optional status message (e.g. an error description).
+   * @returns `this` for chaining.
+   */
   status(code: number, message?: string): this {
     this._statusCode = code;
     if (message !== undefined) this._statusMessage = message;
     return this;
   }
 
+  /**
+   * Override the run's end time. By default, the end time is captured
+   * automatically when {@link Run.end | .end()} or {@link Run.error | .error()}
+   * is called.
+   *
+   * @returns `this` for chaining.
+   */
   endTime(date: Date): this {
     this._endTime = date.toISOString();
     return this;
   }
 
+  /**
+   * Create a new {@link Step} attached to this run. The step is batched
+   * and sent together with the run when {@link Run.end | .end()} is called.
+   *
+   * @param stepIdOrOptions - A custom step ID string, or a {@link StepOptions}
+   *   object. Omit to auto-generate an ID.
+   *
+   * @example
+   * ```ts
+   * const s = r.step();
+   * s.prompt(messages).response(content).model("gpt-4o").end();
+   * ```
+   */
   step(stepIdOrOptions?: string | StepOptions): Step {
     const opts: StepOptions | undefined =
       typeof stepIdOrOptions === "string"
@@ -92,12 +168,34 @@ export class Run {
     return s;
   }
 
+  /**
+   * Create a new {@link ToolCall} attached to this run. The tool call is
+   * batched and sent together with the run when {@link Run.end | .end()} is
+   * called.
+   *
+   * @param nameOrOptions - A tool name string, or a {@link ToolCallOptions}
+   *   object. Omit to set the name later via {@link ToolCall.name | .name()}.
+   *
+   * @example
+   * ```ts
+   * const tc = r.toolCall("get_weather");
+   * tc.args({ city: "SF" }).result({ temp: 72 }).end();
+   * ```
+   */
   toolCall(nameOrOptions?: string | ToolCallOptions): ToolCall {
     const tc = new ToolCall(this._runId, nameOrOptions);
     this._toolCalls.push(tc);
     return tc;
   }
 
+  /**
+   * End the run with error status (`2`) and send the payload.
+   * Any un-ended child steps and tool calls are automatically marked as
+   * errored as well.
+   *
+   * @param message - Optional error message.
+   * @throws If the run has already been ended.
+   */
   async error(message = ""): Promise<void> {
     if (this._ended) throw new Error("[TCC] Run already ended");
     this._clearTimeout();
@@ -117,6 +215,14 @@ export class Run {
     await this._send();
   }
 
+  /**
+   * Finalize the run and send the payload (including all attached steps
+   * and tool calls) in a single batch request.
+   *
+   * @throws If the run has already been ended.
+   * @throws If {@link Run.prompt | .prompt()} was not called.
+   * @throws If any attached steps or tool calls have not been ended.
+   */
   async end(): Promise<void> {
     if (this._ended) throw new Error("[TCC] Run already ended");
 
@@ -190,6 +296,23 @@ export class Run {
   }
 }
 
+/**
+ * Create a new {@link Run} builder. This is the main entry point for the
+ * builder pattern — instrument your agent as it executes, then call
+ * `.end()` to send everything in one batch.
+ *
+ * @example
+ * ```ts
+ * import { run } from "@contextcompany/custom";
+ *
+ * const r = run({ sessionId: "sess_123", conversational: true });
+ * r.prompt("What's the weather in SF?");
+ * r.response("72°F and sunny.");
+ * await r.end();
+ * ```
+ *
+ * @param options - Optional run configuration. See {@link RunOptions}.
+ */
 export function run(options?: RunOptions): Run {
   return new Run(options);
 }

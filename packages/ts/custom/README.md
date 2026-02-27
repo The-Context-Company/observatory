@@ -148,6 +148,7 @@ Create a new run builder.
 | `sessionId`      | `string`  | —                    |
 | `conversational` | `boolean` | —                    |
 | `startTime`      | `Date`    | `new Date()`         |
+| `timeout`        | `number`  | `1200000` (20 min)   |
 
 **Run methods:**
 

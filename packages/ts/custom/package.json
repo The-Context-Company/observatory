@@ -1,7 +1,7 @@
 {
   "name": "@contextcompany/custom",
-  "version": "1.0.0",
-  "description": "The Context Company custom instrumentation SDK for TypeScript",
+  "version": "0.0.1",
+  "description": "The Context Company's manual instrumentation SDK for custom TypeScript agents",
   "type": "module",
   "files": [
     "dist",
@@ -29,6 +29,10 @@
     "custom-instrumentation",
     "context-company"
   ],
+  "homepage": "https://github.com/The-Context-Company/observatory/tree/main/packages/ts/custom#readme",
+  "bugs": {
+    "url": "https://github.com/The-Context-Company/observatory/issues"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",
