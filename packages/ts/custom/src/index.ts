@@ -18,7 +18,7 @@
  * ```ts
  * import { sendRun } from "@contextcompany/custom";
  *
- * await sendRun({ prompt: "Hello", startTime: t0, endTime: t1 });
+ * await sendRun({ prompt: { user_prompt: "Hello" }, startTime: t0, endTime: t1 });
  * ```
  *
  * @packageDocumentation

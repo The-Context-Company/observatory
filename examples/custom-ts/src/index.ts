@@ -116,7 +116,9 @@ async function factoryExample() {
   const later = new Date(now.getTime() + 2_300);
 
   await sendRun({
-    prompt: "Create a ticket to investigate the churn spike",
+    prompt: {
+      user_prompt: "Create a ticket to investigate the churn spike",
+    },
     response:
       "Done — created ticket ENG-4521 (high priority) assigned to the oncall team.",
     startTime: now,

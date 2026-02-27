@@ -110,7 +110,7 @@ function buildToolCallPayload(
  *
  * ```ts
  * await sendRun({
- *   prompt: "What's the weather?",
+ *   prompt: { user_prompt: "What's the weather?" },
  *   response: "72°F in SF",
  *   startTime: new Date("2025-01-01T00:00:00Z"),
  *   endTime:   new Date("2025-01-01T00:00:01Z"),

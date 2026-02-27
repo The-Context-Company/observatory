@@ -38,7 +38,8 @@ export class Run {
   private _startTime: string;
   private _endTime: string | null = null;
 
-  private _prompt: string | undefined = undefined;
+  private _prompt: { user_prompt: string; system_prompt?: string } | undefined =
+    undefined;
   private _response: string | null = null;
 
   private _statusCode = 0;
@@ -83,10 +84,24 @@ export class Run {
    * Set the user prompt / input that initiated the run.
    * Must be called before {@link Run.end | .end()}.
    *
+   * Pass a string for user prompt only, or an object for user + optional
+   * system prompt.
+   *
+   * @example
+   * ```ts
+   * r.prompt("What's the weather?");
+   * r.prompt({ user_prompt: "Summarize this", system_prompt: "You are a helpful assistant." });
+   * ```
+   *
    * @returns `this` for chaining.
    */
-  prompt(text: string): this {
-    this._prompt = text;
+  prompt(
+    input: string | { user_prompt: string; system_prompt?: string }
+  ): this {
+    this._prompt =
+      typeof input === "string"
+        ? { user_prompt: input }
+        : { user_prompt: input.user_prompt, system_prompt: input.system_prompt };
     return this;
   }
 

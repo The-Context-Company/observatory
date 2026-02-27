@@ -119,7 +119,7 @@ export type ModelConfig = string | { requested?: string; used?: string };
  * @example
  * ```ts
  * await sendRun({
- *   prompt: "What's the weather?",
+ *   prompt: { user_prompt: "What's the weather?" },
  *   response: "72°F in SF",
  *   startTime: new Date("2025-01-01T00:00:00Z"),
  *   endTime:   new Date("2025-01-01T00:00:01Z"),
@@ -134,8 +134,8 @@ export type RunInput = {
   sessionId?: string;
   /** Whether this run is part of a multi-turn conversation. */
   conversational?: boolean;
-  /** The user prompt / input that initiated the run. */
-  prompt: string;
+  /** The user prompt / input that initiated the run. Optionally include a system prompt. */
+  prompt: { user_prompt: string; system_prompt?: string };
   /** The agent's final response. */
   response?: string;
   /** When the run started (ISO-8601 string or `Date`). */

@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/custom",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Context Company's manual instrumentation SDK for custom TypeScript agents",
   "type": "module",
   "files": [

@@ -83,7 +83,7 @@ replaying from logs).
 import { sendRun } from "@contextcompany/custom";
 
 await sendRun({
-  prompt: "What's the weather?",
+  prompt: { user_prompt: "What's the weather?", system_prompt: "You are a helpful assistant." },
   response: "72°F in San Francisco",
   startTime: new Date("2025-01-01T00:00:00Z"),
   endTime: new Date("2025-01-01T00:00:01Z"),
@@ -154,7 +154,7 @@ Create a new run builder.
 
 | Method                      | Description                                              |
 | --------------------------- | -------------------------------------------------------- |
-| `.prompt(text)`             | Set the user prompt (required before `.end()`)           |
+| `.prompt(text)`             | Set the user prompt (required before `.end()`). Pass a string or `{ user_prompt, system_prompt? }`. |
 | `.response(text)`           | Set the agent response                                   |
 | `.metadata({ key: "val" })` | Attach metadata key-value pairs                          |
 | `.status(code, message?)`   | Set status (0 = success, 2 = error)                      |
