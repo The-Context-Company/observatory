@@ -1,5 +1,11 @@
 # @contextcompany/otel
 
+## 1.0.13
+
+### Patch Changes
+
+- 4152217: added better error message for production/local conflict
+
 ## 1.0.12
 
 ### Patch Changes
