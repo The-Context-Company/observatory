@@ -7,7 +7,7 @@ automatic integrations (AI SDK, Mastra, etc.).
 ## Install
 
 ```bash
-npm add @contextcompany/custom
+pnpm add @contextcompany/custom
 ```
 
 ## Setup
@@ -142,64 +142,64 @@ await sendToolCall({
 
 Create a new run builder.
 
-| Option           | Type      | Default              |
-| ---------------- | --------- | -------------------- |
-| `runId`          | `string`  | auto-generated UUID  |
-| `sessionId`      | `string`  | —                    |
-| `conversational` | `boolean` | —                    |
-| `startTime`      | `Date`    | `new Date()`         |
-| `timeout`        | `number`  | `1200000` (20 min)   |
+| Option           | Type      | Default             |
+| ---------------- | --------- | ------------------- |
+| `runId`          | `string`  | auto-generated UUID |
+| `sessionId`      | `string`  | —                   |
+| `conversational` | `boolean` | —                   |
+| `startTime`      | `Date`    | `new Date()`        |
+| `timeout`        | `number`  | `1200000` (20 min)  |
 
 **Run methods:**
 
-| Method                       | Description                                           |
-| ---------------------------- | ----------------------------------------------------- |
-| `.prompt(text)`              | Set the user prompt (required before `.end()`)        |
-| `.response(text)`            | Set the agent response                                |
-| `.metadata({ key: "val" })` | Attach metadata key-value pairs                       |
-| `.status(code, message?)`   | Set status (0 = success, 2 = error)                   |
-| `.endTime(date)`             | Set a custom end time                                 |
-| `.step(idOrOptions?)`        | Create an attached Step                               |
-| `.toolCall(nameOrOptions?)`  | Create an attached ToolCall                           |
-| `.end()`                     | Finalize and send (returns `Promise<void>`)           |
-| `.error(message?)`           | End with error status and send (returns `Promise<void>`) |
+| Method                      | Description                                              |
+| --------------------------- | -------------------------------------------------------- |
+| `.prompt(text)`             | Set the user prompt (required before `.end()`)           |
+| `.response(text)`           | Set the agent response                                   |
+| `.metadata({ key: "val" })` | Attach metadata key-value pairs                          |
+| `.status(code, message?)`   | Set status (0 = success, 2 = error)                      |
+| `.endTime(date)`            | Set a custom end time                                    |
+| `.step(idOrOptions?)`       | Create an attached Step                                  |
+| `.toolCall(nameOrOptions?)` | Create an attached ToolCall                              |
+| `.end()`                    | Finalize and send (returns `Promise<void>`)              |
+| `.error(message?)`          | End with error status and send (returns `Promise<void>`) |
 
 ### `Step` (via `run.step()`)
 
-| Method                        | Description                                        |
-| ----------------------------- | -------------------------------------------------- |
-| `.prompt(text)`               | Set the LLM prompt (required)                      |
-| `.response(text)`             | Set the LLM response (required)                    |
-| `.model("gpt-4o")`           | Set model name (shorthand)                         |
-| `.model({ requested, used })` | Set model with requested/used distinction          |
-| `.tokens({ uncached, cached, completion })` | Set token counts                    |
-| `.cost(amount)`               | Set the actual cost in USD                         |
-| `.finishReason(reason)`       | Set the finish reason                              |
-| `.toolDefinitions(defs)`      | Set tool definitions (string or array)             |
-| `.status(code, message?)`    | Set status code                                    |
-| `.endTime(date)`              | Set a custom end time                              |
-| `.end()`                      | Mark step as complete                              |
-| `.error(message?)`            | Mark step as errored                               |
+| Method                                      | Description                               |
+| ------------------------------------------- | ----------------------------------------- |
+| `.prompt(text)`                             | Set the LLM prompt (required)             |
+| `.response(text)`                           | Set the LLM response (required)           |
+| `.model("gpt-4o")`                          | Set model name (shorthand)                |
+| `.model({ requested, used })`               | Set model with requested/used distinction |
+| `.tokens({ uncached, cached, completion })` | Set token counts                          |
+| `.cost(amount)`                             | Set the actual cost in USD                |
+| `.finishReason(reason)`                     | Set the finish reason                     |
+| `.toolDefinitions(defs)`                    | Set tool definitions (string or array)    |
+| `.status(code, message?)`                   | Set status code                           |
+| `.endTime(date)`                            | Set a custom end time                     |
+| `.end()`                                    | Mark step as complete                     |
+| `.error(message?)`                          | Mark step as errored                      |
 
 ### `ToolCall` (via `run.toolCall()`)
 
-| Method                     | Description                                     |
-| -------------------------- | ----------------------------------------------- |
-| `.name(toolName)`          | Set the tool name (required)                    |
-| `.args(value)`             | Set args (string or object, auto-serialized)    |
-| `.result(value)`           | Set result (string or object, auto-serialized)  |
-| `.status(code, message?)`  | Set status code                                 |
-| `.endTime(date)`           | Set a custom end time                           |
-| `.end()`                   | Mark tool call as complete                      |
-| `.error(message?)`         | Mark tool call as errored                       |
+| Method                    | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `.name(toolName)`         | Set the tool name (required)                   |
+| `.args(value)`            | Set args (string or object, auto-serialized)   |
+| `.result(value)`          | Set result (string or object, auto-serialized) |
+| `.status(code, message?)` | Set status code                                |
+| `.endTime(date)`          | Set a custom end time                          |
+| `.end()`                  | Mark tool call as complete                     |
+| `.error(message?)`        | Mark tool call as errored                      |
 
 ### Factory functions
 
-| Function                     | Description                                        |
-| ---------------------------- | -------------------------------------------------- |
-| `sendRun(input)`             | Send a complete run with optional nested steps/toolCalls |
-| `sendStep(input)`            | Send a single step (requires `runId`)              |
-| `sendToolCall(input)`        | Send a single tool call (requires `runId`)         |
+| Function              | Description                                              |
+| --------------------- | -------------------------------------------------------- |
+| `sendRun(input)`      | Send a complete run with optional nested steps/toolCalls |
+| `sendStep(input)`     | Send a single step (requires `runId`)                    |
+| `sendToolCall(input)` | Send a single tool call (requires `runId`)               |
 
 ### Configuration
 
@@ -207,8 +207,8 @@ Create a new run builder.
 import { configure } from "@contextcompany/custom";
 
 configure({
-  apiKey: "your_api_key",  // overrides TCC_API_KEY env var
-  debug: true,             // overrides TCC_DEBUG env var
+  apiKey: "your_api_key", // overrides TCC_API_KEY env var
+  debug: true, // overrides TCC_DEBUG env var
 });
 ```
 
@@ -222,8 +222,8 @@ await submitFeedback({ runId: "...", score: "thumbs_up" });
 
 ## Environment variables
 
-| Variable    | Description                            |
-| ----------- | -------------------------------------- |
-| `TCC_API_KEY` | API key (or use `configure()`)       |
-| `TCC_URL`     | Custom ingestion URL override        |
-| `TCC_DEBUG`   | Set to `1` or `true` for debug logs  |
+| Variable      | Description                         |
+| ------------- | ----------------------------------- |
+| `TCC_API_KEY` | API key (or use `configure()`)      |
+| `TCC_URL`     | Custom ingestion URL override       |
+| `TCC_DEBUG`   | Set to `1` or `true` for debug logs |
