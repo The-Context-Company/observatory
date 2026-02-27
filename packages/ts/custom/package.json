@@ -5,7 +5,8 @@
   "type": "module",
   "files": [
     "dist",
-    "README.md"
+    "README.md",
+    "LICENSE"
   ],
   "main": "dist/index.cjs",
   "module": "dist/index.js",
@@ -38,6 +39,7 @@
     "url": "https://github.com/The-Context-Company/observatory",
     "directory": "packages/ts/custom"
   },
+  "author": "The Context Company",
   "license": "MIT",
   "publishConfig": {
     "access": "public"
