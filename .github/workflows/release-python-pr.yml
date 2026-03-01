@@ -31,14 +31,20 @@ jobs:
           PYTHONPATH: ${{ github.workspace }}/packages/python
         run: semantic-release version --no-push --no-commit --no-tag --no-vcs-release
 
+      - name: Get new version
+        id: version
+        run: |
+          VERSION=$(python -c "import tomllib; print(tomllib.load(open('pyproject.toml','rb'))['project']['version'])")
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+
       - name: Create release PR
         uses: peter-evans/create-pull-request@v7
         with:
           branch: release/python-${{ github.run_id }}
-          title: "chore(python-release): bump version"
-          commit-message: "chore(python-release): bump version and changelog"
+          title: "chore(python-release): bump version to ${{ steps.version.outputs.version }}"
+          commit-message: "chore(python-release): bump version to ${{ steps.version.outputs.version }}"
           body: |
-            Automated Python release PR.
+            Automated Python release PR — **v${{ steps.version.outputs.version }}**
             - Bumps version in `pyproject.toml` and `__init__.py`
             - Updates changelog
           labels: release
