@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "contextcompany"
 version = "1.0.0"
 description = "The Context Company AI Agent Observability SDK for Python"
+readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
@@ -34,6 +35,7 @@ Homepage = "https://thecontext.company"
 Documentation = "https://docs.thecontext.company"
 Repository = "https://github.com/The-Context-Company/observatory"
 Issues = "https://github.com/The-Context-Company/observatory/issues"
+Changelog = "https://github.com/The-Context-Company/observatory/blob/main/packages/python/CHANGELOG.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["contextcompany"]
