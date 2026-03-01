@@ -42,6 +42,14 @@ class Run:
         from .step import Step
         return Step(run_id=self._run_id, step_id=step_id)
 
+    def tool_call(
+        self,
+        tool_name: Optional[str] = None,
+        tool_call_id: Optional[str] = None,
+    ) -> "ToolCall":
+        from .tool_call import ToolCall
+        return ToolCall(run_id=self._run_id, tool_call_id=tool_call_id, tool_name=tool_name)
+
     def prompt(self, user_prompt: str, system_prompt: Optional[str] = None) -> "Run":
         prompt_obj: Dict[str, str] = {"user_prompt": user_prompt}
         if system_prompt is not None:

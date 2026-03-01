@@ -92,6 +92,14 @@ class Step:
         _debug("Step tool_definitions set:", definitions[:200] if len(definitions) > 200 else definitions)
         return self
 
+    def tool_call(
+        self,
+        tool_name: Optional[str] = None,
+        tool_call_id: Optional[str] = None,
+    ) -> "ToolCall":
+        from .tool_call import ToolCall
+        return ToolCall(run_id=self._run_id, tool_call_id=tool_call_id, tool_name=tool_name)
+
     def status(self, code: int, message: Optional[str] = None) -> "Step":
         self._status_code = code
         if message is not None:
