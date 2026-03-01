@@ -7,8 +7,10 @@ string maps to (OpenAI, Anthropic, etc.).
 
 TCC Instrumentation:
 - Each litellm.completion() call is instrumented as a TCC step
+- Each tool execution is instrumented as a TCC tool call
 - Steps are created from the parent tcc_run passed in by the orchestrator
 - Step captures: prompt, response, model info, token usage, tool definitions
+- Tool call captures: tool name, args, result (or error)
 """
 
 import json
@@ -83,16 +85,30 @@ def call_agent(agent_name: str, user_message: str, tcc_run) -> tuple[str, list[d
             fn_name = tool_call.function.name
             fn_args = json.loads(tool_call.function.arguments)
 
+            # =============================================================
+            # TCC ToolCall: instrument this tool execution
+            # =============================================================
+            tcc_tc = tcc_run.tool_call(fn_name, tool_call_id=tool_call.id)
+            tcc_tc.args(fn_args)
+
             # "handoff" is a framework-level signal, not a real tool
             if fn_name == "handoff":
+                handoff_result = json.dumps({"status": "routed", "agent": fn_args["agent"]})
+                tcc_tc.result(handoff_result).end()
                 tool_executions.append({
                     "tool": "handoff",
                     "args": fn_args,
-                    "result": json.dumps({"status": "routed", "agent": fn_args["agent"]}),
+                    "result": handoff_result,
                 })
                 return assistant_msg.content or "", tool_executions
 
-            result = execute_tool(fn_name, fn_args)
+            try:
+                result = execute_tool(fn_name, fn_args)
+                tcc_tc.result(result).end()
+            except Exception as e:
+                tcc_tc.error(str(e))
+                raise
+
             tool_executions.append({"tool": fn_name, "args": fn_args, "result": result})
 
             messages.append({

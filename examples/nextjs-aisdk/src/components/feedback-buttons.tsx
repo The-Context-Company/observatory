@@ -56,7 +56,7 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
         },
         body: JSON.stringify({
           runId, // TCC: Links comment to specific AI response
-          score: selectedScore || "thumbs_up",
+          score: selectedScore || undefined,
           comment: comment.trim(),
         }),
       });

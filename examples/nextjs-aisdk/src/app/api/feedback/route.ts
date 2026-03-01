@@ -13,7 +13,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!score || !["thumbs_up", "thumbs_down"].includes(score)) {
+    if (score && !["thumbs_up", "thumbs_down"].includes(score)) {
       return NextResponse.json(
         { error: "Invalid score. Must be 'thumbs_up' or 'thumbs_down'" },
         { status: 400 }
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest) {
     // TCC: Submit feedback to link user rating/comment to this AI response
     await submitFeedback({
       runId, // Links feedback to the specific AI call
-      score,
+      score: score || undefined,
       text: comment || undefined,
     });
 
