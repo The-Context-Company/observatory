@@ -30,6 +30,13 @@ dependencies = [
     "requests>=2.31.0",
 ]
 
+[project.optional-dependencies]
+litellm = [
+    "litellm",
+    "opentelemetry-sdk>=1.29.0",
+    "opentelemetry-exporter-otlp-proto-http>=1.29.0",
+]
+
 [project.urls]
 Homepage = "https://thecontext.company"
 Documentation = "https://docs.thecontext.company"
