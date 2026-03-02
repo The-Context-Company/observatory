@@ -11,10 +11,14 @@ class Run:
         run_id: Optional[str] = None,
         session_id: Optional[str] = None,
         conversational: Optional[bool] = None,
+        api_key: Optional[str] = None,
+        tcc_url: Optional[str] = None,
     ) -> None:
         self._run_id = run_id or str(uuid.uuid4())
         self._session_id = session_id
         self._conversational = conversational
+        self._api_key = api_key
+        self._tcc_url = tcc_url
 
         self._start_time: str = _now_iso()
 
@@ -40,7 +44,7 @@ class Run:
 
     def step(self, step_id: Optional[str] = None) -> "Step":
         from .step import Step
-        return Step(run_id=self._run_id, step_id=step_id)
+        return Step(run_id=self._run_id, step_id=step_id, api_key=self._api_key, tcc_url=self._tcc_url)
 
     def tool_call(
         self,
@@ -48,7 +52,7 @@ class Run:
         tool_call_id: Optional[str] = None,
     ) -> "ToolCall":
         from .tool_call import ToolCall
-        return ToolCall(run_id=self._run_id, tool_call_id=tool_call_id, tool_name=tool_name)
+        return ToolCall(run_id=self._run_id, tool_call_id=tool_call_id, tool_name=tool_name, api_key=self._api_key, tcc_url=self._tcc_url)
 
     def prompt(self, user_prompt: str, system_prompt: Optional[str] = None) -> "Run":
         prompt_obj: Dict[str, str] = {"user_prompt": user_prompt}
@@ -91,6 +95,8 @@ class Run:
             run_id=self._run_id,
             score=score,
             text=text,
+            api_key=self._api_key,
+            tcc_url=self._tcc_url,
         )
 
     def error(self, status_message: str = "") -> None:
@@ -104,7 +110,7 @@ class Run:
         self._ended = True
 
         payload = self._build_payload()
-        _send_payload(payload, "run")
+        _send_payload(payload, "run", api_key=self._api_key, tcc_url=self._tcc_url)
 
     def end(self) -> None:
         if self._ended:
@@ -116,7 +122,7 @@ class Run:
         self._ended = True
 
         payload = self._build_payload()
-        _send_payload(payload, "run")
+        _send_payload(payload, "run", api_key=self._api_key, tcc_url=self._tcc_url)
 
     def _build_payload(self) -> Dict[str, Any]:
         end_time = _now_iso()
@@ -149,9 +155,13 @@ def run(
     run_id: Optional[str] = None,
     session_id: Optional[str] = None,
     conversational: Optional[bool] = None,
+    api_key: Optional[str] = None,
+    tcc_url: Optional[str] = None,
 ) -> Run:
     return Run(
         run_id=run_id,
         session_id=session_id,
         conversational=conversational,
+        api_key=api_key,
+        tcc_url=tcc_url,
     )

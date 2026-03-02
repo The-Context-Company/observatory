@@ -11,9 +11,13 @@ class ToolCall:
         run_id: str,
         tool_call_id: Optional[str] = None,
         tool_name: Optional[str] = None,
+        api_key: Optional[str] = None,
+        tcc_url: Optional[str] = None,
     ) -> None:
         self._run_id = run_id
         self._tool_call_id = tool_call_id or str(uuid.uuid4())
+        self._api_key = api_key
+        self._tcc_url = tcc_url
 
         self._start_time: str = _now_iso()
 
@@ -65,7 +69,7 @@ class ToolCall:
         self._ended = True
 
         payload = self._build_payload()
-        _send_payload(payload, "tool_call")
+        _send_payload(payload, "tool_call", api_key=self._api_key, tcc_url=self._tcc_url)
 
     def end(self) -> None:
         if self._ended:
@@ -80,7 +84,7 @@ class ToolCall:
         self._ended = True
 
         payload = self._build_payload()
-        _send_payload(payload, "tool_call")
+        _send_payload(payload, "tool_call", api_key=self._api_key, tcc_url=self._tcc_url)
 
     def _build_payload(self) -> Dict[str, Any]:
         end_time = _now_iso()
@@ -109,5 +113,7 @@ def tool_call(
     run_id: str,
     tool_call_id: Optional[str] = None,
     tool_name: Optional[str] = None,
+    api_key: Optional[str] = None,
+    tcc_url: Optional[str] = None,
 ) -> ToolCall:
-    return ToolCall(run_id=run_id, tool_call_id=tool_call_id, tool_name=tool_name)
+    return ToolCall(run_id=run_id, tool_call_id=tool_call_id, tool_name=tool_name, api_key=api_key, tcc_url=tcc_url)

@@ -1,7 +1,7 @@
 import json
 import os
 from datetime import datetime, timezone
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import requests
 
@@ -25,17 +25,23 @@ def _now_iso() -> str:
     return dt.strftime("%Y-%m-%dT%H:%M:%S.") + f"{dt.microsecond // 1000:03d}Z"
 
 
-def _send_payload(payload: Dict[str, Any], label: str) -> None:
+def _send_payload(
+    payload: Dict[str, Any],
+    label: str,
+    api_key: Optional[str] = None,
+    tcc_url: Optional[str] = None,
+) -> None:
     from .config import get_api_key, get_url
 
     _debug(f"Sending {label}...")
     _debug("Payload:", payload)
 
     try:
-        api_key = get_api_key()
+        api_key = get_api_key(api_key)
         endpoint = get_url(
             "https://api.thecontext.company/v1/custom",
             "https://dev.thecontext.company/v1/custom",
+            tcc_url=tcc_url,
         )
 
         resp = requests.post(

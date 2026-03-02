@@ -9,9 +9,13 @@ class Step:
         self,
         run_id: str,
         step_id: Optional[str] = None,
+        api_key: Optional[str] = None,
+        tcc_url: Optional[str] = None,
     ) -> None:
         self._run_id = run_id
         self._step_id = step_id or str(uuid.uuid4())
+        self._api_key = api_key
+        self._tcc_url = tcc_url
 
         self._start_time: str = _now_iso()
 
@@ -98,7 +102,7 @@ class Step:
         tool_call_id: Optional[str] = None,
     ) -> "ToolCall":
         from .tool_call import ToolCall
-        return ToolCall(run_id=self._run_id, tool_call_id=tool_call_id, tool_name=tool_name)
+        return ToolCall(run_id=self._run_id, tool_call_id=tool_call_id, tool_name=tool_name, api_key=self._api_key, tcc_url=self._tcc_url)
 
     def status(self, code: int, message: Optional[str] = None) -> "Step":
         self._status_code = code
@@ -118,7 +122,7 @@ class Step:
         self._ended = True
 
         payload = self._build_payload()
-        _send_payload(payload, "step")
+        _send_payload(payload, "step", api_key=self._api_key, tcc_url=self._tcc_url)
 
     def end(self) -> None:
         if self._ended:
@@ -133,7 +137,7 @@ class Step:
         self._ended = True
 
         payload = self._build_payload()
-        _send_payload(payload, "step")
+        _send_payload(payload, "step", api_key=self._api_key, tcc_url=self._tcc_url)
 
     def _build_payload(self) -> Dict[str, Any]:
         end_time = _now_iso()
@@ -176,5 +180,7 @@ class Step:
 def step(
     run_id: str,
     step_id: Optional[str] = None,
+    api_key: Optional[str] = None,
+    tcc_url: Optional[str] = None,
 ) -> Step:
-    return Step(run_id=run_id, step_id=step_id)
+    return Step(run_id=run_id, step_id=step_id, api_key=api_key, tcc_url=tcc_url)

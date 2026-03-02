@@ -7,6 +7,8 @@ def submit_feedback(
     run_id: str,
     score: Optional[Literal["thumbs_up", "thumbs_down"]] = None,
     text: Optional[str] = None,
+    api_key: Optional[str] = None,
+    tcc_url: Optional[str] = None,
 ) -> bool:
     # Validate inputs
     if not score and not text:
@@ -20,15 +22,16 @@ def submit_feedback(
         )
 
     # Get API key
-    api_key = os.getenv("TCC_API_KEY")
+    from .config import get_url
+    api_key = api_key or os.getenv("TCC_API_KEY")
     if not api_key:
         print("[TCC] Cannot submit feedback: TCC_API_KEY environment variable is not set")
         return False
 
     # Get endpoint
-    from .config import get_url
     feedback_url = (
-        os.getenv("TCC_FEEDBACK_URL")
+        tcc_url
+        or os.getenv("TCC_FEEDBACK_URL")
         or get_url(
             "https://api.thecontext.company/v1/feedback",
             "https://dev.thecontext.company/v1/feedback",

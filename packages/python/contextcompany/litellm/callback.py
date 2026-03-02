@@ -25,15 +25,17 @@ from opentelemetry.sdk.trace.export import BatchSpanProcessor
 from opentelemetry.sdk.resources import Resource, SERVICE_NAME
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
-DEFAULT_ENDPOINT = "https://api.thecontext.company/otel-steps"
-
-
 class TCCCallback(CustomLogger):
     """Exports each LLM call to TCC as an OTEL span with metadata.tcc.runId."""
 
     def __init__(self, api_key=None, endpoint=None, service_name="litellm"):
+        from ..config import get_api_key, get_url
+
         api_key = api_key or os.environ.get("TCC_API_KEY", "")
-        endpoint = endpoint or os.environ.get("TCC_URL", DEFAULT_ENDPOINT)
+        endpoint = endpoint or get_url(
+            "https://api.thecontext.company/otel-steps",
+            "https://dev.thecontext.company/otel-steps",
+        )
 
         exporter = OTLPSpanExporter(
             endpoint=endpoint,
