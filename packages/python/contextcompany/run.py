@@ -96,7 +96,6 @@ class Run:
             score=score,
             text=text,
             api_key=self._api_key,
-            tcc_url=self._tcc_url,
         )
 
     def error(self, status_message: str = "") -> None:

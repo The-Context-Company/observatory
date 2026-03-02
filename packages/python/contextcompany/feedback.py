@@ -35,6 +35,7 @@ def submit_feedback(
         or get_url(
             "https://api.thecontext.company/v1/feedback",
             "https://dev.thecontext.company/v1/feedback",
+            api_key=api_key,
         )
     )
 
