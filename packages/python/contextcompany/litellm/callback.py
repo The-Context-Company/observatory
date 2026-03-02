@@ -14,7 +14,6 @@ Usage:
     )
 """
 
-import os
 import json
 import atexit
 
@@ -31,7 +30,7 @@ class TCCCallback(CustomLogger):
     def __init__(self, api_key=None, endpoint=None, service_name="litellm"):
         from ..config import get_api_key, get_url
 
-        api_key = api_key or os.environ.get("TCC_API_KEY", "")
+        api_key = get_api_key(api_key)
         endpoint = endpoint or get_url(
             "https://api.thecontext.company/otel-steps",
             "https://dev.thecontext.company/otel-steps",
