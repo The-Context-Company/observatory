@@ -36,6 +36,12 @@ litellm = [
     "opentelemetry-sdk>=1.29.0",
     "opentelemetry-exporter-otlp-proto-http>=1.29.0",
 ]
+langchain = [
+    "opentelemetry-api>=1.29.0",
+    "opentelemetry-sdk>=1.29.0",
+    "opentelemetry-exporter-otlp>=1.29.0",
+    "opentelemetry-instrumentation-langchain>=0.47.3",
+]
 
 [project.urls]
 Homepage = "https://thecontext.company"
