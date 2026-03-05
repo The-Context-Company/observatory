@@ -7,6 +7,7 @@ from opentelemetry.sdk.trace import TracerProvider
 
 from .base import setup_instrumentation
 from ..config import get_api_key, get_url
+from .._utils import _debug
 
 
 def instrument_langchain(
@@ -21,6 +22,9 @@ def instrument_langchain(
         api_key=resolved_api_key,
     )
 
+    _debug("Initializing LangChain instrumentation")
+    _debug(f"Endpoint: {resolved_endpoint}")
+
     provider = setup_instrumentation(
         api_key=resolved_api_key,
         endpoint=resolved_endpoint,
@@ -28,8 +32,7 @@ def instrument_langchain(
 
     LangchainInstrumentor().instrument()
 
-    print(f"TCC: LangChain OpenTelemetry instrumentation initialized")
-    print(f"TCC: Exporting traces to: {resolved_endpoint}")
+    _debug("LangChain OpenTelemetry instrumentation initialized")
 
     return provider
 

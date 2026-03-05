@@ -3,6 +3,7 @@ from opentelemetry.sdk.trace import SpanProcessor, ReadableSpan
 from opentelemetry.sdk.trace.export import SpanExporter
 from opentelemetry.trace import Span
 from opentelemetry.context import Context
+from .._utils import _debug
 import threading
 
 
@@ -41,6 +42,7 @@ class TraceBatchSpanProcessor(SpanProcessor):
             self.batch_timers[trace_id] = timer
 
             if is_root_span:
+                _debug(f"Root span ended, exporting batch for trace {trace_id} ({len(self.batches.get(trace_id, []))} spans)")
                 self._export_batch(trace_id)
 
     def _export_batch(self, trace_id: int) -> None:

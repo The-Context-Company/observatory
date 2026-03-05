@@ -6,6 +6,7 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 from ..otel import RunIdSpanProcessor, TraceBatchSpanProcessor
 from .exporter import RunIdFixingExporter
+from .._utils import _debug
 
 
 def create_tracer_provider(resource_attributes: Optional[dict] = None) -> TracerProvider:
@@ -25,6 +26,7 @@ def setup_instrumentation(
     endpoint: str,
     resource_attributes: Optional[dict] = None,
 ) -> TracerProvider:
+    _debug("Creating tracer provider")
     provider = create_tracer_provider(resource_attributes)
     provider.add_span_processor(RunIdSpanProcessor())
 
@@ -35,4 +37,5 @@ def setup_instrumentation(
     provider.add_span_processor(batch_processor)
     trace.set_tracer_provider(provider)
 
+    _debug("Tracer provider configured with RunId and BatchSpan processors")
     return provider

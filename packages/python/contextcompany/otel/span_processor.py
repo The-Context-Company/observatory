@@ -4,6 +4,7 @@ from typing import Optional
 from opentelemetry.sdk.trace import SpanProcessor, ReadableSpan
 from opentelemetry.trace import Span
 from opentelemetry.context import Context
+from .._utils import _debug
 
 
 class RunIdSpanProcessor(SpanProcessor):
@@ -21,6 +22,7 @@ class RunIdSpanProcessor(SpanProcessor):
             run_id = str(uuid.uuid4())
             span.set_attribute("tcc.runId", run_id)
             self.span_id_to_run_id[span_id] = run_id
+            _debug(f"Generated runId for root span: {run_id}")
         else:
             run_id = self.span_id_to_run_id.get(parent_span_id)
             if run_id:
