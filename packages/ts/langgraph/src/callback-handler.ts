@@ -948,6 +948,9 @@ export class TCCCallbackHandler
     for (const spanId of inv.spans.keys()) {
       this.spanToRoot.delete(spanId);
     }
+    for (const skippedId of inv.skippedRuns) {
+      this.spanToRoot.delete(skippedId);
+    }
     this.invocations.delete(rootId);
   }
 
