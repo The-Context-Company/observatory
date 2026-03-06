@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/langchain",
-  "version": "1.0.0",
+  "version": "0.0.1",
   "description": "The Context Company integration for LangChain.js and LangGraph",
   "type": "module",
   "files": [

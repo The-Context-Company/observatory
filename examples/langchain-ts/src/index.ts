@@ -1,28 +1,23 @@
-import { config } from "dotenv";
-import { z } from "zod";
-import { ChatOpenAI } from "@langchain/openai";
+import { randomUUID } from "crypto";
+import { TCCCallbackHandler } from "@contextcompany/langchain";
+import {
+  AIMessage,
+  HumanMessage,
+  SystemMessage,
+} from "@langchain/core/messages";
+import type { BaseMessage } from "@langchain/core/messages";
 import { tool } from "@langchain/core/tools";
 import {
   Annotation,
-  StateGraph,
   MessagesAnnotation,
+  StateGraph,
 } from "@langchain/langgraph";
 import { ToolNode } from "@langchain/langgraph/prebuilt";
-import { AIMessage, SystemMessage } from "@langchain/core/messages";
-import {
-  TCCCallbackHandler,
-  setGlobalHandler,
-} from "@contextcompany/langchain";
+import { ChatOpenAI } from "@langchain/openai";
+import { config } from "dotenv";
+import { z } from "zod";
 
 config();
-
-// ── One-line TCC setup ──────────────────────────────────────────────────
-setGlobalHandler(
-  new TCCCallbackHandler({
-    metadata: { agent: "travel-planner", framework: "langgraph" },
-    debug: true,
-  })
-);
 
 // ── Tools ───────────────────────────────────────────────────────────────
 
@@ -51,7 +46,11 @@ const getWeather = tool(
 const getAttractions = tool(
   async ({ city }) => {
     const attractions: Record<string, string[]> = {
-      "san francisco": ["Golden Gate Bridge", "Alcatraz Island", "Fisherman's Wharf"],
+      "san francisco": [
+        "Golden Gate Bridge",
+        "Alcatraz Island",
+        "Fisherman's Wharf",
+      ],
       "new york": ["Central Park", "Statue of Liberty", "Times Square"],
       tokyo: ["Senso-ji Temple", "Shibuya Crossing", "Meiji Shrine"],
       london: ["Tower of London", "British Museum", "Buckingham Palace"],
@@ -136,25 +135,74 @@ const graph = new StateGraph(GraphAnnotation)
   .addEdge("tools", "agent")
   .compile();
 
-// ── Run ─────────────────────────────────────────────────────────────────
+// ── Helpers ─────────────────────────────────────────────────────────────
+
+function lastAssistantText(messages: BaseMessage[]): string {
+  for (let i = messages.length - 1; i >= 0; i--) {
+    const msg = messages[i];
+    if (
+      msg instanceof AIMessage &&
+      typeof msg.content === "string" &&
+      msg.content
+    ) {
+      return msg.content;
+    }
+  }
+  return "(no text response)";
+}
+
+// ── Conversational example ──────────────────────────────────────────────
+//
+// Demonstrates multi-turn conversation with:
+//   - sessionId: groups all turns under one session in TCC
+//   - conversational: true — tells TCC these runs form a continuous thread
+//
+// Each turn creates its own handler (with the same sessionId) and passes
+// the full message history to the graph so the LLM has context.
 
 async function main() {
-  console.log("LangGraph Travel Planner + TCC Example\n");
+  console.log("═══ LangGraph Travel Planner — Conversational Session ═══\n");
 
-  const result = await graph.invoke({
-    messages: [
-      {
-        role: "user",
-        content:
-          "I'm in New York and thinking about visiting Tokyo. " +
-          "Can you check the weather in Tokyo, find the top attractions, " +
-          "and get a flight estimate from New York?",
-      },
-    ],
-  });
+  const sessionId = randomUUID();
+  console.log(`Session: ${sessionId}\n`);
 
-  const last = result.messages[result.messages.length - 1];
-  console.log(`\nFinal answer:\n${last.content}\n`);
+  const conversationHistory: BaseMessage[] = [];
+
+  const turns = [
+    "I'm planning a trip from New York to Tokyo. What's the weather like in Tokyo right now?",
+    "Great, what are the must-see attractions there?",
+    "How long is the flight and roughly how much will it cost?",
+  ];
+
+  for (let i = 0; i < turns.length; i++) {
+    const userMessage = turns[i];
+    console.log(`── Turn ${i + 1} ──────────────────────────────────────`);
+    console.log(`User: ${userMessage}\n`);
+
+    conversationHistory.push(new HumanMessage(userMessage));
+
+    const handler = new TCCCallbackHandler({
+      sessionId,
+      conversational: true,
+      metadata: { agent: "travel-planner", framework: "langgraph" },
+      debug: true,
+    });
+
+    const result = await graph.invoke(
+      { messages: [...conversationHistory] },
+      { callbacks: [handler] }
+    );
+
+    const assistantReply = lastAssistantText(result.messages);
+    conversationHistory.push(new AIMessage(assistantReply));
+
+    console.log(`Assistant: ${assistantReply}\n`);
+  }
+
+  console.log("═══ Session complete ═══");
+  console.log(
+    `All ${turns.length} turns were tracked under session ${sessionId}`
+  );
 }
 
 main().catch(console.error);
