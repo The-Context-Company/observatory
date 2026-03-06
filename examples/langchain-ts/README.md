@@ -1,10 +1,10 @@
-# LangGraph TypeScript Example with TCC Instrumentation
+# LangChain / LangGraph TypeScript Example with TCC Instrumentation
 
-A simple LangGraph agent with tool calling, automatically traced by The Context Company.
+A LangGraph agent with tool calling, automatically traced by The Context Company. Works with any LangChain.js or LangGraph application.
 
 ## Features
 
-- **LangGraph agent** with a `get_weather` tool
+- **LangGraph agent** with weather, attractions, and flight tools
 - **One-line TCC setup** via `setGlobalHandler()` — all calls are traced automatically
 - **Runs, steps, and tool calls** are captured and sent to TCC
 
@@ -29,18 +29,18 @@ A simple LangGraph agent with tool calling, automatically traced by The Context 
 ## How it works
 
 ```typescript
-import { TCCCallbackHandler, setGlobalHandler } from "@contextcompany/langgraph";
+import { TCCCallbackHandler, setGlobalHandler } from "@contextcompany/langchain";
 
 // One line — every LangChain/LangGraph call is now traced.
 setGlobalHandler(new TCCCallbackHandler());
 ```
 
 The handler automatically captures:
-- **Runs** — the full graph invocation (prompt, response, duration, status)
+- **Runs** — the full graph/chain invocation (prompt, response, duration, status)
 - **Steps** — each LLM call (model, tokens, latency, TTFT)
 - **Tool calls** — each tool execution (name, args, result, duration)
 
-Everything is batched and sent to TCC when the graph invocation completes.
+Everything is batched and sent to TCC when the invocation completes.
 
 ## Per-invocation config
 

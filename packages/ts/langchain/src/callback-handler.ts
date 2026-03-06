@@ -445,7 +445,7 @@ export class TCCCallbackHandler
   private debug(...args: unknown[]): void {
     if (!this.debugEnabled) return;
     console.log(
-      "[TCC LangGraph]",
+      "[TCC]",
       ...args.map((a) =>
         typeof a === "object" && a !== null
           ? JSON.stringify(a, null, 2)
@@ -528,7 +528,7 @@ export class TCCCallbackHandler
     const rootId = this.spanToRoot.get(runId);
     if (runId === rootId) {
       this.flushInvocation(rootId).catch((err) =>
-        console.error("[TCC LangGraph] Flush error:", err)
+        console.error("[TCC LangChain] Flush error:", err)
       );
     }
   }
@@ -824,12 +824,12 @@ export class TCCCallbackHandler
     const runDurationMs = runEndTime.getTime() - runStartTime.getTime();
 
     const runAttributes: Record<string, unknown> = {
-      "langgraph.graph_name": rootSpan?.name,
-      "langgraph.duration_ms": runDurationMs,
-      "langgraph.total_spans": inv.spans.size,
-      "langgraph.framework": "langgraph-js",
+      "langchain.graph_name": rootSpan?.name,
+      "langchain.duration_ms": runDurationMs,
+      "langchain.total_spans": inv.spans.size,
+      "langchain.framework": "langchain-js",
     };
-    if (rootSpan?.tags?.length) runAttributes["langgraph.tags"] = rootSpan.tags;
+    if (rootSpan?.tags?.length) runAttributes["langchain.tags"] = rootSpan.tags;
     if (rootSpan?.metadata) {
       Object.assign(
         runAttributes,
@@ -837,9 +837,9 @@ export class TCCCallbackHandler
       );
     }
     if (rootSpan?.serialized) {
-      runAttributes["langgraph.serialized_id"] = rootSpan.serialized.id;
+      runAttributes["langchain.serialized_id"] = rootSpan.serialized.id;
       if (rootSpan.serialized.name)
-        runAttributes["langgraph.serialized_name"] = rootSpan.serialized.name;
+        runAttributes["langchain.serialized_name"] = rootSpan.serialized.name;
     }
 
     const runPayload: RunPayload = {
@@ -994,7 +994,7 @@ export class TCCCallbackHandler
         const text = await res.text();
         if (res.status !== 429 && res.status < 500) {
           console.error(
-            `[TCC LangGraph] Ingestion failed (${res.status}): ${text}`
+            `[TCC LangChain] Ingestion failed (${res.status}): ${text}`
           );
           return;
         }
@@ -1008,7 +1008,7 @@ export class TCCCallbackHandler
     }
 
     console.error(
-      `[TCC LangGraph] Ingestion failed after ${MAX_RETRIES + 1} attempts:`,
+      `[TCC LangChain] Ingestion failed after ${MAX_RETRIES + 1} attempts:`,
       lastError
     );
   }

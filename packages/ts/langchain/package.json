@@ -1,7 +1,7 @@
 {
-  "name": "@contextcompany/langgraph",
+  "name": "@contextcompany/langchain",
   "version": "1.0.0",
-  "description": "The Context Company integration for LangGraph / LangChain.js",
+  "description": "The Context Company integration for LangChain.js and LangGraph",
   "type": "module",
   "files": [
     "dist",
@@ -23,21 +23,21 @@
   },
   "sideEffects": false,
   "keywords": [
-    "langgraph",
     "langchain",
+    "langgraph",
     "observability",
     "tracing",
     "monitoring",
     "context-company"
   ],
-  "homepage": "https://github.com/The-Context-Company/observatory/tree/main/packages/ts/langgraph#readme",
+  "homepage": "https://github.com/The-Context-Company/observatory/tree/main/packages/ts/langchain#readme",
   "bugs": {
     "url": "https://github.com/The-Context-Company/observatory/issues"
   },
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",
-    "directory": "packages/ts/langgraph"
+    "directory": "packages/ts/langchain"
   },
   "author": "The Context Company",
   "license": "MIT",

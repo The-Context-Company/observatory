@@ -12,7 +12,7 @@ let hookRegistered = false;
  * Register a TCCCallbackHandler as a global handler for all LangChain/LangGraph calls.
  *
  * ```ts
- * import { TCCCallbackHandler, setGlobalHandler } from "@contextcompany/langgraph";
+ * import { TCCCallbackHandler, setGlobalHandler } from "@contextcompany/langchain";
  *
  * setGlobalHandler(new TCCCallbackHandler());
  * ```

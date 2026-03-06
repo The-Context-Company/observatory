@@ -1,5 +1,5 @@
 {
-  "name": "langgraph-ts-example",
+  "name": "langchain-ts-example",
   "version": "1.0.0",
   "description": "Example LangGraph agent with TCC instrumentation",
   "type": "module",
@@ -13,7 +13,7 @@
     "@langchain/core": "^0.3.0",
     "@langchain/langgraph": "^0.2.0",
     "@langchain/openai": "^0.5.0",
-    "@contextcompany/langgraph": "workspace:*",
+    "@contextcompany/langchain": "workspace:*",
     "dotenv": "^16.4.0",
     "zod": "^3.23.0"
   },

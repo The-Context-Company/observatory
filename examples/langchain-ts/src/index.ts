@@ -12,7 +12,7 @@ import { AIMessage, SystemMessage } from "@langchain/core/messages";
 import {
   TCCCallbackHandler,
   setGlobalHandler,
-} from "@contextcompany/langgraph";
+} from "@contextcompany/langchain";
 
 config();
 
