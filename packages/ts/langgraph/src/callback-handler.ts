@@ -639,7 +639,7 @@ export class TCCCallbackHandler
       inv.startTimes.delete(runId);
       inv.firstTokenTimes.delete(runId);
     }
-    this.endSpan(runId, undefined, err);
+    this.endSpan(runId, undefined, err, { finishReason: "error" });
   }
 
   async handleLLMNewToken(
