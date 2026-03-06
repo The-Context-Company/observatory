@@ -509,6 +509,7 @@ export class TCCCallbackHandler
     if (inv.skippedRuns.has(runId)) {
       inv.skippedRuns.delete(runId);
       inv.spans.delete(runId);
+      this.spanToRoot.delete(runId);
       return;
     }
 
