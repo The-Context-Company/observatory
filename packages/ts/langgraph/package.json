@@ -1,0 +1,62 @@
+{
+  "name": "@contextcompany/langgraph",
+  "version": "1.0.0",
+  "description": "The Context Company integration for LangGraph / LangChain.js",
+  "type": "module",
+  "files": [
+    "dist",
+    "README.md"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "pnpm build --watch"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "langgraph",
+    "langchain",
+    "observability",
+    "tracing",
+    "monitoring",
+    "context-company"
+  ],
+  "homepage": "https://github.com/The-Context-Company/observatory/tree/main/packages/ts/langgraph#readme",
+  "bugs": {
+    "url": "https://github.com/The-Context-Company/observatory/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-Context-Company/observatory",
+    "directory": "packages/ts/langgraph"
+  },
+  "author": "The Context Company",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "peerDependencies": {
+    "@langchain/core": ">=0.2.0"
+  },
+  "dependencies": {
+    "@contextcompany/api": "^1.0.1"
+  },
+  "devDependencies": {
+    "@langchain/core": "^0.3.80",
+    "@types/node": "^20.19.37",
+    "tsup": "^8.5.1",
+    "typescript": "^5.9.3"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "name": "langgraph-ts-example",
+  "version": "1.0.0",
+  "description": "Example LangGraph agent with TCC instrumentation",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/index.ts"
+  },
+  "author": "The Context Company",
+  "license": "MIT",
+  "dependencies": {
+    "@langchain/core": "^0.3.0",
+    "@langchain/langgraph": "^0.2.0",
+    "@langchain/openai": "^0.5.0",
+    "@contextcompany/langgraph": "workspace:*",
+    "dotenv": "^16.4.0",
+    "zod": "^3.23.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}
