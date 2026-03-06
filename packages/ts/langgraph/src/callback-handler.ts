@@ -473,13 +473,15 @@ export class TCCCallbackHandler
       rootId = this.spanToRoot.get(parentRunId)!;
     } else {
       rootId = runId;
-      this.invocations.set(rootId, {
-        tccRunId: this.fixedRunId || crypto.randomUUID(),
-        spans: new Map(),
-        startTimes: new Map(),
-        firstTokenTimes: new Map(),
-        skippedRuns: new Set(),
-      });
+      if (!this.invocations.has(rootId)) {
+        this.invocations.set(rootId, {
+          tccRunId: this.fixedRunId || crypto.randomUUID(),
+          spans: new Map(),
+          startTimes: new Map(),
+          firstTokenTimes: new Map(),
+          skippedRuns: new Set(),
+        });
+      }
     }
 
     this.spanToRoot.set(runId, rootId);

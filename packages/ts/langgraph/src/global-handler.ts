@@ -6,6 +6,8 @@ import {
 
 const TCC_HANDLER = "TCC_HANDLER";
 
+let hookRegistered = false;
+
 /**
  * Register a TCCCallbackHandler as a global handler for all LangChain/LangGraph calls.
  *
@@ -17,7 +19,10 @@ const TCC_HANDLER = "TCC_HANDLER";
  */
 export const setGlobalHandler = (handler: BaseCallbackHandler) => {
   setContextVariable(TCC_HANDLER, handler);
-  registerConfigureHook({ contextVar: TCC_HANDLER });
+  if (!hookRegistered) {
+    registerConfigureHook({ contextVar: TCC_HANDLER });
+    hookRegistered = true;
+  }
 };
 
 export const clearGlobalHandler = () => {
