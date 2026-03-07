@@ -1,5 +1,9 @@
 import { randomUUID } from "crypto";
-import { TCCCallbackHandler } from "@contextcompany/langchain";
+import {
+  TCCCallbackHandler,
+  setGlobalHandler,
+} from "@contextcompany/langchain";
+import type { TCCInvokeMetadata } from "@contextcompany/langchain";
 import {
   AIMessage,
   HumanMessage,
@@ -153,15 +157,19 @@ function lastAssistantText(messages: BaseMessage[]): string {
 
 // ── Conversational example ──────────────────────────────────────────────
 //
-// Demonstrates multi-turn conversation with:
-//   - sessionId: groups all turns under one session in TCC
-//   - conversational: true — tells TCC these runs form a continuous thread
-//
-// Each turn creates its own handler (with the same sessionId) and passes
-// the full message history to the graph so the LLM has context.
+// Demonstrates multi-turn conversation using a single global handler.
+// Per-invocation TCC config (sessionId, conversational) is passed via
+// LangChain's `metadata` field — no need to recreate the handler each turn.
 
 async function main() {
   console.log("═══ LangGraph Travel Planner — Conversational Session ═══\n");
+
+  setGlobalHandler(
+    new TCCCallbackHandler({
+      metadata: { agent: "travel-planner", framework: "langgraph" },
+      debug: true,
+    })
+  );
 
   const sessionId = randomUUID();
   console.log(`Session: ${sessionId}\n`);
@@ -181,16 +189,14 @@ async function main() {
 
     conversationHistory.push(new HumanMessage(userMessage));
 
-    const handler = new TCCCallbackHandler({
-      sessionId,
-      conversational: true,
-      metadata: { agent: "travel-planner", framework: "langgraph" },
-      debug: true,
-    });
+    const tccMeta: TCCInvokeMetadata = {
+      tcc_session_id: sessionId,
+      tcc_conversational: true,
+    };
 
     const result = await graph.invoke(
       { messages: [...conversationHistory] },
-      { callbacks: [handler] }
+      { metadata: tccMeta }
     );
 
     const assistantReply = lastAssistantText(result.messages);
