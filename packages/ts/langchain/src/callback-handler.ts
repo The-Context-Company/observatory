@@ -413,21 +413,23 @@ function extractTCCMetaOverrides(metadata: Record<string, unknown> | undefined):
 
   const overrides: ReturnType<typeof extractTCCMetaOverrides> = {};
 
-  if (typeof metadata.tcc_session_id === "string") {
-    overrides.sessionId = metadata.tcc_session_id;
+  const tcc = metadata.tcc;
+  if (tcc && typeof tcc === "object" && !Array.isArray(tcc)) {
+    const t = tcc as Record<string, unknown>;
+    if (typeof t.sessionId === "string") overrides.sessionId = t.sessionId;
+    if (typeof t.conversational === "boolean") overrides.conversational = t.conversational;
+    if (typeof t.runId === "string") overrides.runId = t.runId;
   }
-  if (typeof metadata.tcc_conversational === "boolean") {
-    overrides.conversational = metadata.tcc_conversational;
+
+  const userMetadata: Record<string, unknown> = {};
+  let hasUserMetadata = false;
+  for (const [key, value] of Object.entries(metadata)) {
+    if (key === "tcc") continue;
+    userMetadata[key] = value;
+    hasUserMetadata = true;
   }
-  if (typeof metadata.tcc_run_id === "string") {
-    overrides.runId = metadata.tcc_run_id;
-  }
-  if (
-    metadata.tcc_metadata !== undefined &&
-    metadata.tcc_metadata !== null &&
-    typeof metadata.tcc_metadata === "object"
-  ) {
-    overrides.metadata = metadata.tcc_metadata as Record<string, unknown>;
+  if (hasUserMetadata) {
+    overrides.metadata = userMetadata;
   }
 
   return overrides;

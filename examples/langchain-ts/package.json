@@ -5,7 +5,8 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "dev": "tsx src/index.ts",
+    "dev:overrides": "tsx src/metadata-overrides.ts"
   },
   "author": "The Context Company",
   "license": "MIT",

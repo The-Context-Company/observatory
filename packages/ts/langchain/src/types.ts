@@ -38,31 +38,37 @@ export type TCCCallbackHandlerConfig = {
 /**
  * Per-invocation TCC overrides passed via LangChain's `metadata` in RunnableConfig.
  *
- * These keys can be included in the `metadata` object when calling `.invoke()`,
- * `.stream()`, etc. They override the defaults set on the `TCCCallbackHandler`
- * constructor for that single invocation only.
+ * TCC-specific config goes under the `tcc` key. Everything else in the metadata
+ * object is automatically tracked as custom metadata on the run.
  *
  * @example
  * ```ts
- * // Set up once
- * setGlobalHandler(new TCCCallbackHandler({ metadata: { agent: "travel" } }));
+ * setGlobalHandler(new TCCCallbackHandler());
  *
- * // Per-invocation overrides via metadata
  * await graph.invoke(
  *   { messages },
- *   { metadata: { tcc_session_id: "session-123", tcc_conversational: true } }
+ *   {
+ *     metadata: {
+ *       tcc: { sessionId: "session-123", conversational: true },
+ *       user_id: "user-42",
+ *       environment: "production",
+ *     },
+ *   }
  * );
  * ```
  */
 export type TCCInvokeMetadata = {
-  /** Override the session ID for this invocation. */
-  tcc_session_id?: string;
-  /** Override whether this invocation is conversational. */
-  tcc_conversational?: boolean;
-  /** Override the run ID for this invocation. */
-  tcc_run_id?: string;
-  /** Additional metadata merged with (and overriding) the handler's default metadata. */
-  tcc_metadata?: Record<string, unknown>;
+  /** TCC-specific overrides for this invocation. */
+  tcc?: {
+    /** Override the run ID for this invocation. */
+    runId?: string;
+    /** Override the session ID for this invocation. */
+    sessionId?: string;
+    /** Override whether this invocation is conversational. */
+    conversational?: boolean;
+  };
+  /** All other keys are tracked as custom metadata on the run. */
+  [key: string]: unknown;
 };
 
 export type RunPayload = {

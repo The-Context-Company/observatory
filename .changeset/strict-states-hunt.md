@@ -2,4 +2,4 @@
 "@contextcompany/langchain": minor
 ---
 
-added support for tcc metadata
+Add per-invocation metadata overrides via nested `tcc` key in LangChain's RunnableConfig metadata

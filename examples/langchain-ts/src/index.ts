@@ -190,8 +190,7 @@ async function main() {
     conversationHistory.push(new HumanMessage(userMessage));
 
     const tccMeta: TCCInvokeMetadata = {
-      tcc_session_id: sessionId,
-      tcc_conversational: true,
+      tcc: { sessionId, conversational: true },
     };
 
     const result = await graph.invoke(
