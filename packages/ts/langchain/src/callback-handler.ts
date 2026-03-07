@@ -398,7 +398,40 @@ type InvocationState = {
   startTimes: Map<string, number>;
   firstTokenTimes: Map<string, number>;
   skippedRuns: Set<string>;
+  sessionId?: string;
+  conversational?: boolean;
+  metadata?: Record<string, unknown>;
 };
+
+function extractTCCMetaOverrides(metadata: Record<string, unknown> | undefined): {
+  sessionId?: string;
+  conversational?: boolean;
+  runId?: string;
+  metadata?: Record<string, unknown>;
+} {
+  if (!metadata) return {};
+
+  const overrides: ReturnType<typeof extractTCCMetaOverrides> = {};
+
+  if (typeof metadata.tcc_session_id === "string") {
+    overrides.sessionId = metadata.tcc_session_id;
+  }
+  if (typeof metadata.tcc_conversational === "boolean") {
+    overrides.conversational = metadata.tcc_conversational;
+  }
+  if (typeof metadata.tcc_run_id === "string") {
+    overrides.runId = metadata.tcc_run_id;
+  }
+  if (
+    metadata.tcc_metadata !== undefined &&
+    metadata.tcc_metadata !== null &&
+    typeof metadata.tcc_metadata === "object"
+  ) {
+    overrides.metadata = metadata.tcc_metadata as Record<string, unknown>;
+  }
+
+  return overrides;
+}
 
 export class TCCCallbackHandler
   extends BaseCallbackHandler
@@ -474,12 +507,16 @@ export class TCCCallbackHandler
     } else {
       rootId = runId;
       if (!this.invocations.has(rootId)) {
+        const overrides = extractTCCMetaOverrides(metadata);
         this.invocations.set(rootId, {
-          tccRunId: this.fixedRunId || crypto.randomUUID(),
+          tccRunId: overrides.runId || this.fixedRunId || crypto.randomUUID(),
           spans: new Map(),
           startTimes: new Map(),
           firstTokenTimes: new Map(),
           skippedRuns: new Set(),
+          sessionId: overrides.sessionId,
+          conversational: overrides.conversational,
+          metadata: overrides.metadata,
         });
       }
     }
@@ -842,6 +879,12 @@ export class TCCCallbackHandler
         runAttributes["langchain.serialized_name"] = rootSpan.serialized.name;
     }
 
+    const effectiveSessionId = inv.sessionId ?? this.sessionId;
+    const effectiveConversational = inv.conversational ?? this.conversational;
+    const effectiveMetadata = inv.metadata
+      ? { ...this.customMetadata, ...inv.metadata }
+      : this.customMetadata;
+
     const runPayload: RunPayload = {
       type: "run",
       run_id: tccRunId,
@@ -851,9 +894,9 @@ export class TCCCallbackHandler
       response,
       status_code: hasError ? 2 : 0,
       status_message: rootSpan?.error?.message,
-      session_id: this.sessionId,
-      conversational: this.conversational,
-      metadata: this.customMetadata,
+      session_id: effectiveSessionId,
+      conversational: effectiveConversational,
+      metadata: effectiveMetadata,
       attributes: runAttributes,
     };
     items.push(runPayload);
