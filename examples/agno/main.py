@@ -8,6 +8,7 @@ LLM calls, and tool executions.
 
 import os
 import sys
+import uuid
 
 from dotenv import load_dotenv
 
@@ -16,13 +17,16 @@ load_dotenv()
 # TCC: Import and initialize Agno instrumentation
 # This must be called BEFORE creating any Agent instances
 from contextcompany.agno import instrument_agno
+from contextcompany import submit_feedback
 
 instrument_agno()
 
 # Now import Agno components (after instrumentation is set up)
 from agno.agent import Agent
 from agno.models.openai import OpenAIChat
-from agno.tools.function import Function
+
+# OpenInference context manager for attaching metadata to spans
+from openinference.instrumentation import using_attributes
 
 
 # ============================================================================
@@ -111,9 +115,20 @@ def run_single_query(query: str) -> None:
     print(f"\nRunning query: {query}\n")
 
     agent = create_weather_agent()
+    run_id = str(uuid.uuid4())
+    print(f"[Run ID: {run_id}]")
 
     try:
-        response = agent.run(query)
+        # TCC: Attach run_id and metadata to all spans in this block
+        with using_attributes(
+            session_id=run_id,
+            metadata={
+                "tcc.runId": run_id,
+                "agentName": "weather-agent",
+                "environment": "development",
+            },
+        ):
+            response = agent.run(query)
         print(f"\nResult: {response.content}\n")
     except Exception as e:
         print(f"\nError: {e}\n")
@@ -121,17 +136,25 @@ def run_single_query(query: str) -> None:
 
 
 def run_interactive() -> None:
-    """Run the agent in interactive mode."""
+    """Run the agent in interactive mode with TCC tracking."""
     print("\n" + "=" * 60)
     print("Agno Weather Agent Example")
     print("=" * 60)
     print("\nThis agent can help you check weather conditions!")
     print("\nCommands:")
     print("  Type your weather question naturally")
+    print("  Type 'up' to give thumbs up feedback on the last response")
+    print("  Type 'down' to give thumbs down feedback")
     print("  Type 'exit' or 'quit' to end the session")
     print("=" * 60 + "\n")
 
     agent = create_weather_agent()
+
+    # TCC: Generate a unique session ID to track this conversation
+    session_id = str(uuid.uuid4())
+    print(f"[Session ID: {session_id}]\n")
+
+    previous_run_id = None
 
     while True:
         try:
@@ -144,8 +167,35 @@ def run_interactive() -> None:
                 print("\nGoodbye!\n")
                 break
 
+            # Handle feedback commands
+            if user_input.lower() in ("up", "down"):
+                if previous_run_id:
+                    score = "thumbs_up" if user_input.lower() == "up" else "thumbs_down"
+                    print(f"\nSubmitting {score} feedback...")
+                    success = submit_feedback(run_id=previous_run_id, score=score)
+                    print("Feedback submitted!\n" if success else "Failed to submit feedback\n")
+                else:
+                    print("\nNo previous run to give feedback on\n")
+                continue
+
+            # TCC: Generate a unique run_id for this specific AI call
+            current_run_id = str(uuid.uuid4())
+            print(f"\n[Run ID: {current_run_id}]")
             print("\nAgent:")
-            response = agent.run(user_input)
+
+            # TCC: Attach run_id, session_id, and metadata to all spans
+            with using_attributes(
+                session_id=session_id,
+                metadata={
+                    "tcc.runId": current_run_id,
+                    "tcc.sessionId": session_id,
+                    "agentName": "weather-agent",
+                    "environment": "development",
+                },
+            ):
+                response = agent.run(user_input)
+
+            previous_run_id = current_run_id
             print(f"\n{response.content}\n")
 
         except KeyboardInterrupt:
