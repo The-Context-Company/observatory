@@ -26,6 +26,7 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 from ..otel import RunIdSpanProcessor, TraceBatchSpanProcessor
 from ..config import get_api_key, get_url
 from .._utils import _debug
+from .exporter import MetadataFixingExporter
 
 
 def instrument_agno(
@@ -71,12 +72,13 @@ def instrument_agno(
     provider = TracerProvider(resource=Resource(attributes={}))
     provider.add_span_processor(RunIdSpanProcessor())
 
-    exporter = OTLPSpanExporter(
+    base_exporter = OTLPSpanExporter(
         endpoint=resolved_endpoint,
         headers={"Authorization": f"Bearer {resolved_api_key}"},
     )
+    fixing_exporter = MetadataFixingExporter(base_exporter)
     provider.add_span_processor(
-        TraceBatchSpanProcessor(exporter=exporter, timeout_seconds=600)
+        TraceBatchSpanProcessor(exporter=fixing_exporter, timeout_seconds=600)
     )
 
     trace.set_tracer_provider(provider)
