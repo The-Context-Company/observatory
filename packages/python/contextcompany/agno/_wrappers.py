@@ -62,6 +62,13 @@ def _send_run_payload(
         payload["session_id"] = session_id
     if metadata:
         payload["metadata"] = {k: str(v) for k, v in metadata.items()}
+    if token_metrics:
+        if token_metrics.get("prompt_uncached_tokens"):
+            payload["prompt_uncached_tokens"] = token_metrics["prompt_uncached_tokens"]
+        if token_metrics.get("prompt_cached_tokens"):
+            payload["prompt_cached_tokens"] = token_metrics["prompt_cached_tokens"]
+        if token_metrics.get("completion_tokens"):
+            payload["completion_tokens"] = token_metrics["completion_tokens"]
     if status_message:
         payload["status_message"] = status_message
 
