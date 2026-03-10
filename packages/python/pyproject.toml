@@ -42,6 +42,10 @@ langchain = [
     "opentelemetry-exporter-otlp>=1.29.0",
     "opentelemetry-instrumentation-langchain>=0.47.3",
 ]
+agno = [
+    "agno>=1.1.4",
+    "wrapt>=1.14.0",
+]
 
 [project.urls]
 Homepage = "https://thecontext.company"

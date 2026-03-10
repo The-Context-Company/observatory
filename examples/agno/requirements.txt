@@ -1,0 +1,9 @@
+# TCC SDK with Agno support (local editable install)
+-e ../../packages/python[agno]
+
+# Agno with OpenAI support
+agno>=1.1.4
+openai>=1.0.0
+
+# Environment variables
+python-dotenv>=1.0.1
