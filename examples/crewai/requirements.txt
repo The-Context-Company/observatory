@@ -1,0 +1,8 @@
+# TCC SDK with CrewAI support (local editable install)
+-e ../../packages/python[crewai]
+
+# CrewAI framework
+crewai>=0.70.0
+
+# Environment variables
+python-dotenv>=1.0.1
