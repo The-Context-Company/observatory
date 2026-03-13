@@ -3,12 +3,12 @@
 Captures runs, LLM calls, and tool executions from CrewAI workflows.
 
 Usage:
-    from contextcompany.crewai import instrument_crewai, set_run_metadata
+    from contextcompany.crewai import instrument_crewai, set_metadata
 
     instrument_crewai()
 
     # Optional: set session_id and custom metadata before kickoff
-    set_run_metadata({"tcc.sessionId": "sess-1", "agentName": "weather-crew"})
+    set_metadata({"tcc.sessionId": "sess-1", "agentName": "weather-crew"})
 
     result = crew.kickoff()
     # Run, steps, and tool calls are all sent automatically.
@@ -33,7 +33,7 @@ _resolved_api_key: Optional[str] = None
 _resolved_tcc_url: Optional[str] = None
 
 
-def set_run_metadata(metadata: Dict[str, Any]) -> None:
+def set_metadata(metadata: Dict[str, Any]) -> None:
     """Set metadata for the next crew run.
 
     Call before ``crew.kickoff()``. Recognized keys:
@@ -46,7 +46,7 @@ def set_run_metadata(metadata: Dict[str, Any]) -> None:
 
     Example::
 
-        set_run_metadata({
+        set_metadata({
             "tcc.sessionId": session_id,
             "agentName": "weather-crew",
             "environment": "production",
@@ -59,10 +59,10 @@ def set_run_metadata(metadata: Dict[str, Any]) -> None:
 
 
 def _read_metadata() -> Dict[str, Any]:
-    """Read the metadata set by set_run_metadata (does not clear it).
+    """Read the metadata set by set_metadata (does not clear it).
 
     Metadata persists across kickoffs so kickoff_for_each works.
-    The user clears it by calling set_run_metadata again.
+    The user clears it by calling set_metadata again.
     """
     with _next_lock:
         return dict(_next_metadata)
@@ -408,4 +408,4 @@ def instrument_crewai(
     _debug("CrewAI instrumentation initialized")
 
 
-__all__ = ["instrument_crewai", "set_run_metadata"]
+__all__ = ["instrument_crewai", "set_metadata"]

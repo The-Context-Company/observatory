@@ -16,7 +16,7 @@ load_dotenv()
 
 # TCC: Import and initialize CrewAI instrumentation
 # This must be called BEFORE creating any Crew, Agent, or Task instances
-from contextcompany.crewai import instrument_crewai, set_run_metadata
+from contextcompany.crewai import instrument_crewai, set_metadata
 from contextcompany import submit_feedback
 
 instrument_crewai()
@@ -141,7 +141,7 @@ def run_single_query(query: str) -> None:
     try:
         crew = create_weather_crew(query)
         # TCC: Just set metadata — the run is created automatically by instrument_crewai
-        set_run_metadata({"agentName": "weather-crew", "environment": "development"})
+        set_metadata({"agentName": "weather-crew", "environment": "development"})
         result = crew.kickoff()
         print(f"\nResult: {result.raw}\n")
     except Exception as e:
@@ -195,7 +195,7 @@ def run_interactive() -> None:
 
             # TCC: Set metadata — run is created automatically on kickoff
             run_id = str(uuid.uuid4())
-            set_run_metadata({
+            set_metadata({
                 "tcc.runId": run_id,
                 "tcc.sessionId": session_id,
                 "agentName": "weather-crew",
