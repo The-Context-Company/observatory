@@ -2,8 +2,8 @@
 CrewAI Example with The Context Company (TCC) Observability
 
 This example demonstrates a CrewAI crew with weather tools,
-instrumented with TCC for full observability of crew runs,
-agent executions, task completions, and LLM calls.
+instrumented with TCC for full observability of LLM calls
+and tool executions.
 """
 
 import os
@@ -16,8 +16,9 @@ load_dotenv()
 
 # TCC: Import and initialize CrewAI instrumentation
 # This must be called BEFORE creating any Crew, Agent, or Task instances
-from contextcompany.crewai import instrument_crewai
+from contextcompany.crewai import instrument_crewai, set_run_metadata
 from contextcompany import submit_feedback
+import contextcompany as tcc
 
 instrument_crewai()
 
@@ -138,16 +139,22 @@ def run_single_query(query: str) -> None:
     """Run a single query and exit."""
     print(f"\nRunning query: {query}\n")
 
-    crew = create_weather_crew(query)
-    run_id = str(uuid.uuid4())
-    print(f"[Run ID: {run_id}]")
+    # TCC: Create a run to track this crew execution
+    r = tcc.run()
+    r.prompt(query)
+    print(f"[Run ID: {r.run_id}]")
 
     try:
-        # TCC: Traces are automatically captured by the instrumentation.
-        # The RunIdSpanProcessor auto-generates a tcc.runId for each trace.
+        crew = create_weather_crew(query)
+        r.metadata(agentName="weather-crew", environment="development")
+        set_run_metadata({"tcc.runId": r.run_id})
         result = crew.kickoff()
+
+        r.response(result.raw)
+        r.end()
         print(f"\nResult: {result.raw}\n")
     except Exception as e:
+        r.error(status_message=str(e))
         print(f"\nError: {e}\n")
         sys.exit(1)
 
@@ -165,7 +172,6 @@ def run_interactive() -> None:
     print("  Type 'exit' or 'quit' to end the session")
     print("=" * 60 + "\n")
 
-    # TCC: Generate a unique session ID to track this conversation
     session_id = str(uuid.uuid4())
     print(f"[Session ID: {session_id}]\n")
 
@@ -193,17 +199,24 @@ def run_interactive() -> None:
                     print("\nNo previous run to give feedback on\n")
                 continue
 
-            # TCC: Generate a unique run_id for this specific crew run
-            current_run_id = str(uuid.uuid4())
-            print(f"\n[Run ID: {current_run_id}]")
+            # TCC: Create a run for this crew execution
+            r = tcc.run(session_id=session_id)
+            r.prompt(user_input)
+            print(f"\n[Run ID: {r.run_id}]")
             print("\nCrew:")
 
-            # TCC: Traces are automatically captured by the instrumentation.
-            # Each crew.kickoff() generates a new trace with a tcc.runId.
             crew = create_weather_crew(user_input)
+            r.metadata(agentName="weather-crew", environment="development")
+            set_run_metadata({
+                "tcc.runId": r.run_id,
+                "tcc.sessionId": session_id,
+            })
             result = crew.kickoff()
 
-            previous_run_id = current_run_id
+            r.response(result.raw)
+            r.end()
+
+            previous_run_id = r.run_id
             print(f"\n{result.raw}\n")
 
         except KeyboardInterrupt:
