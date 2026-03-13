@@ -56,12 +56,14 @@ def set_run_metadata(metadata: Dict[str, Any]) -> None:
         _next_metadata.update(metadata)
 
 
-def _consume_metadata() -> Dict[str, Any]:
-    """Pop and return the metadata set by set_run_metadata."""
+def _read_metadata() -> Dict[str, Any]:
+    """Read the metadata set by set_run_metadata (does not clear it).
+
+    Metadata persists across kickoffs so kickoff_for_each works.
+    The user clears it by calling set_run_metadata again.
+    """
     with _next_lock:
-        meta = dict(_next_metadata)
-        _next_metadata.clear()
-    return meta
+        return dict(_next_metadata)
 
 
 # ── Kickoff wrapper ──────────────────────────────────────────────────
@@ -74,8 +76,8 @@ def _wrap_kickoff(wrapped, instance, args, kwargs):
     if getattr(instance, "_tcc_run_id", None):
         return wrapped(*args, **kwargs)
 
-    meta = _consume_metadata()
-    run_id = meta.get("tcc.runId") or str(uuid.uuid4())
+    meta = _read_metadata()
+    run_id = meta.pop("tcc.runId", None) or str(uuid.uuid4())
 
     # Store on the crew instance so steps and tool calls can find it
     instance._tcc_run_id = run_id
@@ -112,6 +114,13 @@ def _wrap_kickoff(wrapped, instance, args, kwargs):
         instance._tcc_run_id = None
         raise
 
+    _finalize_run(r, result, run_id)
+    instance._tcc_run_id = None
+    return result
+
+
+def _finalize_run(r, result, run_id):
+    """Send the run with the result."""
     try:
         raw = getattr(result, "raw", None) or str(result)
         r.response(raw)
@@ -120,6 +129,47 @@ def _wrap_kickoff(wrapped, instance, args, kwargs):
     except Exception as e:
         _debug(f"Failed to send run: {e}")
 
+
+async def _wrap_kickoff_async(wrapped, instance, args, kwargs):
+    """Async wrapper for Crew.akickoff."""
+    from ..run import Run
+
+    if getattr(instance, "_tcc_run_id", None):
+        return await wrapped(*args, **kwargs)
+
+    meta = _read_metadata()
+    run_id = meta.pop("tcc.runId", None) or str(uuid.uuid4())
+    instance._tcc_run_id = run_id
+
+    task_descriptions = []
+    for task in getattr(instance, "tasks", []):
+        desc = getattr(task, "description", None)
+        if desc:
+            task_descriptions.append(desc)
+    prompt = "\n\n".join(task_descriptions) if task_descriptions else ""
+
+    r = Run(
+        run_id=run_id,
+        session_id=meta.get("tcc.sessionId"),
+        conversational=meta.get("tcc.conversational"),
+    )
+    r.prompt(prompt)
+
+    custom_meta = {k: v for k, v in meta.items() if not k.startswith("tcc.")}
+    if custom_meta:
+        r.metadata(custom_meta)
+
+    try:
+        result = await wrapped(*args, **kwargs)
+    except Exception as e:
+        try:
+            r.error(status_message=str(e))
+        except Exception:
+            pass
+        instance._tcc_run_id = None
+        raise
+
+    _finalize_run(r, result, run_id)
     instance._tcc_run_id = None
     return result
 
@@ -323,11 +373,13 @@ def instrument_crewai(
 
     _debug("Initializing CrewAI instrumentation")
 
-    # 1. Patch Crew.kickoff (sync + async)
+    # 1. Patch Crew.kickoff variants
+    #    kickoff — sync entry point (also called by kickoff_async via asyncio.to_thread)
+    #    akickoff — native async entry point (needs async wrapper)
+    #    kickoff_for_each — calls kickoff per input, so already covered
     wrap_function_wrapper("crewai.crew", "Crew.kickoff", _wrap_kickoff)
-    wrap_function_wrapper("crewai.crew", "Crew.kickoff_async", _wrap_kickoff)
-    wrap_function_wrapper("crewai.crew", "Crew.akickoff", _wrap_kickoff)
-    _debug("Patched Crew.kickoff variants")
+    wrap_function_wrapper("crewai.crew", "Crew.akickoff", _wrap_kickoff_async)
+    _debug("Patched Crew.kickoff and Crew.akickoff")
 
     # 2. Patch get_llm_response for LLM step capture
     wrap_function_wrapper(
