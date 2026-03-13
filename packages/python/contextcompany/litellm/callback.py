@@ -31,11 +31,7 @@ class TCCCallback(CustomLogger):
         from ..config import get_api_key, get_url
 
         api_key = get_api_key(api_key)
-        endpoint = endpoint or get_url(
-            "https://api.thecontext.company/otel-steps",
-            "https://dev.thecontext.company/otel-steps",
-            api_key=api_key,
-        )
+        endpoint = endpoint or get_url("/v1/otel-steps", api_key=api_key)
 
         exporter = OTLPSpanExporter(
             endpoint=endpoint,

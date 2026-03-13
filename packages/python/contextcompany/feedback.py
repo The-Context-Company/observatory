@@ -32,11 +32,7 @@ def submit_feedback(
     feedback_url = (
         tcc_url
         or os.getenv("TCC_FEEDBACK_URL")
-        or get_url(
-            "https://api.thecontext.company/v1/feedback",
-            "https://dev.thecontext.company/v1/feedback",
-            api_key=api_key,
-        )
+        or get_url("/v1/feedback", api_key=api_key)
     )
 
     # Prepare request

@@ -1,6 +1,9 @@
 import os
 from typing import Optional
 
+PROD_BASE = "https://api.thecontext.company"
+DEV_BASE = "https://dev.thecontext.company"
+
 
 def get_api_key(api_key: Optional[str] = None) -> str:
     key = api_key or os.getenv("TCC_API_KEY")
@@ -12,9 +15,13 @@ def get_api_key(api_key: Optional[str] = None) -> str:
     return key
 
 
-def get_url(prod_url: str, dev_url: str, tcc_url: Optional[str] = None, api_key: Optional[str] = None) -> str:
-    url = tcc_url or os.getenv("TCC_URL")
+def get_base_url(api_key: Optional[str] = None) -> str:
+    url = os.getenv("TCC_BASE_URL")
     if url:
-        return url
+        return url.rstrip("/")
     key = api_key or os.getenv("TCC_API_KEY", "")
-    return dev_url if key.startswith("dev_") else prod_url
+    return DEV_BASE if key.startswith("dev_") else PROD_BASE
+
+
+def get_url(path: str, api_key: Optional[str] = None) -> str:
+    return f"{get_base_url(api_key)}{path}"
