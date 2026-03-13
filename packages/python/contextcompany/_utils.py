@@ -38,12 +38,7 @@ def _send_payload(
 
     try:
         api_key = get_api_key(api_key)
-        endpoint = get_url(
-            "https://api.thecontext.company/v1/custom",
-            "https://dev.thecontext.company/v1/custom",
-            tcc_url=tcc_url,
-            api_key=api_key,
-        )
+        endpoint = tcc_url or get_url("/v1/custom", api_key=api_key)
 
         resp = requests.post(
             endpoint,

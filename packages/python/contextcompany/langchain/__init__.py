@@ -15,12 +15,7 @@ def instrument_langchain(
     tcc_url: Optional[str] = None,
 ) -> TracerProvider:
     resolved_api_key = get_api_key(api_key)
-    resolved_endpoint = get_url(
-        "https://api.thecontext.company/v1/traces",
-        "https://dev.thecontext.company/v1/traces",
-        tcc_url=tcc_url,
-        api_key=resolved_api_key,
-    )
+    resolved_endpoint = tcc_url or get_url("/v1/traces", api_key=resolved_api_key)
 
     _debug("Initializing LangChain instrumentation")
     _debug(f"Endpoint: {resolved_endpoint}")
