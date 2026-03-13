@@ -70,13 +70,16 @@ def _read_metadata() -> Dict[str, Any]:
 
 # ── Kickoff wrapper ──────────────────────────────────────────────────
 
-def _wrap_kickoff(wrapped, instance, args, kwargs):
-    """Wrap Crew.kickoff to automatically create and send a run."""
+def _setup_kickoff_run(instance):
+    """Setup run tracking for a kickoff call.
+    
+    Returns a tuple of (run, run_id) or (None, None) if already being traced.
+    """
     from ..run import Run
 
     # Skip if this crew is already being traced (recursive streaming call)
     if getattr(instance, "_tcc_run_id", None):
-        return wrapped(*args, **kwargs)
+        return None, None
 
     meta = _read_metadata()
     run_id = meta.pop("tcc.runId", None) or str(uuid.uuid4())
@@ -108,14 +111,28 @@ def _wrap_kickoff(wrapped, instance, args, kwargs):
     if custom_meta:
         r.metadata(custom_meta)
 
+    return r, run_id
+
+
+def _handle_kickoff_error(r, instance, e):
+    """Handle error during kickoff execution."""
+    try:
+        r.error(status_message=str(e))
+    except Exception:
+        pass
+    instance._tcc_run_id = None
+
+
+def _wrap_kickoff(wrapped, instance, args, kwargs):
+    """Wrap Crew.kickoff to automatically create and send a run."""
+    r, run_id = _setup_kickoff_run(instance)
+    if r is None:
+        return wrapped(*args, **kwargs)
+
     try:
         result = wrapped(*args, **kwargs)
     except Exception as e:
-        try:
-            r.error(status_message=str(e))
-        except Exception:
-            pass
-        instance._tcc_run_id = None
+        _handle_kickoff_error(r, instance, e)
         raise
 
     _finalize_run(r, result, run_id)
@@ -136,43 +153,14 @@ def _finalize_run(r, result, run_id):
 
 async def _wrap_kickoff_async(wrapped, instance, args, kwargs):
     """Async wrapper for Crew.akickoff."""
-    from ..run import Run
-
-    if getattr(instance, "_tcc_run_id", None):
+    r, run_id = _setup_kickoff_run(instance)
+    if r is None:
         return await wrapped(*args, **kwargs)
-
-    meta = _read_metadata()
-    run_id = meta.pop("tcc.runId", None) or str(uuid.uuid4())
-    instance._tcc_run_id = run_id
-
-    task_descriptions = []
-    for task in getattr(instance, "tasks", []):
-        desc = getattr(task, "description", None)
-        if desc:
-            task_descriptions.append(desc)
-    prompt = "\n\n".join(task_descriptions) if task_descriptions else ""
-
-    r = Run(
-        run_id=run_id,
-        session_id=meta.get("tcc.sessionId"),
-        conversational=meta.get("tcc.conversational"),
-        api_key=_resolved_api_key,
-        tcc_url=_resolved_tcc_url,
-    )
-    r.prompt(prompt)
-
-    custom_meta = {k: v for k, v in meta.items() if not k.startswith("tcc.")}
-    if custom_meta:
-        r.metadata(custom_meta)
 
     try:
         result = await wrapped(*args, **kwargs)
     except Exception as e:
-        try:
-            r.error(status_message=str(e))
-        except Exception:
-            pass
-        instance._tcc_run_id = None
+        _handle_kickoff_error(r, instance, e)
         raise
 
     _finalize_run(r, result, run_id)
