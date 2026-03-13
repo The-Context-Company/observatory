@@ -1,24 +1,21 @@
 """CrewAI framework instrumentation for The Context Company.
 
-Captures LLM calls and tool executions from CrewAI workflows.
+Captures runs, LLM calls, and tool executions from CrewAI workflows.
 
 Usage:
     from contextcompany.crewai import instrument_crewai, set_run_metadata
-    import contextcompany as tcc
 
     instrument_crewai()
 
-    r = tcc.run()
-    r.prompt("What's the weather in Tampa?")
+    # Optional: set session_id and custom metadata before kickoff
+    set_run_metadata({"tcc.sessionId": "sess-1", "agentName": "weather-crew"})
 
-    set_run_metadata({"tcc.runId": r.run_id, "tcc.sessionId": "sess-1"})
     result = crew.kickoff()
-
-    r.response(result.raw)
-    r.end()
+    # Run, steps, and tool calls are all sent automatically.
 """
 
 import uuid
+import json
 import threading
 from typing import Any, Dict, Optional
 
@@ -28,6 +25,7 @@ from .._utils import _debug
 
 
 _run_id: Optional[str] = None
+_metadata: Dict[str, Any] = {}
 _pending_tool_calls: Dict[int, Any] = {}
 _pending_lock = threading.Lock()
 
@@ -35,17 +33,26 @@ _pending_lock = threading.Lock()
 def set_run_metadata(metadata: Dict[str, Any]) -> None:
     """Set metadata for the next crew run.
 
-    Call before ``crew.kickoff()``. The run_id is used for every
-    LLM call and tool call that CrewAI makes internally.
+    Call before ``crew.kickoff()``. Recognized keys:
 
-    If ``tcc.runId`` is not provided, one is auto-generated.
+    - ``tcc.runId``: Custom run ID (auto-generated if not provided).
+    - ``tcc.sessionId``: Session ID to group related runs.
+    - ``tcc.conversational``: Whether this is a conversational run.
 
-    Args:
-        metadata: Dict with optional ``tcc.runId``, ``tcc.sessionId``,
-            and any custom key/value pairs.
+    All other keys are sent as custom metadata.
+
+    Example::
+
+        set_run_metadata({
+            "tcc.sessionId": session_id,
+            "agentName": "weather-crew",
+            "environment": "production",
+        })
+        result = crew.kickoff()
     """
-    global _run_id
+    global _run_id, _metadata
     _run_id = metadata.get("tcc.runId") or str(uuid.uuid4())
+    _metadata = metadata
 
 
 def _get_run_id() -> str:
@@ -56,13 +63,66 @@ def _get_run_id() -> str:
     return _run_id
 
 
+def _wrap_kickoff(wrapped, instance, args, kwargs):
+    """Wrap Crew.kickoff to automatically create and send a run."""
+    from ..run import Run
+
+    global _run_id
+    run_id = _get_run_id()
+
+    # Extract the user prompt from the crew's task descriptions
+    task_descriptions = []
+    for task in getattr(instance, "tasks", []):
+        desc = getattr(task, "description", None)
+        if desc:
+            task_descriptions.append(desc)
+    prompt = "\n\n".join(task_descriptions) if task_descriptions else ""
+
+    # Build the Run
+    r = Run(
+        run_id=run_id,
+        session_id=_metadata.get("tcc.sessionId"),
+        conversational=_metadata.get("tcc.conversational"),
+    )
+    r.prompt(prompt)
+
+    # Attach custom metadata (everything except tcc.* keys)
+    custom_meta = {
+        k: v for k, v in _metadata.items()
+        if not k.startswith("tcc.")
+    }
+    if custom_meta:
+        r.metadata(custom_meta)
+
+    try:
+        result = wrapped(*args, **kwargs)
+    except Exception as e:
+        r.error(status_message=str(e))
+        # Reset for next run
+        _run_id = None
+        _metadata.clear()
+        raise
+
+    # Set response from crew output
+    raw = getattr(result, "raw", None) or str(result)
+    r.response(raw)
+    r.end()
+
+    _debug(f"Captured run {run_id}")
+
+    # Reset for next run
+    _run_id = None
+    _metadata.clear()
+
+    return result
+
+
 def _wrap_llm_call(wrapped, instance, args, kwargs):
     """Capture LLM call data and send as a step.
 
     Wraps crewai.utilities.agent_utils.get_llm_response.
     """
     from ..step import Step
-    import json
 
     run_id = _get_run_id()
 
@@ -75,7 +135,6 @@ def _wrap_llm_call(wrapped, instance, args, kwargs):
 
     s = Step(run_id=run_id)
 
-    # Format messages as JSON if possible
     try:
         s.prompt(json.dumps(messages))
     except (TypeError, ValueError):
@@ -84,7 +143,6 @@ def _wrap_llm_call(wrapped, instance, args, kwargs):
     model = getattr(llm, "model", None) or getattr(llm, "model_name", "unknown")
     s.model(requested=str(model), used=str(model))
 
-    # Record tool definitions if present
     if tools:
         try:
             s.tool_definitions(json.dumps(tools))
@@ -110,11 +168,9 @@ def _wrap_llm_call(wrapped, instance, args, kwargs):
             completion=completion_tokens,
         )
 
-    # Format response
     if isinstance(result, str):
         s.response(result)
     elif isinstance(result, list):
-        # Tool call responses — serialize them
         try:
             s.response(json.dumps([
                 {"id": tc.id, "function": {"name": tc.function.name, "arguments": tc.function.arguments}}
@@ -159,7 +215,6 @@ def _after_tool_call_hook(context):
         tc = _pending_tool_calls.pop(key, None)
 
     if tc is None:
-        # Fallback: create a new ToolCall if before hook wasn't matched
         from ..tool_call import ToolCall
         tc = ToolCall(run_id=_get_run_id(), tool_name=context.tool_name)
         if context.tool_input:
@@ -177,9 +232,10 @@ def instrument_crewai(
 ) -> None:
     """Instrument CrewAI for automatic observability.
 
-    Sets up:
-    - Patch on get_llm_response to capture every LLM call (model, prompts, responses)
-    - CrewAI tool hooks to capture every tool execution (name, args, result, timing)
+    After calling this, every ``crew.kickoff()`` automatically sends:
+    - A **run** with the task description as prompt and crew output as response
+    - A **step** for each LLM call (with model, tokens, messages)
+    - A **tool call** for each tool execution (with name, args, result, timing)
 
     Call once at startup, before creating any CrewAI objects.
 
@@ -191,8 +247,11 @@ def instrument_crewai(
 
     _debug("Initializing CrewAI instrumentation")
 
-    # 1. Patch get_llm_response — the single entry point for all LLM calls
-    #    Also patch the cached import in crew_agent_executor.
+    # 1. Patch Crew.kickoff to auto-create runs
+    wrap_function_wrapper("crewai.crew", "Crew.kickoff", _wrap_kickoff)
+    _debug("Patched Crew.kickoff")
+
+    # 2. Patch get_llm_response for LLM step capture
     wrap_function_wrapper(
         "crewai.utilities.agent_utils", "get_llm_response", _wrap_llm_call
     )
@@ -202,7 +261,7 @@ def instrument_crewai(
     ).get_llm_response
     _debug("Patched get_llm_response")
 
-    # 2. Register tool call hooks
+    # 3. Register tool call hooks
     register_before_tool_call_hook(_before_tool_call_hook)
     register_after_tool_call_hook(_after_tool_call_hook)
     _debug("Registered CrewAI tool call hooks")

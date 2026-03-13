@@ -18,7 +18,6 @@ load_dotenv()
 # This must be called BEFORE creating any Crew, Agent, or Task instances
 from contextcompany.crewai import instrument_crewai, set_run_metadata
 from contextcompany import submit_feedback
-import contextcompany as tcc
 
 instrument_crewai()
 
@@ -139,22 +138,13 @@ def run_single_query(query: str) -> None:
     """Run a single query and exit."""
     print(f"\nRunning query: {query}\n")
 
-    # TCC: Create a run to track this crew execution
-    r = tcc.run()
-    r.prompt(query)
-    print(f"[Run ID: {r.run_id}]")
-
     try:
         crew = create_weather_crew(query)
-        r.metadata(agentName="weather-crew", environment="development")
-        set_run_metadata({"tcc.runId": r.run_id})
+        # TCC: Just set metadata — the run is created automatically by instrument_crewai
+        set_run_metadata({"agentName": "weather-crew", "environment": "development"})
         result = crew.kickoff()
-
-        r.response(result.raw)
-        r.end()
         print(f"\nResult: {result.raw}\n")
     except Exception as e:
-        r.error(status_message=str(e))
         print(f"\nError: {e}\n")
         sys.exit(1)
 
@@ -199,24 +189,21 @@ def run_interactive() -> None:
                     print("\nNo previous run to give feedback on\n")
                 continue
 
-            # TCC: Create a run for this crew execution
-            r = tcc.run(session_id=session_id)
-            r.prompt(user_input)
-            print(f"\n[Run ID: {r.run_id}]")
             print("\nCrew:")
 
             crew = create_weather_crew(user_input)
-            r.metadata(agentName="weather-crew", environment="development")
+
+            # TCC: Set metadata — run is created automatically on kickoff
+            run_id = str(uuid.uuid4())
             set_run_metadata({
-                "tcc.runId": r.run_id,
+                "tcc.runId": run_id,
                 "tcc.sessionId": session_id,
+                "agentName": "weather-crew",
+                "environment": "development",
             })
             result = crew.kickoff()
 
-            r.response(result.raw)
-            r.end()
-
-            previous_run_id = r.run_id
+            previous_run_id = run_id
             print(f"\n{result.raw}\n")
 
         except KeyboardInterrupt:
