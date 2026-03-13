@@ -29,6 +29,8 @@ _next_metadata: Dict[str, Any] = {}
 _next_lock = threading.Lock()
 _pending_tool_calls: Dict[int, Any] = {}
 _pending_tool_lock = threading.Lock()
+_api_key: Optional[str] = None
+_tcc_url: Optional[str] = None
 
 
 def set_run_metadata(metadata: Dict[str, Any]) -> None:
@@ -94,6 +96,8 @@ def _wrap_kickoff(wrapped, instance, args, kwargs):
         run_id=run_id,
         session_id=meta.get("tcc.sessionId"),
         conversational=meta.get("tcc.conversational"),
+        api_key=_api_key,
+        tcc_url=_tcc_url,
     )
     r.prompt(prompt)
 
@@ -152,6 +156,8 @@ async def _wrap_kickoff_async(wrapped, instance, args, kwargs):
         run_id=run_id,
         session_id=meta.get("tcc.sessionId"),
         conversational=meta.get("tcc.conversational"),
+        api_key=_api_key,
+        tcc_url=_tcc_url,
     )
     r.prompt(prompt)
 
@@ -221,7 +227,7 @@ def _wrap_llm_call(wrapped, instance, args, kwargs):
         result = wrapped(*args, **kwargs)
     except Exception as e:
         try:
-            s = Step(run_id=run_id)
+            s = Step(run_id=run_id, api_key=_api_key, tcc_url=_tcc_url)
             s._start_time = start_time
             s.prompt(json.dumps(messages) if isinstance(messages, list) else str(messages))
             model = getattr(llm, "model", None) or "unknown"
@@ -233,7 +239,7 @@ def _wrap_llm_call(wrapped, instance, args, kwargs):
 
     # Capture the step
     try:
-        s = Step(run_id=run_id)
+        s = Step(run_id=run_id, api_key=_api_key, tcc_url=_tcc_url)
         s._start_time = start_time
 
         try:
@@ -300,7 +306,7 @@ def _before_tool_call_hook(context):
         if not run_id:
             return None
 
-        tc = ToolCall(run_id=run_id, tool_name=context.tool_name)
+        tc = ToolCall(run_id=run_id, tool_name=context.tool_name, api_key=_api_key, tcc_url=_tcc_url)
         if context.tool_input:
             tc.args(context.tool_input)
 
@@ -325,7 +331,7 @@ def _after_tool_call_hook(context):
             run_id = getattr(crew, "_tcc_run_id", None) if crew else None
             if not run_id:
                 return None
-            tc = ToolCall(run_id=run_id, tool_name=context.tool_name)
+            tc = ToolCall(run_id=run_id, tool_name=context.tool_name, api_key=_api_key, tcc_url=_tcc_url)
             if context.tool_input:
                 tc.args(context.tool_input)
 
@@ -370,6 +376,10 @@ def instrument_crewai(
         tcc_url: Override TCC endpoint URL. Falls back to ``TCC_URL`` env var.
     """
     from crewai.hooks import register_before_tool_call_hook, register_after_tool_call_hook
+
+    global _api_key, _tcc_url
+    _api_key = api_key
+    _tcc_url = tcc_url
 
     _debug("Initializing CrewAI instrumentation")
 
