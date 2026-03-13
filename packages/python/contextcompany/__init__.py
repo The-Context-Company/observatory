@@ -6,5 +6,5 @@ from .tool_call import tool_call
 from .feedback import submit_feedback
 from .config import get_api_key, get_url
 
-__version__ = "1.4.0"
+__version__ = "1.5.0"
 __all__ = ["run", "step", "tool_call", "submit_feedback", "get_api_key", "get_url"]
