@@ -1,5 +1,5 @@
 import { cn } from "@/utils/cn";
-import { getPositionFromWidget } from "@/utils/corners";
+import { getPositionFromWidget, SAFE_AREA_MARGIN } from "@/utils/corners";
 import {
   useCallback,
   useEffect,
@@ -19,6 +19,15 @@ import RunViewer from "./run-viewer/run-viewer";
 import { ResizableHandles } from "./ResizableHandle";
 import { X } from "lucide-preact";
 import { captureAnonymousEvent } from "@/internal/events";
+
+const clampToViewport = (width: number, height: number) => {
+  const maxWidth = window.innerWidth - SAFE_AREA_MARGIN * 2;
+  const maxHeight = window.innerHeight - SAFE_AREA_MARGIN * 2;
+  return {
+    width: Math.min(width, Math.max(300, maxWidth)),
+    height: Math.min(height, Math.max(200, maxHeight)),
+  };
+};
 
 type Tab = "Agent runs" | "Tool calls" | "Failures";
 
@@ -88,15 +97,12 @@ function Popover() {
     if (!popover) return;
 
     if (selectedTraceIdSignal.value) {
-      popoverDimensionSignal.value = {
-        width: window.innerWidth * 0.6,
-        height: window.innerHeight * 0.7,
-      };
+      popoverDimensionSignal.value = clampToViewport(
+        window.innerWidth * 0.6,
+        window.innerHeight * 0.7
+      );
     } else {
-      popoverDimensionSignal.value = {
-        width: 630,
-        height: 400,
-      };
+      popoverDimensionSignal.value = clampToViewport(630, 400);
     }
 
     const { x, y } = getPositionFromWidget({
@@ -113,26 +119,25 @@ function Popover() {
     if (!popover) return;
 
     if (!selectedTraceIdSignal.value) {
+      const clamped = clampToViewport(630, 400);
       const { x, y } = getPositionFromWidget({
-        targetWidth: 630,
-        targetHeight: 400,
+        targetWidth: clamped.width,
+        targetHeight: clamped.height,
       });
 
-      popoverDimensionSignal.value = {
-        width: 630,
-        height: 400,
-      };
+      popoverDimensionSignal.value = clamped;
       popover.style.transform = `translate3d(${x}px, ${y}px, 0)`;
       return;
     }
 
-    // check if any part of the element will be outside of the window
     const { x: popoverX, y: popoverY } = popover.getBoundingClientRect();
     const windowWidth = window.innerWidth;
     const windowHeight = window.innerHeight;
 
-    const newWidth = window.innerWidth * 0.6;
-    const newHeight = window.innerHeight * 0.7;
+    const { width: newWidth, height: newHeight } = clampToViewport(
+      window.innerWidth * 0.6,
+      window.innerHeight * 0.7
+    );
 
     const isOutsideWindowX = newWidth + popoverX > windowWidth || popoverX < 0;
     const isOutsideWindowY =
@@ -189,6 +194,7 @@ function Popover() {
         left: 0,
         width: `${popoverDimensionSignal.value.width}px`,
         height: `${popoverDimensionSignal.value.height}px`,
+        maxWidth: `calc(100vw - ${SAFE_AREA_MARGIN * 2}px)`,
       }}
     >
       {selectedTraceIdSignal.value ? (

@@ -83,7 +83,7 @@ function DataBlock({
         <Copyable content={content}>
           <div
             className={cn(
-              "group bg-white rounded p-3 border border-gray-300 relative font-mono text-xs",
+              "group bg-white rounded p-3 border border-gray-300 relative font-mono text-xs overflow-x-auto",
               className
             )}
           >

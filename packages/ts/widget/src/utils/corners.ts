@@ -102,6 +102,9 @@ export const getPositionFromWidget = ({
       break;
   }
 
+  x = Math.max(SAFE_AREA_MARGIN, Math.min(x, window.innerWidth - targetWidth - SAFE_AREA_MARGIN));
+  y = Math.max(SAFE_AREA_MARGIN, Math.min(y, window.innerHeight - targetHeight - SAFE_AREA_MARGIN));
+
   return { x, y };
 };
 
