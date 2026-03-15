@@ -1,12 +1,20 @@
 # <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Observatory
 
-[The Context Company](https://thecontext.company/) does agent observability. **We care deeply about DX; it’s our single biggest priority.**
+[The Context Company](https://thecontext.company/) does agent observability. **We care deeply about DX; it's our single biggest priority.**
 
-Observatory is a monorepo containing core packages for AI agent observability:
+Observatory is a monorepo containing core packages for AI agent observability across TypeScript and Python:
 
-- **[@contextcompany/otel](./packages/otel)** - OpenTelemetry integration for instrumenting AI SDK calls
-- **[@contextcompany/widget](./packages/widget)** - Local-first UI overlay for visualizing AI agent traces in real-time
-- **[@contextcompany/claude](./packages/claude)** - Instrumentation for Claude Agent SDK
+**TypeScript:**
+- **[@contextcompany/otel](./packages/ts/otel)** - OpenTelemetry integration for instrumenting AI SDK calls
+- **[@contextcompany/widget](./packages/ts/widget)** - Local-first UI overlay for visualizing AI agent traces in real-time
+- **[@contextcompany/claude](./packages/ts/claude)** - Instrumentation for Claude Agent SDK
+- **[@contextcompany/langchain](./packages/ts/langchain)** - Integration for LangChain.js and LangGraph
+- **[@contextcompany/mastra](./packages/ts/mastra)** - Integration for the Mastra framework
+- **[@contextcompany/custom](./packages/ts/custom)** - Manual instrumentation SDK for custom agents
+- **[@contextcompany/api](./packages/ts/api)** - Shared API utilities (feedback, configuration)
+
+**Python:**
+- **[contextcompany](./packages/python)** - Python SDK with built-in integrations for LangChain, CrewAI, Agno, and LiteLLM
 
 ## Local mode (AI SDK + Next.js)
 
@@ -85,6 +93,23 @@ const result = generateText({
 
 > [!NOTE]
 > By default, The Context Company collects limited anonymous usage data when running local mode. **No sensitive or personally identifiable information is ever collected**. You can view exactly which events and values are tracked [here](https://github.com/The-Context-Company/observatory/blob/main/packages/ts/otel/src/nextjs/telemetry/events.ts). To disable anonymous telemetry, set the `TCC_DISABLE_ANONYMOUS_TELEMETRY` environment variable to `true` in your Next.js project. Learn more about this in our [documentation](https://docs.thecontext.company/frameworks/ai-sdk/local#anonymous-telemetry).
+
+## Examples
+
+Check out the [examples/](./examples) directory for working demos across all supported frameworks:
+
+| Example | Framework | Language |
+|---------|-----------|----------|
+| [nextjs-widget](./examples/nextjs-widget) | AI SDK + Local Widget | TypeScript |
+| [nextjs-aisdk](./examples/nextjs-aisdk) | AI SDK + Cloud Mode | TypeScript |
+| [claude-agent-sdk](./examples/claude-agent-sdk) | Claude Agent SDK | TypeScript |
+| [langchain-ts](./examples/langchain-ts) | LangChain / LangGraph | TypeScript |
+| [mastra](./examples/mastra) | Mastra | TypeScript |
+| [custom-ts](./examples/custom-ts) | Custom Instrumentation | TypeScript |
+| [langchain](./examples/langchain) | LangChain | Python |
+| [crewai](./examples/crewai) | CrewAI | Python |
+| [agno](./examples/agno) | Agno | Python |
+| [custom-python](./examples/custom-python) | Custom Instrumentation | Python |
 
 ### Contributing
 
