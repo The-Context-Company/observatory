@@ -52,15 +52,23 @@ Observatory is a **pnpm monorepo** with the following structure:
 ```
 observatory/
 ├── packages/
-│   ├── otel/     # @contextcompany/otel - OpenTelemetry integration
-│   ├── widget/   # @contextcompany/widget - Preact widget for Local Mode
-│   └── claude/   # @contextcompany/claude - Claude Agent SDK instrumentation
-│       ├── ts/       # TypeScript implementation
-│       └── python/   # Python implementation (coming soon)
-└── examples/     # Examples of Local Mode
+│   ├── ts/
+│   │   ├── api/         # @contextcompany/api - Shared API utilities
+│   │   ├── otel/        # @contextcompany/otel - OpenTelemetry integration
+│   │   ├── widget/      # @contextcompany/widget - Preact widget for Local Mode
+│   │   ├── claude/      # @contextcompany/claude - Claude Agent SDK instrumentation
+│   │   ├── langchain/   # @contextcompany/langchain - LangChain/LangGraph integration
+│   │   ├── mastra/      # @contextcompany/mastra - Mastra framework integration
+│   │   └── custom/      # @contextcompany/custom - Manual instrumentation SDK
+│   └── python/          # contextcompany - Python SDK (LangChain, CrewAI, Agno, LiteLLM)
+└── examples/            # Working examples for all supported frameworks
 ```
 
 ### Package Descriptions
+
+#### `@contextcompany/api`
+
+Core API utilities and shared functionality used by all other TypeScript packages. Provides feedback submission and configuration helpers.
 
 #### `@contextcompany/otel`
 
@@ -72,13 +80,29 @@ Browser-based visualization widget for real-time AI SDK observability. Built wit
 
 #### `@contextcompany/claude`
 
-Instrumentation wrapper for the Claude Agent SDK. Provides transparent telemetry collection and feedback submission for Claude-powered agents. Currently supports TypeScript, with Python support coming soon.
+Instrumentation wrapper for the Claude Agent SDK. Provides transparent telemetry collection and feedback submission for Claude-powered agents.
+
+#### `@contextcompany/langchain`
+
+Integration for LangChain.js and LangGraph. Provides `TCCCallbackHandler` for capturing runs, steps, and tool calls with session tracking.
+
+#### `@contextcompany/mastra`
+
+Integration for the Mastra framework. Provides observability for Mastra agents and workflows.
+
+#### `@contextcompany/custom`
+
+Manual instrumentation SDK for custom TypeScript agents. Supports a builder pattern (instrument live execution) and a factory pattern (send pre-built data).
+
+#### `contextcompany` (Python)
+
+Unified Python SDK with built-in framework integrations for CrewAI, Agno, LangChain, and LiteLLM. Provides core `run()`, `step()`, and `tool_call()` APIs for custom instrumentation.
 
 ## Development workflow
 
 ### Helper package scripts
 
-Each package supports two development modes:
+Each TypeScript package supports two development modes:
 
 `pnpm dev`:
 - **Watch mode only** - Automatically rebuilds when you save files
@@ -109,7 +133,7 @@ We don't have a comprehensive test suite yet (contributions welcome!). For now, 
 2. **Start the otel dev server** in watch mode:
 
    ```bash
-   cd packages/otel
+   cd packages/ts/otel
    pnpm dev
    ```
 
@@ -128,7 +152,7 @@ We don't have a comprehensive test suite yet (contributions welcome!). For now, 
 1. **Start the widget dev server** with hot reloading:
 
    ```bash
-   cd packages/widget
+   cd packages/ts/widget
    pnpm dev:all
    ```
 
@@ -157,7 +181,7 @@ Now you can make changes to the widget package and see them reflected in real-ti
 1. **Navigate to the TypeScript package**:
 
    ```bash
-   cd packages/claude/ts
+   cd packages/ts/claude
    ```
 
 2. **Build in watch mode**:
@@ -181,6 +205,27 @@ Now you can make changes to the widget package and see them reflected in real-ti
    - Changes to the package require a rebuild
    - The `pnpm dev` watch mode will automatically rebuild on file changes
 
+#### Testing Python changes
+
+1. **Navigate to the Python package**:
+
+   ```bash
+   cd packages/python
+   ```
+
+2. **Install in development mode**:
+
+   ```bash
+   pip install -e ".[crewai,langchain,agno,litellm]"
+   ```
+
+3. **Run an example**:
+
+   ```bash
+   cd examples/crewai  # or agno, langchain, custom-python
+   python main.py
+   ```
+
 ### Commit Messages
 
 Every commit message must follow this format: `type(scope): description`
@@ -195,7 +240,7 @@ Commit messages control version bumps and changelogs automatically. CI reads you
 | `feat(scope)!:` | major |
 | `docs:` `chore:` `refactor:` `test:` `ci:` `style:` | no release |
 
-Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `api`, `python`
+Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `langchain`, `api`, `python`
 
 Omit scope for repo-wide changes: `chore: upgrade dependencies`
 
@@ -206,6 +251,7 @@ fix(widget): prevent popover from rendering off-screen
 fix(python): handle None metadata without crashing
 feat(otel): add custom span attribute support
 feat(python): add trace_id field to runs
+feat(langchain): support session tracking
 feat(otel)!: drop Node 16 support
 docs: update installation instructions
 chore: upgrade dependencies
