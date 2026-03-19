@@ -11,6 +11,7 @@ Observatory is a monorepo containing core packages for AI agent observability ac
 - **[@contextcompany/langchain](./packages/ts/langchain)** - Integration for LangChain.js and LangGraph
 - **[@contextcompany/mastra](./packages/ts/mastra)** - Integration for the Mastra framework
 - **[@contextcompany/custom](./packages/ts/custom)** - Manual instrumentation SDK for custom agents
+- **[@contextcompany/openclaw](./packages/ts/openclaw)** - Integration for OpenClaw via OpenTelemetry
 - **[@contextcompany/api](./packages/ts/api)** - Shared API utilities (feedback, configuration)
 
 **Python:**
@@ -106,6 +107,7 @@ Check out the [examples/](./examples) directory for working demos across all sup
 | [langchain-ts](./examples/langchain-ts) | LangChain / LangGraph | TypeScript |
 | [mastra](./examples/mastra) | Mastra | TypeScript |
 | [custom-ts](./examples/custom-ts) | Custom Instrumentation | TypeScript |
+| [openclaw](./packages/ts/openclaw) | OpenClaw (OTLP Collector) | TypeScript |
 | [langchain](./examples/langchain) | LangChain | Python |
 | [crewai](./examples/crewai) | CrewAI | Python |
 | [agno](./examples/agno) | Agno | Python |
