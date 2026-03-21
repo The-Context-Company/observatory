@@ -1,0 +1,8 @@
+# TCC SDK with Claude Agent SDK support (local editable install)
+-e ../../packages/python[claude]
+
+# Claude Agent SDK
+claude-agent-sdk>=0.1.0
+
+# Environment variables
+python-dotenv>=1.0.1
