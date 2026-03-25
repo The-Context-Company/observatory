@@ -1,0 +1,22 @@
+{
+  "name": "claude-code-stream-example",
+  "version": "1.0.0",
+  "description": "Example Daytona + Claude Code stream-json tracing with TCC",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/index.ts"
+  },
+  "author": "The Context Company",
+  "license": "MIT",
+  "dependencies": {
+    "@contextcompany/claude": "workspace:*",
+    "@daytonaio/sdk": "latest",
+    "dotenv": "^17.2.3"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  }
+}

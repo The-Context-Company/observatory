@@ -1,5 +1,12 @@
-// Type definitions
-type SDKMessage = { type: string; [key: string]: any };
+import {
+  debugLog,
+  enrichClaudeMessage,
+  resolveTCCConfig,
+  sendToClaudeIngestion,
+  type SDKMessage,
+  type TCCConfig,
+} from "./core";
+
 type QueryFn = (
   ...args: unknown[]
 ) => AsyncGenerator<SDKMessage, void, unknown>;
@@ -10,16 +17,7 @@ type ToolDefinition = {
   [key: string]: any;
 };
 
-// Global debug flag
-let DEBUG_ENABLED = false;
-
-// TCC config that users can pass
-export type TCCConfig = {
-  runId?: string;
-  sessionId?: string;
-  metadata?: Record<string, unknown>;
-  debug?: boolean;
-};
+export type { TCCConfig } from "./core";
 
 // Extended type for wrapped SDK that adds tcc parameter
 export type WrappedSDK<T> = T extends { query: infer Q }
@@ -43,55 +41,30 @@ function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
 
       // Extract tcc config from query params
       const params = args[0] as any;
-      const tccConfig: TCCConfig | undefined = params?.tcc;
+      const resolvedTcc = resolveTCCConfig(params?.tcc as TCCConfig | undefined);
 
-      // Set global debug flag if enabled in config
-      if (tccConfig?.debug) {
-        DEBUG_ENABLED = true;
-      }
-
-      // Extract runId - check top level first, then metadata with tcc. prefix
-      const runId =
-        tccConfig?.runId ??
-        (tccConfig?.metadata?.["tcc.runId"] as string | undefined) ??
-        crypto.randomUUID();
-
-      // Extract sessionId - check top level first, then metadata with tcc. prefix
-      const sessionId =
-        tccConfig?.sessionId ??
-        (tccConfig?.metadata?.["tcc.sessionId"] as string | undefined) ??
-        null;
-
-      // Build final metadata: user metadata only (no tcc.* fields)
-      const metadata: Record<string, unknown> = tccConfig?.metadata || {};
-
-      if (DEBUG_ENABLED) {
-        console.log("[TCC Debug] Query wrapper called");
-        console.log("[TCC Debug] runId:", runId);
-        console.log("[TCC Debug] sessionId:", sessionId);
-        console.log("[TCC Debug] metadata:", metadata);
-      }
+      debugLog("Query wrapper called");
+      debugLog("runId:", resolvedTcc.runId);
+      debugLog("sessionId:", resolvedTcc.sessionId);
+      debugLog("metadata:", resolvedTcc.metadata);
 
       const wrappedGenerator = async function* () {
         try {
-          if (DEBUG_ENABLED)
-            console.log("[TCC Debug] Starting to collect messages");
+          debugLog("Starting to collect messages");
 
           const generator = Reflect.apply(fn, thisArg || target, args);
 
           for await (const message of generator) {
-            // Collect message with timestamp and tcc metadata
-            messages.push({
-              ...message,
-              receivedAtMs: Date.now(),
-              tccMetadata: { runId, sessionId }, // Attach to every message
-            });
+            messages.push(
+              enrichClaudeMessage(message, {
+                runId: resolvedTcc.runId,
+                sessionId: resolvedTcc.sessionId,
+              })
+            );
 
-            if (DEBUG_ENABLED) {
-              console.log(
-                `[TCC Debug] Collected message type: ${message.type}, total: ${messages.length}`
-              );
-            }
+            debugLog(
+              `Collected message type: ${message.type}, total: ${messages.length}`
+            );
 
             // Pass through transparently
             yield message;
@@ -99,22 +72,18 @@ function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
 
           // After stream completes, send telemetry
           if (messages.length > 0) {
-            if (DEBUG_ENABLED) {
-              console.log(
-                `[TCC Debug] Stream completed with ${messages.length} messages`
-              );
-              console.log("[TCC Debug] Sending telemetry data...");
-            }
+            debugLog(`Stream completed with ${messages.length} messages`);
+            debugLog("Sending telemetry data...");
 
             // Add user prompt to messages if it's a string
             const userPrompt =
               typeof params.prompt === "string" ? params.prompt : null;
 
-            sendToAuthTagger({
+            sendToClaudeIngestion({
               messages,
-              customMetadata: metadata,
-              runId,
-              sessionId,
+              customMetadata: resolvedTcc.metadata,
+              runId: resolvedTcc.runId,
+              sessionId: resolvedTcc.sessionId,
               userPrompt,
             }).catch((err) =>
               console.error("[TCC] Failed to send telemetry:", err)
@@ -125,11 +94,11 @@ function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
           if (messages.length > 0) {
             const userPrompt =
               typeof params.prompt === "string" ? params.prompt : null;
-            sendToAuthTagger({
+            sendToClaudeIngestion({
               messages,
-              customMetadata: metadata,
-              runId,
-              sessionId,
+              customMetadata: resolvedTcc.metadata,
+              runId: resolvedTcc.runId,
+              sessionId: resolvedTcc.sessionId,
               userPrompt,
             }).catch(() => {});
           }
@@ -148,67 +117,12 @@ function instrumentTool(toolDef: ToolDefinition): ToolDefinition {
   return {
     ...toolDef,
     handler: async (args: any, extra: any) => {
-      if (DEBUG_ENABLED) {
-        console.log(`[TCC Debug] Tool call: ${toolDef.name}`, args);
-      }
+      debugLog(`Tool call: ${toolDef.name}`, args);
       const result = await originalHandler(args, extra);
-      if (DEBUG_ENABLED) {
-        console.log(`[TCC Debug] Tool result: ${toolDef.name}`, result);
-      }
+      debugLog(`Tool result: ${toolDef.name}`, result);
       return result;
     },
   };
-}
-
-async function sendToAuthTagger(payload: {
-  messages: SDKMessage[];
-  customMetadata?: Record<string, unknown>;
-  runId?: string;
-  sessionId?: string | null;
-  userPrompt?: string | null;
-}): Promise<void> {
-  const { getTCCApiKey, getTCCUrl } = await import("@contextcompany/api");
-
-  const apiKey = getTCCApiKey();
-
-  if (!apiKey) {
-    console.warn("[TCC] Missing TCC_API_KEY, skipping telemetry");
-    return;
-  }
-
-  const endpoint = getTCCUrl(
-    apiKey,
-    "https://api.thecontext.company/v1/claude",
-    "https://dev.thecontext.company/v1/claude"
-  );
-
-  if (DEBUG_ENABLED) {
-    console.log("[TCC Debug] Payload:", JSON.stringify(payload, null, 2));
-  }
-
-  try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${apiKey}`,
-      },
-      body: JSON.stringify(payload),
-    });
-
-    if (!response.ok) {
-      const text = await response.text();
-      throw new Error(`HTTP ${response.status}: ${text}`);
-    }
-
-    if (DEBUG_ENABLED) {
-      console.log(
-        `[TCC Debug] Successfully sent ${payload.messages.length} messages`
-      );
-    }
-  } catch (error) {
-    console.error("[TCC] Error sending telemetry:", error);
-  }
 }
 
 export function instrumentClaudeAgent<T extends object>(sdk: T): WrappedSDK<T> {
