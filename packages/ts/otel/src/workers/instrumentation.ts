@@ -9,11 +9,11 @@ import {
   BasicTracerProvider,
   type SpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
-import { TCCSpanProcessor } from "../TCCSpanProcessor";
 import { debug, setDebug } from "../internal/logger";
+import { TCCSpanProcessor } from "../TCCSpanProcessor";
 
 const DEFAULT_TRACER_NAME = "tcc-workers";
-const DEFAULT_PROD_TRACES_URL = "https://api.thecontext.company/v1/traces";
+const DEFAULT_PROD_TRACES_URL = "https://ingest.thecontext.company/v1/traces";
 const DEFAULT_DEV_TRACES_URL = "https://dev.thecontext.company/v1/traces";
 
 type CachedTracing = {
@@ -51,7 +51,7 @@ let didLogTracerProviderConflict = false;
 
 function resolveApiKey(
   env: WorkersEnv | undefined,
-  apiKey: string | undefined,
+  apiKey: string | undefined
 ): string | undefined {
   const resolved = apiKey ?? env?.TCC_API_KEY;
   if (typeof resolved !== "string") return undefined;
@@ -73,14 +73,14 @@ function createDefaultContextManager(): ContextManager {
 
 function ensureTracerProvider(
   env: WorkersEnv | undefined,
-  opts: RegisterOpts = {},
+  opts: RegisterOpts = {}
 ): CachedTracing | undefined {
   if (opts.debug) setDebug(true);
 
   const apiKey = resolveApiKey(env, opts.apiKey);
   if (!apiKey) {
     debug(
-      "Skipping Cloudflare Workers tracing because no TCC API key was provided.",
+      "Skipping Cloudflare Workers tracing because no TCC API key was provided."
     );
     return undefined;
   }
@@ -117,7 +117,9 @@ function ensureTracerProvider(
     if (didSet) {
       debug("Registered AsyncLocalStorage context manager for Workers.");
     } else if (!didLogContextManagerConflict) {
-      debug("Global context manager already exists; reusing the active manager.");
+      debug(
+        "Global context manager already exists; reusing the active manager."
+      );
       didLogContextManagerConflict = true;
     }
   }
@@ -129,7 +131,9 @@ function ensureTracerProvider(
     if (didSet) {
       debug("Registered global tracer provider for Workers.");
     } else if (!didLogTracerProviderConflict) {
-      debug("Global tracer provider already exists; using explicit tracer fallback.");
+      debug(
+        "Global tracer provider already exists; using explicit tracer fallback."
+      );
       didLogTracerProviderConflict = true;
     }
   }
@@ -145,7 +149,7 @@ function ensureTracerProvider(
  */
 export function registerOTelTCC(
   env?: WorkersEnv,
-  opts: RegisterOpts = {},
+  opts: RegisterOpts = {}
 ): void {
   ensureTracerProvider(env, opts);
 }
@@ -158,7 +162,7 @@ export function registerOTelTCC(
  */
 export function getTCCTracer(
   env?: WorkersEnv,
-  opts: GetTracerOpts = {},
+  opts: GetTracerOpts = {}
 ): Tracer | undefined {
   const tracing = ensureTracerProvider(env, opts);
   if (!tracing) return undefined;
