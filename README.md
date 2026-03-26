@@ -5,7 +5,7 @@
 Observatory is a monorepo containing core packages for AI agent observability across TypeScript and Python:
 
 **TypeScript:**
-- **[@contextcompany/otel](./packages/ts/otel)** - OpenTelemetry integration for instrumenting AI SDK calls
+- **[@contextcompany/otel](./packages/ts/otel)** - OpenTelemetry integration for AI SDK calls across Next.js/Node and worker-style runtimes
 - **[@contextcompany/widget](./packages/ts/widget)** - Local-first UI overlay for visualizing AI agent traces in real-time
 - **[@contextcompany/claude](./packages/ts/claude)** - Instrumentation for Claude Agent SDK
 - **[@contextcompany/langchain](./packages/ts/langchain)** - Integration for LangChain.js and LangGraph

@@ -18,7 +18,17 @@ export default defineConfig([
     dts: { entry: { "nextjs/index": "src/nextjs/index.ts" } },
     splitting: false,
     treeshake: true,
-    clean: true,
+    clean: false,
+    external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
+  },
+  // @contextcompany/otel/workers
+  {
+    entry: { "workers/index": "src/workers/index.ts" },
+    format: ["esm", "cjs"],
+    dts: { entry: { "workers/index": "src/workers/index.ts" } },
+    splitting: false,
+    treeshake: true,
+    clean: false,
     external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
   },
   // @contextcompany/otel/nextjs auto script
@@ -33,7 +43,7 @@ export default defineConfig([
     splitting: true,
     treeshake: true,
     dts: true,
-    clean: true,
+    clean: false,
     outExtension: () => ({
       js: ".global.js",
     }),

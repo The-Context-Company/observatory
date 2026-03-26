@@ -72,7 +72,7 @@ Core API utilities and shared functionality used by all other TypeScript package
 
 #### `@contextcompany/otel`
 
-OpenTelemetry instrumentation layer for the Vercel AI SDK. Provides span processors, exporters, and Next.js integration for collecting telemetry data in both local and cloud modes.
+OpenTelemetry instrumentation layer for the Vercel AI SDK. Provides span processors, exporters, Next.js integration, and a Cloudflare Workers helper for worker-style runtimes.
 
 #### `@contextcompany/widget`
 
