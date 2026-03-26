@@ -1,5 +1,6 @@
 # @contextcompany/otel
 
+<<<<<<< Updated upstream
 OpenTelemetry integration for AI SDK calls across multiple runtime shapes.
 
 This package currently provides:
@@ -88,3 +89,43 @@ run fields automatically:
 - `tcc.conversational`
 
 All other telemetry metadata is forwarded as custom run metadata.
+=======
+This package contains The Context Company's OpenTelemetry integration for AI SDK applications.
+
+## Next.js
+
+Use `@contextcompany/otel/nextjs` to wire TCC into Next.js with `@vercel/otel`.
+
+## Cloudflare Workers
+
+Use `@contextcompany/otel/workers` when you need to manually register TCC tracing in
+Cloudflare Workers or Durable Objects.
+
+Cloudflare must have `nodejs_als` or `nodejs_compat` enabled so
+`AsyncLocalStorageContextManager` can propagate context correctly.
+
+```ts
+import {
+  registerOTelTCC,
+  getTCCTracer,
+  scheduleTCCFlush,
+} from "@contextcompany/otel/workers";
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext) {
+    registerOTelTCC(env);
+
+    try {
+      return await handleRequest(request, {
+        tracer: getTCCTracer(env),
+      });
+    } finally {
+      scheduleTCCFlush(ctx);
+    }
+  },
+} satisfies ExportedHandler<Env>;
+```
+
+`registerOTelTCC()` is safe to call more than once and becomes a no-op when
+`TCC_API_KEY` is not set.
+>>>>>>> Stashed changes

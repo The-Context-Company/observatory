@@ -15,10 +15,10 @@
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
     },
-    "./runtime": {
-      "types": "./dist/runtime/index.d.ts",
-      "import": "./dist/runtime/index.js",
-      "require": "./dist/runtime/index.cjs"
+    "./workers": {
+      "types": "./dist/workers/index.d.ts",
+      "import": "./dist/workers/index.js",
+      "require": "./dist/workers/index.cjs"
     },
     "./nextjs": {
       "types": "./dist/nextjs/index.d.ts",
@@ -40,7 +40,7 @@
     "monitoring",
     "ai-sdk",
     "nextjs",
-    "runtime",
+    "cloudflare-workers",
     "context-company"
   ],
   "repository": {
@@ -69,9 +69,10 @@
   },
   "dependencies": {
     "@contextcompany/api": "^1.0.1",
+    "@opentelemetry/context-async-hooks": "^2.6.1",
     "@opentelemetry/sdk-trace-base": "^2.1.0",
-    "ws": "^8.18.3",
-    "posthog-node": "^5.11.2"
+    "posthog-node": "^5.11.2",
+    "ws": "^8.18.3"
   },
   "devDependencies": {
     "@opentelemetry/api": "^1.9.0",

@@ -31,6 +31,16 @@ export default defineConfig([
     clean: true,
     external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
   },
+  // @contextcompany/otel/workers
+  {
+    entry: { "workers/index": "src/workers/index.ts" },
+    format: ["esm", "cjs"],
+    dts: { entry: { "workers/index": "src/workers/index.ts" } },
+    splitting: false,
+    treeshake: true,
+    clean: true,
+    external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
+  },
   // @contextcompany/otel/nextjs auto script
   {
     entry: { "nextjs/local/auto": "src/nextjs/local/auto.ts" },
