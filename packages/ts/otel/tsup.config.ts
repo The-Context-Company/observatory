@@ -11,6 +11,16 @@ export default defineConfig([
     clean: true,
     external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
   },
+  // @contextcompany/otel/runtime
+  {
+    entry: { "runtime/index": "src/runtime/index.ts" },
+    format: ["esm", "cjs"],
+    dts: { entry: { "runtime/index": "src/runtime/index.ts" } },
+    splitting: false,
+    treeshake: true,
+    clean: true,
+    external: ["@opentelemetry/api", "@vercel/otel", "@contextcompany/api"],
+  },
   // @contextcompany/otel/nextjs
   {
     entry: { "nextjs/index": "src/nextjs/index.ts" },

@@ -1,7 +1,7 @@
 {
   "name": "@contextcompany/otel",
-  "version": "1.0.13",
-  "description": "The Context Company OpenTelemetry integration",
+  "version": "1.0.14",
+  "description": "The Context Company OpenTelemetry integration for AI SDK runtimes",
   "type": "module",
   "files": [
     "dist"
@@ -14,6 +14,11 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
+      "import": "./dist/runtime/index.js",
+      "require": "./dist/runtime/index.cjs"
     },
     "./nextjs": {
       "types": "./dist/nextjs/index.d.ts",
@@ -33,7 +38,9 @@
     "observability",
     "tracing",
     "monitoring",
+    "ai-sdk",
     "nextjs",
+    "runtime",
     "context-company"
   ],
   "repository": {
