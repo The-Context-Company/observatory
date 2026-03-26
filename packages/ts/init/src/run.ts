@@ -38,33 +38,10 @@ export async function run(): Promise<void> {
     process.exit(1);
   }
 
-  // ── Detect framework ────────────────────────────────────────────────
+  // ── Select framework ─────────────────────────────────────────────────
 
-  let framework: Framework;
   const detected = detectFramework(installDir);
-
-  if (detected) {
-    const frameworkInfo = FRAMEWORKS.find((f) => f.id === detected)!;
-    const confirmed = await p.confirm({
-      message: `Detected ${pc.bold(frameworkInfo.name)} project. Is this correct?`,
-      initialValue: true,
-    });
-
-    if (isCancel(confirmed)) {
-      p.outro(pc.red("Setup cancelled."));
-      process.exit(0);
-    }
-
-    if (confirmed) {
-      framework = detected;
-      p.log.success(`Using ${pc.bold(frameworkInfo.name)}`);
-    } else {
-      framework = await askForFramework();
-    }
-  } else {
-    p.log.info("Could not auto-detect your framework.");
-    framework = await askForFramework();
-  }
+  const framework = await askForFramework(detected);
 
   // ── Detect project properties ───────────────────────────────────────
 
@@ -174,13 +151,19 @@ export async function run(): Promise<void> {
 
 // ── Helpers ─────────────────────────────────────────────────────────────
 
-async function askForFramework(): Promise<Framework> {
+async function askForFramework(
+  detected: Framework | null,
+): Promise<Framework> {
   const choice = await p.select({
     message: "Which framework are you using?",
+    initialValue: detected ?? undefined,
     options: FRAMEWORKS.map((f) => ({
       value: f.id,
       label: f.name,
-      hint: f.description,
+      hint:
+        f.id === detected
+          ? `${f.description} ${pc.green("(detected)")}`
+          : f.description,
     })),
   });
 
