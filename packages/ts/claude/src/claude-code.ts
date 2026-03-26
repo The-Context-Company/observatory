@@ -53,15 +53,14 @@ function normalizeLine(line: string): string {
 }
 
 function tryParseClaudeMessage(line: string): SDKMessage | null {
-  const normalized = normalizeLine(line);
-  if (!normalized) return null;
+  if (!line) return null;
 
-  const candidates = [normalized];
+  const candidates = [line];
 
-  const firstBrace = normalized.indexOf("{");
-  const lastBrace = normalized.lastIndexOf("}");
+  const firstBrace = line.indexOf("{");
+  const lastBrace = line.lastIndexOf("}");
   if (firstBrace > 0 && lastBrace > firstBrace) {
-    candidates.push(normalized.slice(firstBrace, lastBrace + 1));
+    candidates.push(line.slice(firstBrace, lastBrace + 1));
   }
 
   for (const candidate of candidates) {
