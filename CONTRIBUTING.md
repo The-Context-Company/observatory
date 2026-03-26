@@ -60,7 +60,8 @@ observatory/
 │   │   ├── langchain/   # @contextcompany/langchain - LangChain/LangGraph integration
 │   │   ├── mastra/      # @contextcompany/mastra - Mastra framework integration
 │   │   ├── custom/      # @contextcompany/custom - Manual instrumentation SDK
-│   │   └── openclaw/    # @contextcompany/openclaw - OpenClaw OTLP collector
+│   │   ├── openclaw/    # @contextcompany/openclaw - OpenClaw OTLP collector
+│   │   └── pi/          # @contextcompany/pi - Pi Agent SDK instrumentation
 │   └── python/          # contextcompany - Python SDK (LangChain, CrewAI, Agno, LiteLLM)
 └── examples/            # Working examples for all supported frameworks
 ```
@@ -98,6 +99,10 @@ Manual instrumentation SDK for custom TypeScript agents. Supports a builder patt
 #### `@contextcompany/openclaw`
 
 Integration for OpenClaw via OpenTelemetry. Provides a lightweight OTLP collector that receives traces from OpenClaw's built-in `diagnostics-otel` plugin, maps them to TCC's format, and forwards them to the API. Can be run as a CLI (`npx @contextcompany/openclaw`) or used programmatically.
+
+#### `@contextcompany/pi`
+
+Instrumentation for the Pi Agent SDK (`@mariozechner/pi-coding-agent`). Provides a non-invasive `instrumentPiSession()` function that subscribes to session events and automatically captures agent runs, LLM steps (with token usage and costs), and tool executions.
 
 #### `contextcompany` (Python)
 
@@ -235,6 +240,38 @@ Now you can make changes to the widget package and see them reflected in real-ti
 
 4. Verify the collector logs show the span was received, parsed, and forwarded.
 
+#### Testing `@contextcompany/pi` changes
+
+1. **Build the package**:
+
+   ```bash
+   cd packages/ts/pi
+   pnpm build
+   ```
+
+2. **Test in a project** that uses `@mariozechner/pi-coding-agent`:
+
+   ```json
+   {
+     "dependencies": {
+       "@contextcompany/pi": "workspace:*"
+     }
+   }
+   ```
+
+3. **Add instrumentation** to your Pi session:
+
+   ```typescript
+   import { createAgentSession } from '@mariozechner/pi-coding-agent';
+   import { instrumentPiSession } from '@contextcompany/pi';
+
+   const { session } = await createAgentSession();
+   instrumentPiSession(session, { debug: true });
+   await session.prompt('Hello');
+   ```
+
+4. Verify debug logs show events being captured and sent.
+
 #### Testing Python changes
 
 1. **Navigate to the Python package**:
@@ -270,7 +307,7 @@ Commit messages control version bumps and changelogs automatically. CI reads you
 | `feat(scope)!:` | major |
 | `docs:` `chore:` `refactor:` `test:` `ci:` `style:` | no release |
 
-Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `openclaw`, `langchain`, `api`, `python`
+Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `openclaw`, `pi`, `langchain`, `api`, `python`
 
 Omit scope for repo-wide changes: `chore: upgrade dependencies`
 
