@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/otel",
-  "version": "1.0.14",
+  "version": "1.0.15",
   "description": "The Context Company OpenTelemetry integration for AI SDK runtimes",
   "type": "module",
   "files": [
