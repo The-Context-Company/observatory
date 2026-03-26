@@ -13,7 +13,7 @@ import { debug, setDebug } from "../internal/logger";
 import { TCCSpanProcessor } from "../TCCSpanProcessor";
 
 const DEFAULT_TRACER_NAME = "tcc-workers";
-const DEFAULT_PROD_TRACES_URL = "https://ingest.thecontext.company/v1/traces";
+const DEFAULT_PROD_TRACES_URL = "https://api.thecontext.company/v1/traces";
 const DEFAULT_DEV_TRACES_URL = "https://dev.thecontext.company/v1/traces";
 
 type CachedTracing = {
@@ -112,7 +112,7 @@ function ensureTracerProvider(
   if (opts.installContextManager !== false && !didSetGlobalContextManager) {
     const contextManager = opts.contextManager ?? createDefaultContextManager();
     const didSet = context.setGlobalContextManager(contextManager);
-    didSetGlobalContextManager = didSet || didSetGlobalContextManager;
+    didSetGlobalContextManager = true;
 
     if (didSet) {
       debug("Registered AsyncLocalStorage context manager for Workers.");
@@ -126,7 +126,7 @@ function ensureTracerProvider(
 
   if (!didSetGlobalTracerProvider) {
     const didSet = trace.setGlobalTracerProvider(cachedTracing.provider);
-    didSetGlobalTracerProvider = didSet || didSetGlobalTracerProvider;
+    didSetGlobalTracerProvider = true;
 
     if (didSet) {
       debug("Registered global tracer provider for Workers.");
