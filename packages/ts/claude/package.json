@@ -1,7 +1,7 @@
 {
   "name": "@contextcompany/claude",
   "version": "1.0.0",
-  "description": "The Context Company instrumentation for Claude Agent SDK",
+  "description": "The Context Company integration for Claude Agent SDK",
   "type": "module",
   "files": [
     "dist",

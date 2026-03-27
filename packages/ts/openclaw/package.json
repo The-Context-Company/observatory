@@ -1,7 +1,7 @@
 {
   "name": "@contextcompany/openclaw",
   "version": "1.0.0",
-  "description": "The Context Company observability plugin for OpenClaw",
+  "description": "The Context Company integration for OpenClaw",
   "type": "module",
   "files": [
     "dist",
