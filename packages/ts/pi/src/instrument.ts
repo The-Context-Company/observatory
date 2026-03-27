@@ -1,5 +1,5 @@
-import { createSender } from "./sender";
 import { debug, setDebug } from "./logger";
+import { createSender } from "./sender";
 import type { TCCPiConfig } from "./types";
 
 interface PiAgentSession {
@@ -22,7 +22,7 @@ type PiAgentEvent = {
 };
 
 type RawToolExecution = {
-  toolCallId: string;
+  toolCallId: string | undefined;
   toolName: string;
   args: unknown;
   result?: unknown;
@@ -80,7 +80,7 @@ export function instrumentPiSession(
       case "tool_execution_start": {
         if (!runId) break;
         toolExecutions.push({
-          toolCallId: event.toolCallId ?? crypto.randomUUID(),
+          toolCallId: event.toolCallId,
           toolName: event.toolName ?? "unknown",
           args: event.args,
           isError: false,
@@ -93,7 +93,8 @@ export function instrumentPiSession(
       case "tool_execution_end": {
         if (!runId) break;
         const tc = toolExecutions.find(
-          (t) => t.toolCallId === event.toolCallId && t.endTimestamp === undefined
+          (t) =>
+            t.toolCallId === event.toolCallId && t.endTimestamp === undefined
         );
         if (tc) {
           tc.endTimestamp = Date.now();
@@ -108,9 +109,8 @@ export function instrumentPiSession(
         if (!runId) break;
 
         const endTimestamp = Date.now();
-        const finalMessages = messages.length > 0
-          ? messages
-          : (event.messages ?? []);
+        const finalMessages =
+          messages.length > 0 ? messages : (event.messages ?? []);
 
         const payload = {
           runId,
@@ -156,6 +156,8 @@ export function instrumentPiSession(
   return {
     unsubscribe,
     getLastRunId: () => lastRunId,
-    setRunId: (id: string) => { nextRunId = id; },
+    setRunId: (id: string) => {
+      nextRunId = id;
+    },
   };
 }
