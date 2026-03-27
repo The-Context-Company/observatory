@@ -42,10 +42,11 @@ function registerHooks(
     (typeof pluginConfig.endpoint === "string"
       ? pluginConfig.endpoint
       : null) ??
-    process.env.TCC_URL ??
-    (apiKey.startsWith("dev_")
-      ? "https://dev.thecontext.company/v1/openclaw"
-      : "https://api.thecontext.company/v1/openclaw");
+    (process.env.TCC_BASE_URL
+      ? `${process.env.TCC_BASE_URL.replace(/\/+$/, "")}/v1/openclaw`
+      : apiKey.startsWith("dev_")
+        ? "https://dev.thecontext.company/v1/openclaw"
+        : "https://api.thecontext.company/v1/openclaw");
 
   log.info(`exporting runs to ${url}`);
 

@@ -1,6 +1,5 @@
 import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import { debug } from "./logger";
-import type { BatchPayload } from "./types";
 
 const MAX_RETRIES = 2;
 const INITIAL_BACKOFF_MS = 1000;
@@ -17,11 +16,7 @@ function resolveApiKey(config: SenderConfig): string | undefined {
 
 function resolveUrl(config: SenderConfig, apiKey: string): string {
   if (config.endpoint) return config.endpoint;
-  return getTCCUrl(
-    apiKey,
-    "https://api.thecontext.company/v1/custom",
-    "https://dev.thecontext.company/v1/custom"
-  );
+  return getTCCUrl("/v1/pi", apiKey);
 }
 
 function isRetryable(status: number): boolean {
@@ -34,12 +29,12 @@ function sleep(ms: number): Promise<void> {
 
 /**
  * Creates a sender function bound to the given configuration.
- * The returned function sends a {@link BatchPayload} to TCC's ingestion
+ * The returned function sends a payload to TCC's Pi ingestion
  * endpoint with retry logic for transient failures.
  */
 export function createSender(
   config: SenderConfig
-): (payload: BatchPayload) => Promise<void> {
+): (payload: unknown) => Promise<void> {
   const apiKey = resolveApiKey(config);
 
   if (!apiKey) {
@@ -52,9 +47,9 @@ export function createSender(
   const url = resolveUrl(config, apiKey);
   debug(`TCC endpoint: ${url}`);
 
-  return async (payload: BatchPayload): Promise<void> => {
+  return async (payload: unknown): Promise<void> => {
     const body = JSON.stringify(payload);
-    debug(`Sending batch with ${payload.items.length} item(s)`);
+    debug(`Sending Pi payload`);
 
     let lastError: unknown;
 

@@ -12,8 +12,8 @@ function resolveApiKey(): string | undefined {
 function resolveUrl(apiKey: string): string {
   const { url } = getConfig();
   if (url) return url;
-  if (typeof process !== "undefined" && process.env?.TCC_URL) {
-    return process.env.TCC_URL;
+  if (typeof process !== "undefined" && process.env?.TCC_BASE_URL) {
+    return `${process.env.TCC_BASE_URL.replace(/\/+$/, "")}/v1/custom`;
   }
   const isDev = apiKey.startsWith("dev_");
   return isDev

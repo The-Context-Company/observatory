@@ -48,7 +48,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@contextcompany/api": "^1.0.1"
+    "@contextcompany/api": "workspace:*"
   },
   "devDependencies": {
     "@types/node": "^20",

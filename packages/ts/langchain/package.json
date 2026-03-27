@@ -51,7 +51,7 @@
     "@langchain/core": ">=0.2.0"
   },
   "dependencies": {
-    "@contextcompany/api": "^1.0.1"
+    "@contextcompany/api": "workspace:*"
   },
   "devDependencies": {
     "@langchain/core": "^0.3.80",

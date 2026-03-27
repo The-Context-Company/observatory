@@ -238,6 +238,28 @@ importers:
         specifier: ^5
         version: 5.9.3
 
+  examples/pi:
+    dependencies:
+      '@contextcompany/pi':
+        specifier: workspace:*
+        version: link:../../packages/ts/pi
+      '@mariozechner/pi-coding-agent':
+        specifier: ^0.62.0
+        version: 0.62.0(ws@8.18.3)(zod@4.1.13)
+      dotenv:
+        specifier: ^17.2.2
+        version: 17.2.3
+    devDependencies:
+      '@types/node':
+        specifier: ^20
+        version: 20.19.37
+      tsx:
+        specifier: ^4.19.0
+        version: 4.20.6
+      typescript:
+        specifier: ^5.5.0
+        version: 5.9.3
+
   packages/ts/api:
     devDependencies:
       '@types/node':
@@ -256,8 +278,8 @@ importers:
         specifier: '>=0.1.0'
         version: 0.1.53(zod@4.1.13)
       '@contextcompany/api':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../api
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -272,8 +294,8 @@ importers:
   packages/ts/custom:
     dependencies:
       '@contextcompany/api':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../api
     devDependencies:
       '@types/node':
         specifier: ^20
@@ -288,8 +310,8 @@ importers:
   packages/ts/langchain:
     dependencies:
       '@contextcompany/api':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../api
     devDependencies:
       '@langchain/core':
         specifier: ^0.3.80
@@ -307,8 +329,8 @@ importers:
   packages/ts/mastra:
     dependencies:
       '@contextcompany/api':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../api
     devDependencies:
       '@mastra/core':
         specifier: ^0.24.6
@@ -330,7 +352,7 @@ importers:
         version: 20.19.37
       tsup:
         specifier: ^8.5.0
-        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.1)
+        version: 8.5.1(jiti@2.6.1)(postcss@8.5.6)(tsx@4.20.6)(typescript@5.9.3)(yaml@2.8.3)
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
@@ -338,8 +360,8 @@ importers:
   packages/ts/otel:
     dependencies:
       '@contextcompany/api':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../api
       '@opentelemetry/sdk-trace-base':
         specifier: ^2.1.0
         version: 2.2.0(@opentelemetry/api@1.9.0)
@@ -384,8 +406,8 @@ importers:
   packages/ts/pi:
     dependencies:
       '@contextcompany/api':
-        specifier: ^1.0.1
-        version: 1.0.1
+        specifier: workspace:*
+        version: link:../api
       '@mariozechner/pi-coding-agent':
         specifier: '>=0.50.0'
         version: 0.62.0(ws@8.18.3)(zod@4.1.13)

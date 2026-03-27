@@ -44,7 +44,7 @@
     "@mastra/core": "^0.24.0"
   },
   "dependencies": {
-    "@contextcompany/api": "^1.0.1"
+    "@contextcompany/api": "workspace:*"
   },
   "devDependencies": {
     "@mastra/core": "^0.24.6",

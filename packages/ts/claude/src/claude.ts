@@ -176,11 +176,7 @@ async function sendToAuthTagger(payload: {
     return;
   }
 
-  const endpoint = getTCCUrl(
-    apiKey,
-    "https://api.thecontext.company/v1/claude",
-    "https://dev.thecontext.company/v1/claude"
-  );
+  const endpoint = getTCCUrl("/v1/claude", apiKey);
 
   if (DEBUG_ENABLED) {
     console.log("[TCC Debug] Payload:", JSON.stringify(payload, null, 2));
