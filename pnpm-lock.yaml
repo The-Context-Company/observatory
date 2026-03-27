@@ -324,10 +324,6 @@ importers:
         version: 5.9.3
 
   packages/ts/openclaw:
-    dependencies:
-      '@contextcompany/api':
-        specifier: ^1.0.1
-        version: 1.0.1
     devDependencies:
       '@types/node':
         specifier: ^20
