@@ -66,6 +66,34 @@ export function register(
   log.info(`exporting runs to ${url}`);
 
   // -------------------------------------------------------------------
+  // Stale session cleanup — flush sessions that never got an agent_end
+  // -------------------------------------------------------------------
+  const STALE_SESSION_MS = 30 * 60 * 1000; // 30 minutes
+
+  const cleanupInterval = setInterval(() => {
+    const now = Date.now();
+    for (const [key, session] of activeSessions) {
+      if (now - session.startedAt > STALE_SESSION_MS) {
+        if (debug) log.info(`flushing stale session: ${key}`);
+
+        sendToTcc(
+          { framework: "openclaw", events: session.events, stale: true },
+          apiKey,
+          url,
+          debug,
+          log,
+        ).catch((err) => {
+          log.warn(`failed to send stale session: ${err}`);
+        });
+
+        activeSessions.delete(key);
+      }
+    }
+  }, 5 * 60 * 1000); // check every 5 minutes
+
+  if (cleanupInterval.unref) cleanupInterval.unref();
+
+  // -------------------------------------------------------------------
   // Helper: push a raw event into the session's event list
   // -------------------------------------------------------------------
   function pushEvent(hook: string, event: unknown, ctx: unknown): void {
