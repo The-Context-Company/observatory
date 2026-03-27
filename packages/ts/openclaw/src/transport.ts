@@ -37,6 +37,7 @@ export async function sendToTcc(
         log.warn(`ingestion failed after ${MAX_RETRIES + 1} attempts: ${err}`);
     }
   }
+  log.warn(`ingestion failed after ${MAX_RETRIES + 1} attempts (server errors)`);
 }
 
 export function safeClone(obj: unknown): unknown {
