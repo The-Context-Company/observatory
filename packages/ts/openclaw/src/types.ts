@@ -16,7 +16,7 @@ export type ActiveSession = {
 export type OpenClawPluginConfig = {
   /** TCC API key. Falls back to TCC_API_KEY env var. */
   apiKey?: string;
-  /** TCC ingestion endpoint. Falls back to TCC_URL env var, then auto-detected from key prefix. */
+  /** TCC ingestion endpoint. Falls back to TCC_BASE_URL env var, then auto-detected from key prefix. */
   endpoint?: string;
   /** Enable debug logging. Falls back to TCC_DEBUG env var. */
   debug?: boolean;

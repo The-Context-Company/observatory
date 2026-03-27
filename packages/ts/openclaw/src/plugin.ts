@@ -7,22 +7,19 @@
  * All parsing/transformation happens server-side.
  */
 
-import type { ActiveSession, OpenClawPluginConfig } from "./types.js";
-export type { OpenClawPluginConfig } from "./types.js";
 import { safeClone, sendToTcc } from "./transport.js";
+import type { ActiveSession, OpenClawPluginConfig } from "./types.js";
 
-function registerHooks(
-  api: any,
-  configOverrides?: OpenClawPluginConfig,
-): void {
+export type { OpenClawPluginConfig } from "./types.js";
+
+function registerHooks(api: any, configOverrides?: OpenClawPluginConfig): void {
   const activeSessions = new Map<string, ActiveSession>();
 
   const pluginConfig: Record<string, unknown> = {
     ...(api.pluginConfig ?? {}),
     ...configOverrides,
   };
-  const debug =
-    pluginConfig.debug === true || process.env.TCC_DEBUG === "true";
+  const debug = pluginConfig.debug === true || process.env.TCC_DEBUG === "true";
 
   const log = {
     info: (msg: string) => console.log(`[tcc] ${msg}`),
@@ -42,6 +39,12 @@ function registerHooks(
     (typeof pluginConfig.endpoint === "string"
       ? pluginConfig.endpoint
       : null) ??
+    (process.env.TCC_URL
+      ? (log.warn(
+          "TCC_URL is deprecated. Use TCC_BASE_URL instead (without the /v1/openclaw path)."
+        ),
+        process.env.TCC_URL)
+      : null) ??
     (process.env.TCC_BASE_URL
       ? `${process.env.TCC_BASE_URL.replace(/\/+$/, "")}/v1/openclaw`
       : apiKey.startsWith("dev_")
@@ -55,26 +58,29 @@ function registerHooks(
   // -------------------------------------------------------------------
   const STALE_SESSION_MS = 30 * 60 * 1000; // 30 minutes
 
-  const cleanupInterval = setInterval(() => {
-    const now = Date.now();
-    for (const [key, session] of activeSessions) {
-      if (now - session.startedAt > STALE_SESSION_MS) {
-        if (debug) log.info(`flushing stale session: ${key}`);
+  const cleanupInterval = setInterval(
+    () => {
+      const now = Date.now();
+      for (const [key, session] of activeSessions) {
+        if (now - session.startedAt > STALE_SESSION_MS) {
+          if (debug) log.info(`flushing stale session: ${key}`);
 
-        sendToTcc(
-          { framework: "openclaw", events: session.events, stale: true },
-          apiKey,
-          url,
-          debug,
-          log,
-        ).catch((err) => {
-          log.warn(`failed to send stale session: ${err}`);
-        });
+          sendToTcc(
+            { framework: "openclaw", events: session.events, stale: true },
+            apiKey,
+            url,
+            debug,
+            log
+          ).catch((err) => {
+            log.warn(`failed to send stale session: ${err}`);
+          });
 
-        activeSessions.delete(key);
+          activeSessions.delete(key);
+        }
       }
-    }
-  }, 5 * 60 * 1000); // check every 5 minutes
+    },
+    5 * 60 * 1000
+  ); // check every 5 minutes
 
   if (cleanupInterval.unref) cleanupInterval.unref();
 
@@ -176,7 +182,8 @@ function registerHooks(
 const plugin = {
   id: "@contextcompany/openclaw",
   name: "The Context Company",
-  description: "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
+  description:
+    "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
   register(api: any) {
     registerHooks(api);
   },
@@ -197,7 +204,7 @@ export default plugin;
  */
 export function register(
   api: any,
-  configOverrides?: OpenClawPluginConfig,
+  configOverrides?: OpenClawPluginConfig
 ): void {
   registerHooks(api, configOverrides);
 }

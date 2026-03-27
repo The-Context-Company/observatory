@@ -261,7 +261,7 @@ export type ClientConfig = {
    * environment variable.
    */
   debug?: boolean;
-  /** Custom ingestion endpoint URL. Overrides the `TCC_URL` environment variable. */
+  /** Custom ingestion endpoint URL. Overrides the `TCC_BASE_URL` environment variable. */
   url?: string;
   /**
    * Default auto-flush timeout (in ms) for all new runs. Can be overridden
