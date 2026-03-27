@@ -11,23 +11,7 @@ import type { ActiveSession, OpenClawPluginConfig } from "./types.js";
 export type { OpenClawPluginConfig } from "./types.js";
 import { safeClone, sendToTcc } from "./transport.js";
 
-/**
- * Register the TCC observability plugin with an OpenClaw plugin API.
- *
- * @example
- * ```ts
- * // As an OpenClaw extension (index.ts):
- * import { register } from "@contextcompany/openclaw";
- * export default async function (api) { register(api); }
- *
- * // Or with explicit config:
- * import { register } from "@contextcompany/openclaw";
- * export default async function (api) {
- *   register(api, { apiKey: "tcc_...", debug: true });
- * }
- * ```
- */
-export function register(
+function registerHooks(
   api: any,
   configOverrides?: OpenClawPluginConfig,
 ): void {
@@ -165,4 +149,54 @@ export function register(
       activeSessions.delete(sessionKey);
     });
   });
+}
+
+/**
+ * Full OpenClaw plugin object — install via `openclaw plugins install`
+ * and configure in `openclaw.json` under `plugins.entries`.
+ *
+ * @example
+ * ```json
+ * {
+ *   "plugins": {
+ *     "allow": ["@contextcompany/openclaw"],
+ *     "entries": {
+ *       "@contextcompany/openclaw": {
+ *         "enabled": true,
+ *         "config": {
+ *           "apiKey": "${TCC_API_KEY}"
+ *         }
+ *       }
+ *     }
+ *   }
+ * }
+ * ```
+ */
+const plugin = {
+  id: "@contextcompany/openclaw",
+  name: "The Context Company",
+  description: "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
+  register(api: any) {
+    registerHooks(api);
+  },
+};
+
+export default plugin;
+
+/**
+ * Named export for manual registration (e.g. from a custom extension).
+ *
+ * @example
+ * ```ts
+ * import { register } from "@contextcompany/openclaw";
+ * export default async function (api) {
+ *   register(api, { apiKey: "tcc_...", debug: true });
+ * }
+ * ```
+ */
+export function register(
+  api: any,
+  configOverrides?: OpenClawPluginConfig,
+): void {
+  registerHooks(api, configOverrides);
 }

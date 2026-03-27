@@ -4,15 +4,45 @@ The Context Company observability plugin for [OpenClaw](https://openclaw.ai).
 
 Captures LLM calls, tool executions, and agent lifecycle events from OpenClaw's plugin hook system, then exports them to The Context Company for visualization and analysis.
 
-## Installation
+## Quick Start
+
+### 1. Install
 
 ```bash
-npm install @contextcompany/openclaw
+openclaw plugins install @contextcompany/openclaw
 ```
 
-## Usage
+### 2. Configure
 
-Create an OpenClaw extension that registers the plugin:
+Add to your `openclaw.json`:
+
+```json
+{
+  "plugins": {
+    "allow": ["@contextcompany/openclaw"],
+    "entries": {
+      "@contextcompany/openclaw": {
+        "enabled": true,
+        "config": {
+          "apiKey": "${TCC_API_KEY}"
+        }
+      }
+    }
+  }
+}
+```
+
+### 3. Restart
+
+```bash
+openclaw gateway restart
+```
+
+That's it. The plugin hooks into the agent runtime and starts sending traces to TCC.
+
+## Alternative: Manual Registration
+
+If you prefer to register from a custom extension:
 
 ```ts
 // extensions/tcc-observability/index.ts
@@ -23,13 +53,7 @@ export default async function (api) {
 }
 ```
 
-Set your API key via environment variable:
-
-```bash
-export TCC_API_KEY="your_api_key"
-```
-
-Or pass config directly:
+With explicit config:
 
 ```ts
 register(api, {
@@ -59,4 +83,4 @@ The plugin hooks into OpenClaw's agent lifecycle events:
 | `after_tool_call` | Tool execution end — result, errors, duration |
 | `agent_end` | Run complete — success/failure, full message history |
 
-All events are collected during the agent run and sent as a single batch when the run completes.
+All events are collected during the agent run and sent as a single batch when the run completes. Sessions that never receive an `agent_end` are flushed after 30 minutes.
