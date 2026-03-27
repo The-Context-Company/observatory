@@ -5,8 +5,13 @@
   "type": "module",
   "files": [
     "dist",
+    "openclaw.plugin.json",
+    "src",
     "README.md"
   ],
+  "openclaw": {
+    "extension": "src/index.ts"
+  },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",

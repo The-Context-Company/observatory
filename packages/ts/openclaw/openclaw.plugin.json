@@ -1,0 +1,36 @@
+{
+  "id": "@contextcompany/openclaw",
+  "name": "The Context Company",
+  "description": "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
+  "configSchema": {
+    "type": "object",
+    "additionalProperties": false,
+    "properties": {
+      "enabled": { "type": "boolean" },
+      "apiKey": { "type": "string" },
+      "endpoint": { "type": "string" },
+      "debug": { "type": "boolean" }
+    }
+  },
+  "uiHints": {
+    "enabled": {
+      "label": "Tracing Enabled",
+      "help": "Enable trace export to The Context Company."
+    },
+    "apiKey": {
+      "label": "TCC API Key",
+      "placeholder": "tcc_...",
+      "sensitive": true,
+      "help": "Falls back to TCC_API_KEY environment variable."
+    },
+    "endpoint": {
+      "label": "TCC Endpoint URL",
+      "placeholder": "https://api.thecontext.company/v1/openclaw",
+      "help": "Auto-detected from API key prefix. Override for custom deployments."
+    },
+    "debug": {
+      "label": "Debug Logging",
+      "help": "Log hook events and transport details to console."
+    }
+  }
+}
