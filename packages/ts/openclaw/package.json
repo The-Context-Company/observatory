@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/openclaw",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Context Company integration for OpenClaw",
   "type": "module",
   "files": [
@@ -10,7 +10,9 @@
     "README.md"
   ],
   "openclaw": {
-    "extensions": ["src/index.ts"],
+    "extensions": [
+      "src/index.ts"
+    ],
     "plugin": "openclaw.plugin.json"
   },
   "main": "dist/index.cjs",
