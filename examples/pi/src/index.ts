@@ -20,10 +20,15 @@ async function main() {
 
   const { session } = await createAgentSession();
 
-  // Add TCC instrumentation — that's it
   instrumentPiSession(session, {
     sessionId: randomUUID(),
     conversational: true,
+  });
+
+  session.subscribe((event: any) => {
+    if (event.type === "message_update" && event.assistantMessageEvent?.type === "text_delta") {
+      process.stdout.write(event.assistantMessageEvent.delta);
+    }
   });
 
   while (true) {
@@ -36,8 +41,8 @@ async function main() {
       break;
     }
 
-    const result = await session.prompt(trimmed);
-    console.log(result);
+    await session.prompt(trimmed);
+    console.log();
   }
 }
 
