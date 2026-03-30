@@ -36,6 +36,74 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Auto-generate changeset from conventional commit
+        run: |
+          MSG=$(git log -1 --pretty=%s)
+          echo "Commit message: $MSG"
+
+          # Skip if this is a changeset version PR merge
+          if [[ "$MSG" == chore\(ts-release\):* ]]; then
+            echo "Version PR merge, skipping changeset generation."
+            exit 0
+          fi
+
+          # Skip if there are already changeset files (manually created)
+          EXISTING=$(find .changeset -name '*.md' ! -name 'README.md' | head -1)
+          if [ -n "$EXISTING" ]; then
+            echo "Changeset already exists ($EXISTING), skipping auto-generation."
+            exit 0
+          fi
+
+          # Map commit scopes to npm package names
+          scope_to_pkg() {
+            case "$1" in
+              otel) echo "@contextcompany/otel" ;;
+              widget) echo "@contextcompany/widget" ;;
+              claude) echo "@contextcompany/claude" ;;
+              langchain) echo "@contextcompany/langchain" ;;
+              mastra) echo "@contextcompany/mastra" ;;
+              custom) echo "@contextcompany/custom" ;;
+              openclaw) echo "@contextcompany/openclaw" ;;
+              pi) echo "@contextcompany/pi" ;;
+              api) echo "@contextcompany/api" ;;
+              *) echo "" ;;
+            esac
+          }
+
+          # Parse conventional commit: type(scope): description
+          if [[ "$MSG" =~ ^(feat|fix|perf)\(([a-z]+)\)(!)?:\ (.+)$ ]]; then
+            TYPE="${BASH_REMATCH[1]}"
+            SCOPE="${BASH_REMATCH[2]}"
+            BREAKING="${BASH_REMATCH[3]}"
+            DESC="${BASH_REMATCH[4]}"
+          else
+            echo "Not a releasable conventional commit, skipping."
+            exit 0
+          fi
+
+          PKG=$(scope_to_pkg "$SCOPE")
+          if [ -z "$PKG" ]; then
+            echo "Scope '$SCOPE' is not a TS package, skipping."
+            exit 0
+          fi
+
+          # Determine bump level
+          if [ "$BREAKING" = "!" ]; then
+            BUMP="major"
+          elif [ "$TYPE" = "feat" ]; then
+            BUMP="minor"
+          else
+            BUMP="patch"
+          fi
+
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          FILENAME=".changeset/${SCOPE}-${SHORT_SHA}.md"
+
+          printf -- '---\n"%s": %s\n---\n\n%s\n' "$PKG" "$BUMP" "$DESC" > "$FILENAME"
+
+          echo "Auto-generated $FILENAME ($PKG: $BUMP)"
+          cat "$FILENAME"
+
       - name: Build packages
         run: pnpm --filter "./packages/ts/*" run build
 
