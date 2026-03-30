@@ -50,10 +50,8 @@
   "peerDependencies": {
     "@langchain/core": ">=0.2.0"
   },
-  "dependencies": {
-    "@contextcompany/api": "workspace:*"
-  },
   "devDependencies": {
+    "@contextcompany/api": "workspace:*",
     "@langchain/core": "^0.3.80",
     "@types/node": "^20.19.37",
     "tsup": "^8.5.1",

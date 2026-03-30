@@ -277,10 +277,10 @@ importers:
       '@anthropic-ai/claude-agent-sdk':
         specifier: '>=0.1.0'
         version: 0.1.53(zod@4.1.13)
+    devDependencies:
       '@contextcompany/api':
         specifier: workspace:*
         version: link:../api
-    devDependencies:
       '@types/node':
         specifier: ^20
         version: 20.19.25
@@ -292,11 +292,10 @@ importers:
         version: 5.9.3
 
   packages/ts/custom:
-    dependencies:
+    devDependencies:
       '@contextcompany/api':
         specifier: workspace:*
         version: link:../api
-    devDependencies:
       '@types/node':
         specifier: ^20
         version: 20.19.25
@@ -308,11 +307,10 @@ importers:
         version: 5.9.3
 
   packages/ts/langchain:
-    dependencies:
+    devDependencies:
       '@contextcompany/api':
         specifier: workspace:*
         version: link:../api
-    devDependencies:
       '@langchain/core':
         specifier: ^0.3.80
         version: 0.3.80(@opentelemetry/api@1.9.0)(@opentelemetry/exporter-trace-otlp-proto@0.203.0(@opentelemetry/api@1.9.0))(@opentelemetry/sdk-trace-base@2.2.0(@opentelemetry/api@1.9.0))(openai@6.26.0(ws@8.18.3)(zod@4.1.13))
@@ -327,11 +325,10 @@ importers:
         version: 5.9.3
 
   packages/ts/mastra:
-    dependencies:
+    devDependencies:
       '@contextcompany/api':
         specifier: workspace:*
         version: link:../api
-    devDependencies:
       '@mastra/core':
         specifier: ^0.24.6
         version: 0.24.6(@sinclair/typebox@0.34.48)(openapi-types@12.1.3)(react@19.2.3)(zod@4.1.13)
@@ -347,6 +344,9 @@ importers:
 
   packages/ts/openclaw:
     devDependencies:
+      '@contextcompany/api':
+        specifier: workspace:*
+        version: link:../api
       '@types/node':
         specifier: ^20
         version: 20.19.37
@@ -359,9 +359,6 @@ importers:
 
   packages/ts/otel:
     dependencies:
-      '@contextcompany/api':
-        specifier: workspace:*
-        version: link:../api
       '@opentelemetry/sdk-trace-base':
         specifier: ^2.1.0
         version: 2.2.0(@opentelemetry/api@1.9.0)
@@ -372,6 +369,9 @@ importers:
         specifier: ^8.18.3
         version: 8.18.3
     devDependencies:
+      '@contextcompany/api':
+        specifier: workspace:*
+        version: link:../api
       '@opentelemetry/api':
         specifier: ^1.9.0
         version: 1.9.0
@@ -405,13 +405,13 @@ importers:
 
   packages/ts/pi:
     dependencies:
-      '@contextcompany/api':
-        specifier: workspace:*
-        version: link:../api
       '@mariozechner/pi-coding-agent':
         specifier: '>=0.50.0'
         version: 0.62.0(ws@8.18.3)(zod@4.1.13)
     devDependencies:
+      '@contextcompany/api':
+        specifier: workspace:*
+        version: link:../api
       '@types/node':
         specifier: ^20
         version: 20.19.37

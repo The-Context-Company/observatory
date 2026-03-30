@@ -7,6 +7,7 @@
  * All parsing/transformation happens server-side.
  */
 
+import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import type { ActiveSession, OpenClawPluginConfig } from "./types.js";
 export type { OpenClawPluginConfig } from "./types.js";
 import { safeClone, sendToTcc } from "./transport.js";
@@ -31,7 +32,7 @@ function registerHooks(
 
   const apiKey =
     (typeof pluginConfig.apiKey === "string" ? pluginConfig.apiKey : null) ??
-    process.env.TCC_API_KEY;
+    getTCCApiKey();
 
   if (!apiKey) {
     log.warn("No TCC_API_KEY found. Set env var or plugin config. Disabled.");
@@ -42,11 +43,7 @@ function registerHooks(
     (typeof pluginConfig.endpoint === "string"
       ? pluginConfig.endpoint
       : null) ??
-    (process.env.TCC_BASE_URL
-      ? `${process.env.TCC_BASE_URL.replace(/\/+$/, "")}/v1/openclaw`
-      : apiKey.startsWith("dev_")
-        ? "https://dev.thecontext.company/v1/openclaw"
-        : "https://api.thecontext.company/v1/openclaw");
+    getTCCUrl("/v1/openclaw", apiKey);
 
   log.info(`exporting runs to ${url}`);
 

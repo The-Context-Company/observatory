@@ -7,5 +7,5 @@ export default defineConfig({
   splitting: false,
   treeshake: true,
   clean: true,
-  external: ["@mariozechner/pi-coding-agent", "@mariozechner/pi-agent-core", "@mariozechner/pi-ai", "@contextcompany/api"],
+  external: ["@mariozechner/pi-coding-agent", "@mariozechner/pi-agent-core", "@mariozechner/pi-ai"],
 });

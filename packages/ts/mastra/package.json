@@ -43,10 +43,8 @@
   "peerDependencies": {
     "@mastra/core": "^0.24.0"
   },
-  "dependencies": {
-    "@contextcompany/api": "workspace:*"
-  },
   "devDependencies": {
+    "@contextcompany/api": "workspace:*",
     "@mastra/core": "^0.24.6",
     "@types/node": "^20",
     "tsup": "^8.5.0",

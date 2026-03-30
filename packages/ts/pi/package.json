@@ -46,10 +46,8 @@
   "peerDependencies": {
     "@mariozechner/pi-coding-agent": ">=0.50.0"
   },
-  "dependencies": {
-    "@contextcompany/api": "workspace:*"
-  },
   "devDependencies": {
+    "@contextcompany/api": "workspace:*",
     "@types/node": "^20",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3"

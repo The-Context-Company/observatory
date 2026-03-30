@@ -1,24 +1,16 @@
+import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import { getConfig } from "./config";
 
 function resolveApiKey(): string | undefined {
   const { apiKey } = getConfig();
   if (apiKey) return apiKey;
-  if (typeof process !== "undefined" && process.env?.TCC_API_KEY) {
-    return process.env.TCC_API_KEY;
-  }
-  return undefined;
+  return getTCCApiKey();
 }
 
 function resolveUrl(apiKey: string): string {
   const { url } = getConfig();
   if (url) return url;
-  if (typeof process !== "undefined" && process.env?.TCC_BASE_URL) {
-    return `${process.env.TCC_BASE_URL.replace(/\/+$/, "")}/v1/custom`;
-  }
-  const isDev = apiKey.startsWith("dev_");
-  return isDev
-    ? "https://dev.thecontext.company/v1/custom"
-    : "https://api.thecontext.company/v1/custom";
+  return getTCCUrl("/v1/custom", apiKey);
 }
 
 export function isDebug(): boolean {
