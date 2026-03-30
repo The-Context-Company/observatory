@@ -328,7 +328,7 @@ chore: upgrade dependencies
 
 Never edit version numbers manually. CI handles everything on merge to `main`:
 
-- **TypeScript** — uses [Changesets](https://github.com/changesets/changesets). CI automatically generates changeset files from your conventional commit messages (e.g., `feat(pi): add event stream support` → minor bump for `@contextcompany/pi`). CI opens a "Version Packages" PR; merging it publishes to npm.
+- **TypeScript** — uses [Changesets](https://github.com/changesets/changesets). When you change a TS package, add a changeset file via `pnpm changeset`. CI opens a "Version Packages" PR; merging it publishes to npm.
 - **Python** — uses [python-semantic-release](https://python-semantic-release.readthedocs.io/). CI reads your commit messages automatically. A `fix(python):` commit publishes a patch; `feat(python):` publishes a minor.
 
 The two pipelines are completely independent. A TS-only merge won't touch Python, and vice versa.
