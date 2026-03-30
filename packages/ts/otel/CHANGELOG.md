@@ -1,11 +1,5 @@
 # @contextcompany/otel
 
-## 1.0.14
-
-### Patch Changes
-
-- 6c6bc9c: bundle @contextcompany/api at build time to fix endpoint resolution
-
 ## 1.0.13
 
 ### Patch Changes
