@@ -37,12 +37,11 @@ export type PiInstrumentation = {
   setRunId: (id: string) => void;
 };
 
-export function instrumentPiSession(
-  session: PiAgentSession,
-  config: TCCPiConfig = {}
-): PiInstrumentation {
-  if (config.debug) setDebug(true);
+export type PiEventStreamInstrumentation = {
+  getLastRunId: () => string | null;
+};
 
+function createListener(config: TCCPiConfig) {
   const send = createSender({
     apiKey: config.apiKey,
     endpoint: config.endpoint,
@@ -150,14 +149,49 @@ export function instrumentPiSession(
     }
   };
 
-  const unsubscribe = session.subscribe(listener as (event: unknown) => void);
-  debug("Instrumentation active");
-
   return {
-    unsubscribe,
+    listener,
     getLastRunId: () => lastRunId,
     setRunId: (id: string) => {
       nextRunId = id;
     },
   };
+}
+
+export function instrumentPiSession(
+  session: PiAgentSession,
+  config: TCCPiConfig = {}
+): PiInstrumentation {
+  if (config.debug) setDebug(true);
+
+  const { listener, getLastRunId, setRunId } = createListener(config);
+
+  const unsubscribe = session.subscribe(listener as (event: unknown) => void);
+  debug("Instrumentation active");
+
+  return {
+    unsubscribe,
+    getLastRunId,
+    setRunId,
+  };
+}
+
+export function instrumentPiEventStream<T extends { type: string }>(
+  events: AsyncIterable<T>,
+  config: TCCPiConfig = {}
+): AsyncIterable<T> & PiEventStreamInstrumentation {
+  if (config.debug) setDebug(true);
+
+  const { listener, getLastRunId } = createListener(config);
+
+  async function* instrumented(): AsyncGenerator<T> {
+    for await (const event of events) {
+      listener(event as unknown as PiAgentEvent);
+      yield event;
+    }
+  }
+
+  const stream = instrumented();
+
+  return Object.assign(stream, { getLastRunId });
 }
