@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/pi",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "The Context Company instrumentation for Pi Agent SDK",
   "type": "module",
   "files": [

@@ -1,6 +1,6 @@
 {
   "name": "pi-example",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Example Pi agent with TCC instrumentation",
   "type": "module",
   "private": true,

@@ -1,5 +1,11 @@
 # @contextcompany/langchain
 
+## 1.2.1
+
+### Patch Changes
+
+- 6c6bc9c: bundle @contextcompany/api at build time to fix endpoint resolution
+
 ## 1.2.0
 
 ### Minor Changes
