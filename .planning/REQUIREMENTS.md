@@ -74,7 +74,7 @@
 - [ ] **INST-15**: AI infers and wires high-value existing metadata visible in the codebase (userId, orgId, sessionId, request IDs, route context, conversation/thread IDs, environment, etc.); sessionId is especially important — if the codebase has any chat/conversation concept with message memory, AI should wire that as tcc.sessionId to group runs into sessions; if uncertain about any value, adds TODOs instead of guessing
 - [ ] **INST-16**: AI-generated changes must not modify business logic or control flow beyond what is required for instrumentation
 - [ ] **INST-17**: For recognized frameworks, wizard may choose between AI-generated patches and deterministic templates, preferring whichever produces more complete instrumentation for that codebase
-- [ ] **INST-18**: User is shown a summary or diff of AI-generated changes before apply, unless running in explicit auto-apply mode
+- [x] **INST-18**: User is shown a summary or diff of AI-generated changes before apply, unless running in explicit auto-apply mode
 
 ### Gotcha Fixes
 
@@ -82,7 +82,7 @@
 - [ ] **FIX-02**: For Next.js: ensure instrumentationHook is enabled in next.config
 - [ ] **FIX-03**: Auto-add tcc.conversational: true to instrumentation metadata
 - [ ] **FIX-04**: Auto-add tcc.sessionId and tcc.runId capture patterns appropriate to framework (not required, but heavily preferred — if the codebase has any concept of a chat/conversation with memory of previous messages, sessionId groups those into the same session for analysis)
-- [ ] **FIX-05**: AI-inferred metadata (userId, orgId, etc.) handled via INST-15 — gotcha fixes focus on framework config, not metadata
+- [x] **FIX-05**: AI-inferred metadata (userId, orgId, etc.) handled via INST-15 — gotcha fixes focus on framework config, not metadata
 
 ### MCP Setup
 
@@ -206,12 +206,12 @@
 | INST-15 | Phase 4 | Pending |
 | INST-16 | Phase 4 | Pending |
 | INST-17 | Phase 4 | Pending |
-| INST-18 | Phase 4 | Pending |
+| INST-18 | Phase 4 | Complete |
 | FIX-01 | Phase 4 | Pending |
 | FIX-02 | Phase 4 | Pending |
 | FIX-03 | Phase 4 | Pending |
 | FIX-04 | Phase 4 | Pending |
-| FIX-05 | Phase 4 | Pending |
+| FIX-05 | Phase 4 | Complete |
 | MCP-01 | Phase 5 | Pending |
 | MCP-02 | Phase 5 | Pending |
 | MCP-03 | Phase 5 | Pending |
