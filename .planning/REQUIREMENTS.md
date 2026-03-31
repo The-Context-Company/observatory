@@ -86,13 +86,13 @@
 
 ### MCP Setup
 
-- [ ] **MCP-01**: Detect editors with MCP config on disk (Cursor, Claude Code, Windsurf, OpenCode, VS Code)
-- [ ] **MCP-02**: Show detected editors pre-checked, let user add others
-- [ ] **MCP-03**: Write MCP config for file-based editors (Cursor: .cursor/mcp.json, Windsurf: ~/.codeium/windsurf/mcp_config.json)
-- [ ] **MCP-04**: Run `claude mcp add` for Claude Code
-- [ ] **MCP-05**: Merge with existing MCP config — never overwrite other servers
-- [ ] **MCP-06**: Use the provisioned readonly key (tcc_key_) as Bearer token
-- [ ] **MCP-07**: Show clear explanation of MCP benefits before setup ("Your AI coding tool can now query prod runs, find failures, and search insights")
+- [x] **MCP-01**: Detect editors with MCP config on disk (Cursor, Claude Code, Windsurf, OpenCode, VS Code)
+- [x] **MCP-02**: Show detected editors pre-checked, let user add others
+- [x] **MCP-03**: Write MCP config for file-based editors (Cursor: .cursor/mcp.json, Windsurf: ~/.codeium/windsurf/mcp_config.json)
+- [x] **MCP-04**: Run `claude mcp add` for Claude Code
+- [x] **MCP-05**: Merge with existing MCP config — never overwrite other servers
+- [x] **MCP-06**: Use the provisioned readonly key (tcc_key_) as Bearer token
+- [x] **MCP-07**: Show clear explanation of MCP benefits before setup ("Your AI coding tool can now query prod runs, find failures, and search insights")
 
 ### Slack Setup
 
@@ -212,13 +212,13 @@
 | FIX-03 | Phase 4 | Complete |
 | FIX-04 | Phase 4 | Complete |
 | FIX-05 | Phase 4 | Complete |
-| MCP-01 | Phase 5 | Pending |
-| MCP-02 | Phase 5 | Pending |
-| MCP-03 | Phase 5 | Pending |
-| MCP-04 | Phase 5 | Pending |
-| MCP-05 | Phase 5 | Pending |
-| MCP-06 | Phase 5 | Pending |
-| MCP-07 | Phase 5 | Pending |
+| MCP-01 | Phase 5 | Complete |
+| MCP-02 | Phase 5 | Complete |
+| MCP-03 | Phase 5 | Complete |
+| MCP-04 | Phase 5 | Complete |
+| MCP-05 | Phase 5 | Complete |
+| MCP-06 | Phase 5 | Complete |
+| MCP-07 | Phase 5 | Complete |
 | SLK-01 | Phase 6 | Pending |
 | SLK-02 | Phase 6 | Pending |
 | SLK-03 | Phase 6 | Pending |

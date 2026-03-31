@@ -16,7 +16,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 - [ ] **Phase 2: Authentication + Key Provisioning** - Browser OAuth login that provisions API keys without touching a dashboard
 - [ ] **Phase 3: Detection + Package Installation** - Auto-detect framework, language, and package manager, then install the right SDK packages
 - [ ] **Phase 4: Instrumentation + Gotcha Fixes** - AI-first instrumentation that generates project-specific patches, plus automatic framework config fixes
-- [ ] **Phase 5: MCP Editor Integration** - Connect AI coding tools to observability data via per-editor MCP configuration
+- [x] **Phase 5: MCP Editor Integration** - Connect AI coding tools to observability data via per-editor MCP configuration (completed 2026-03-31)
 - [ ] **Phase 6: Slack Integration** - Walk users through Slack workspace connection with no Pro plan gate
 - [ ] **Phase 7: First Win + Success Summary** - Deep-link to dashboard and print a complete summary so users see value immediately
 
@@ -87,9 +87,9 @@ Plans:
   2. MCP config is written for file-based editors (Cursor, Windsurf, VS Code) and `claude mcp add` is run for Claude Code
   3. Existing MCP configs are merged, not overwritten -- other servers remain intact
   4. The readonly key (tcc_key_) is used as Bearer token in all MCP configs
-**Plans:** 1 plan
+**Plans:** 1/1 plans complete
 Plans:
-- [ ] 05-01-PLAN.md -- MCP config utilities + setup-mcp pipeline step: editor detection, config merging, Claude Code CLI, pipeline wiring
+- [x] 05-01-PLAN.md -- MCP config utilities + setup-mcp pipeline step: editor detection, config merging, Claude Code CLI, pipeline wiring
 
 ### Phase 6: Slack Integration
 **Goal**: Users can connect Slack alerts during onboarding without needing a Pro plan
@@ -124,6 +124,6 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 2. Authentication + Key Provisioning | 0/? | Not started | - |
 | 3. Detection + Package Installation | 0/2 | Planning complete | - |
 | 4. Instrumentation + Gotcha Fixes | 0/4 | Planning complete | - |
-| 5. MCP Editor Integration | 0/1 | Planning complete | - |
+| 5. MCP Editor Integration | 1/1 | Complete   | 2026-03-31 |
 | 6. Slack Integration | 0/? | Not started | - |
 | 7. First Win + Success Summary | 0/? | Not started | - |
