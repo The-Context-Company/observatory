@@ -34,6 +34,15 @@ export interface FrameworkInfo {
   supportsLocalMode: boolean;
 }
 
+/** SDK packages to install for each framework */
+export const FRAMEWORK_PACKAGES: Record<Framework, string[]> = {
+  "nextjs-aisdk": ["@contextcompany/otel"],
+  "claude-agent-sdk": ["@contextcompany/claude"],
+  "langchain-ts": ["@contextcompany/langchain"],
+  "mastra": ["@contextcompany/mastra"],
+  "custom-ts": ["@contextcompany/custom"],
+};
+
 export const FRAMEWORKS: FrameworkInfo[] = [
   {
     id: "nextjs-aisdk",

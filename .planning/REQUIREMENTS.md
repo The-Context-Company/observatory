@@ -17,43 +17,43 @@
 
 ### Authentication
 
-- [x] **AUTH-01**: Wizard opens browser to WorkOS OAuth login via localhost callback server
+- [ ] **AUTH-01**: Wizard opens browser to WorkOS OAuth login via localhost callback server
 - [x] **AUTH-02**: Localhost callback server listens on 127.0.0.1 (not localhost) before browser opens
-- [x] **AUTH-03**: User can skip auth only with explicit --key flag (existing TCC_API_KEY in .env does NOT skip auth — user may want to provision MCP/Slack which require identity)
-- [x] **AUTH-04**: Wizard handles auth timeout gracefully (30s default, shows manual key fallback)
+- [ ] **AUTH-03**: User can skip auth only with explicit --key flag (existing TCC_API_KEY in .env does NOT skip auth — user may want to provision MCP/Slack which require identity)
+- [ ] **AUTH-04**: Wizard handles auth timeout gracefully (30s default, shows manual key fallback)
 - [x] **AUTH-05**: Auth tokens stored securely for session (not persisted to disk beyond .env keys)
-- [x] **AUTH-06**: When --key is used, wizard warns that MCP and Slack setup will be skipped (no user identity available)
+- [ ] **AUTH-06**: When --key is used, wizard warns that MCP and Slack setup will be skipped (no user identity available)
 
 ### Key Provisioning
 
-- [x] **KEY-01**: After auth, wizard provisions org-level prod API key (tcc_prod_) via Unkey for TCC_API_KEY
-- [x] **KEY-02**: After auth, wizard provisions user-level readonly key (tcc_key_) via Unkey for MCP
-- [x] **KEY-03**: Keys are written to appropriate .env file (.env.local for Next.js, .env for others)
-- [x] **KEY-04**: Existing .env values are never overwritten — wizard warns and skips if key exists
-- [x] **KEY-05**: .env file is ensured in .gitignore
+- [ ] **KEY-01**: After auth, wizard provisions org-level prod API key (tcc_prod_) via Unkey for TCC_API_KEY
+- [ ] **KEY-02**: After auth, wizard provisions user-level readonly key (tcc_key_) via Unkey for MCP
+- [ ] **KEY-03**: Keys are written to appropriate .env file (.env.local for Next.js, .env for others)
+- [ ] **KEY-04**: Existing .env values are never overwritten — wizard warns and skips if key exists
+- [ ] **KEY-05**: .env file is ensured in .gitignore
 
 ### Framework Detection
 
-- [x] **DET-01**: Detect Next.js + Vercel AI SDK (package.json: next + ai/@ai-sdk/*)
-- [x] **DET-02**: Detect Claude Agent SDK (package.json: @anthropic-ai/claude-agent-sdk)
-- [x] **DET-03**: Detect LangChain TS (package.json: @langchain/core or langchain)
-- [x] **DET-04**: Detect Mastra (package.json: @mastra/core)
-- [x] **DET-05**: Detect LangChain Python (pyproject.toml/requirements.txt: langchain)
-- [x] **DET-06**: Detect CrewAI (pyproject.toml/requirements.txt: crewai)
-- [x] **DET-07**: Detect Agno (pyproject.toml/requirements.txt: agno)
-- [x] **DET-08**: Detect Pi-Mono (package.json: @anthropic-ai/pi-mono or similar)
-- [x] **DET-09**: Detect OpenClaw (package.json: openclaw)
-- [x] **DET-10**: Detect LiteLLM Python (pyproject.toml/requirements.txt: litellm)
+- [ ] **DET-01**: Detect Next.js + Vercel AI SDK (package.json: next + ai/@ai-sdk/*)
+- [ ] **DET-02**: Detect Claude Agent SDK (package.json: @anthropic-ai/claude-agent-sdk)
+- [ ] **DET-03**: Detect LangChain TS (package.json: @langchain/core or langchain)
+- [ ] **DET-04**: Detect Mastra (package.json: @mastra/core)
+- [ ] **DET-05**: Detect LangChain Python (pyproject.toml/requirements.txt: langchain)
+- [ ] **DET-06**: Detect CrewAI (pyproject.toml/requirements.txt: crewai)
+- [ ] **DET-07**: Detect Agno (pyproject.toml/requirements.txt: agno)
+- [ ] **DET-08**: Detect Pi-Mono (package.json: @anthropic-ai/pi-mono or similar)
+- [ ] **DET-09**: Detect OpenClaw (package.json: openclaw)
+- [ ] **DET-10**: Detect LiteLLM Python (pyproject.toml/requirements.txt: litellm)
 - [x] **DET-11**: Fall back to Custom TS or Custom Python — for users on unsupported frameworks, custom-built agent frameworks, or highly custom setups where library instrumentation would break. Custom gives most granularity over what is logged.
-- [x] **DET-12**: Handle monorepos — detect primary framework, don't false-positive on sub-dependencies
+- [ ] **DET-12**: Handle monorepos — detect primary framework, don't false-positive on sub-dependencies
 
 ### Package Installation
 
-- [ ] **PKG-01**: Install correct framework-specific package (@contextcompany/otel for AI SDK, @contextcompany/claude for Claude, etc.)
-- [ ] **PKG-02**: Install using detected package manager with spinner
-- [ ] **PKG-03**: For Python, install contextcompany with correct extras (contextcompany[langchain], contextcompany[crewai], contextcompany[agno], contextcompany[litellm])
-- [ ] **PKG-04**: Install @contextcompany/pi for Pi-Mono, @contextcompany/openclaw for OpenClaw
-- [ ] **PKG-05**: Skip installation if packages already installed
+- [x] **PKG-01**: Install correct framework-specific package (@contextcompany/otel for AI SDK, @contextcompany/claude for Claude, etc.)
+- [x] **PKG-02**: Install using detected package manager with spinner
+- [x] **PKG-03**: For Python, install contextcompany with correct extras (contextcompany[langchain], contextcompany[crewai], contextcompany[agno], contextcompany[litellm])
+- [x] **PKG-04**: Install @contextcompany/pi for Pi-Mono, @contextcompany/openclaw for OpenClaw
+- [x] **PKG-05**: Skip installation if packages already installed
 
 ### Instrumentation
 
@@ -161,34 +161,34 @@
 | CLI-05 | Phase 1 | Complete |
 | CLI-06 | Phase 1 | Complete |
 | CLI-07 | Phase 1 | Complete |
-| AUTH-01 | Phase 2 | Complete |
+| AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Complete |
-| AUTH-03 | Phase 2 | Complete |
-| AUTH-04 | Phase 2 | Complete |
+| AUTH-03 | Phase 2 | Pending |
+| AUTH-04 | Phase 2 | Pending |
 | AUTH-05 | Phase 2 | Complete |
-| AUTH-06 | Phase 2 | Complete |
-| KEY-01 | Phase 2 | Complete |
-| KEY-02 | Phase 2 | Complete |
-| KEY-03 | Phase 2 | Complete |
-| KEY-04 | Phase 2 | Complete |
-| KEY-05 | Phase 2 | Complete |
-| DET-01 | Phase 3 | Complete |
-| DET-02 | Phase 3 | Complete |
-| DET-03 | Phase 3 | Complete |
-| DET-04 | Phase 3 | Complete |
-| DET-05 | Phase 3 | Complete |
-| DET-06 | Phase 3 | Complete |
-| DET-07 | Phase 3 | Complete |
-| DET-08 | Phase 3 | Complete |
-| DET-09 | Phase 3 | Complete |
-| DET-10 | Phase 3 | Complete |
+| AUTH-06 | Phase 2 | Pending |
+| KEY-01 | Phase 2 | Pending |
+| KEY-02 | Phase 2 | Pending |
+| KEY-03 | Phase 2 | Pending |
+| KEY-04 | Phase 2 | Pending |
+| KEY-05 | Phase 2 | Pending |
+| DET-01 | Phase 3 | Pending |
+| DET-02 | Phase 3 | Pending |
+| DET-03 | Phase 3 | Pending |
+| DET-04 | Phase 3 | Pending |
+| DET-05 | Phase 3 | Pending |
+| DET-06 | Phase 3 | Pending |
+| DET-07 | Phase 3 | Pending |
+| DET-08 | Phase 3 | Pending |
+| DET-09 | Phase 3 | Pending |
+| DET-10 | Phase 3 | Pending |
 | DET-11 | Phase 3 | Complete |
-| DET-12 | Phase 3 | Complete |
-| PKG-01 | Phase 3 | Pending |
-| PKG-02 | Phase 3 | Pending |
-| PKG-03 | Phase 3 | Pending |
-| PKG-04 | Phase 3 | Pending |
-| PKG-05 | Phase 3 | Pending |
+| DET-12 | Phase 3 | Pending |
+| PKG-01 | Phase 3 | Complete |
+| PKG-02 | Phase 3 | Complete |
+| PKG-03 | Phase 3 | Complete |
+| PKG-04 | Phase 3 | Complete |
+| PKG-05 | Phase 3 | Complete |
 | INST-01 | Phase 4 | Pending |
 | INST-02 | Phase 4 | Pending |
 | INST-03 | Phase 4 | Pending |

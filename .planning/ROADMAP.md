@@ -59,7 +59,10 @@ Plans:
   2. Wizard detects and uses the correct package manager (npm/yarn/pnpm/bun for TS, pip/poetry/uv for Python)
   3. In a monorepo, wizard does not false-positive on sub-dependencies and detects the primary framework
   4. Correct framework-specific packages are installed with a spinner, and already-installed packages are skipped
-**Plans**: TBD
+**Plans:** 2 plans
+Plans:
+- [ ] 03-01-PLAN.md -- Types expansion + detection utilities: extend Framework/PackageManager types, port detection from init, add Python parsing
+- [x] 03-02-PLAN.md -- Pipeline steps + wiring: detect-framework and install-packages steps, replace placeholders, wire into pipeline
 
 ### Phase 4: Instrumentation + Gotcha Fixes
 **Goal**: The user's codebase is instrumented with AI-generated, project-specific patches that wire up observability and metadata, and framework-specific gotchas are automatically fixed
@@ -116,7 +119,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 |-------|----------------|--------|-----------|
 | 1. Server Endpoints + CLI Scaffold | 0/3 | Planning complete | - |
 | 2. Authentication + Key Provisioning | 0/? | Not started | - |
-| 3. Detection + Package Installation | 0/? | Not started | - |
+| 3. Detection + Package Installation | 0/2 | Planning complete | - |
 | 4. Instrumentation + Gotcha Fixes | 0/? | Not started | - |
 | 5. MCP Editor Integration | 0/? | Not started | - |
 | 6. Slack Integration | 0/? | Not started | - |

@@ -20,11 +20,8 @@ function createPlaceholderStep(name: string, description: string): Step {
  * As each phase is implemented, its placeholder is replaced with a real step import.
  */
 export const placeholderSteps: Step[] = [
-  createPlaceholderStep(
-    "detect-framework",
-    "Framework and package manager detection",
-  ),
-  createPlaceholderStep("install-packages", "SDK package installation"),
+  createPlaceholderStep("authenticate", "Browser OAuth login"),
+  createPlaceholderStep("provision-keys", "API key provisioning"),
   createPlaceholderStep("instrument", "Codebase instrumentation"),
   createPlaceholderStep("setup-mcp", "MCP editor integration"),
   createPlaceholderStep("setup-slack", "Slack alerts connection"),
