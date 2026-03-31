@@ -86,6 +86,8 @@ export interface WizardContext {
   mode: Mode;
   /** TCC API key (provisioned or provided via --key flag) */
   apiKey?: string;
+  /** Readonly MCP key (tcc_key_ prefix, provisioned for MCP/editor integrations) */
+  readonlyKey?: string;
   /** Whether the project uses TypeScript */
   typescript?: boolean;
   /** Whether the project has a src/ directory */
