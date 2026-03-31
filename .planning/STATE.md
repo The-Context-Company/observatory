@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: executing
-stopped_at: Completed 07.1-02-PLAN.md
-last_updated: "2026-03-31T08:59:26.932Z"
+status: verifying
+stopped_at: Completed 07.1-03-PLAN.md
+last_updated: "2026-03-31T09:06:03.914Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 8
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 18
-  completed_plans: 16
+  completed_plans: 18
   percent: 0
 ---
 
@@ -26,8 +26,8 @@ See: .planning/PROJECT.md (updated 2026-03-30)
 ## Current Position
 
 Phase: 07.1 (move-cli-routes-from-dashboard-to-public-api) — EXECUTING
-Plan: 2 of 3
-Status: Ready to execute
+Plan: 3 of 3
+Status: Phase complete — ready for verification
 Last activity: 2026-03-31
 
 Progress: [░░░░░░░░░░] 0%
@@ -65,6 +65,8 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 06 P01 | 178s | 2 tasks | 6 files |
 | Phase 07 P01 | 2min | 2 tasks | 6 files |
 | Phase 07.1 P02 | 55s | 1 tasks | 4 files |
+| Phase 07.1 P01 | 234s | 2 tasks | 6 files |
+| Phase 07.1 P03 | 48s | 1 tasks | 7 files |
 
 ## Accumulated Context
 
@@ -100,6 +102,8 @@ Recent decisions affecting current work:
 - [Phase 06]: Slack client ID fetched from server at runtime via /api/cli/slack-client-id (not hardcoded)
 - [Phase 07]: Used p.note() for receipt-style summary box, WizardContext as accumulator pattern for tracking fields
 - [Phase 07.1]: User-facing dashboard URLs (settings, org pages) remain as www.thecontext.company; only API fetch URLs changed to api.thecontext.company
+- [Phase 07.1]: Used WorkOS v8 AuthenticationResponse.organizationId directly (not v7 organizationMemberships array)
+- [Phase 07.1]: Verified public-api routes exist before deleting old dashboard routes
 
 ### Roadmap Evolution
 
@@ -116,6 +120,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T08:59:26.929Z
-Stopped at: Completed 07.1-02-PLAN.md
+Last session: 2026-03-31T09:06:03.911Z
+Stopped at: Completed 07.1-03-PLAN.md
 Resume file: None

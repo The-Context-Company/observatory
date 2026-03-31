@@ -143,9 +143,9 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 **Goal:** All 7 CLI API routes live in public-api at api.thecontext.company/cli/* instead of dashboard, and the liftoff CLI points at the new URLs
 **Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08, D-09, D-10, D-11, D-12, D-13, D-14, D-15, D-16, D-17, D-18, D-19, D-20, D-21, D-22, D-23, D-24, D-25
 **Depends on:** Phase 7
-**Plans:** 1/3 plans executed
+**Plans:** 3/3 plans complete
 
 Plans:
-- [ ] 07.1-01-PLAN.md -- Create CLI routes in public-api: deps, env vars, encryption, postgres, 7 Hono routes, mount in index.ts
+- [x] 07.1-01-PLAN.md -- Create CLI routes in public-api: deps, env vars, encryption, postgres, 7 Hono routes, mount in index.ts
 - [x] 07.1-02-PLAN.md -- Update liftoff CLI base URLs: DASHBOARD_BASE to API_BASE in all 4 step files
-- [ ] 07.1-03-PLAN.md -- Delete old dashboard CLI routes: rm -rf demo/src/app/api/cli/
+- [x] 07.1-03-PLAN.md -- Delete old dashboard CLI routes: rm -rf demo/src/app/api/cli/
