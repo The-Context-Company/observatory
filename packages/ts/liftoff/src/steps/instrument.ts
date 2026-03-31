@@ -201,6 +201,24 @@ export const instrumentStep: Step = {
       fs.writeFileSync(absPath, change.newContent, "utf-8");
     }
 
+    // Track which files were created vs modified
+    ctx.filesCreated = [];
+    ctx.filesModified = [];
+    for (const filePath of applied) {
+      const change = changes.find((c) => c.filePath === filePath);
+      if (!change) continue;
+      if (change.oldContent === "") {
+        ctx.filesCreated.push(filePath);
+      } else {
+        ctx.filesModified.push(filePath);
+      }
+    }
+
+    // Track metadata hooks if AI instrumentation was used
+    if (usedAI && aiMetadata) {
+      ctx.metadataHooks = aiMetadata;
+    }
+
     // Log summary
     if (applied.length > 0) {
       p.log.success(

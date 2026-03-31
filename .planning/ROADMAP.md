@@ -116,7 +116,7 @@ Plans:
   3. Success summary prints: framework detected, all files created/modified, metadata hooks added, MCP editors configured, Slack status, and exact next step
 **Plans:** 1 plan
 Plans:
-- [ ] 06-01-PLAN.md -- Slack OAuth step + server endpoints: setup-slack pipeline step with localhost callback, server-side token exchange, pipeline wiring
+- [ ] 07-01-PLAN.md -- Success summary step + context tracking: extend WizardContext with tracking fields, create success-summary step with receipt-style output, deep-link to dashboard
 
 ## Progress
 
@@ -132,4 +132,4 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 4. Instrumentation + Gotcha Fixes | 0/4 | Planning complete | - |
 | 5. MCP Editor Integration | 1/1 | Complete   | 2026-03-31 |
 | 6. Slack Integration | 0/1 | Planning complete | - |
-| 7. First Win + Success Summary | 0/? | Not started | - |
+| 7. First Win + Success Summary | 0/1 | Planning complete | - |
