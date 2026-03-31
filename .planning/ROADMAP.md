@@ -48,7 +48,9 @@ Plans:
   3. Existing .env values are never overwritten -- wizard warns and skips if a key already exists
   4. Using --key flag skips auth entirely and warns that MCP and Slack setup will be unavailable
   5. If auth times out after 30 seconds, user sees a manual key fallback option
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 06-01-PLAN.md -- Slack OAuth step + server endpoints: setup-slack pipeline step with localhost callback, server-side token exchange, pipeline wiring
 
 ### Phase 3: Detection + Package Installation
 **Goal**: The wizard correctly identifies any supported framework and installs the right SDK packages using the project's package manager
@@ -104,7 +106,9 @@ Plans:
   2. Selecting yes opens browser to Slack OAuth and the CLI receives the callback
   3. User is guided to add the bot to a channel and run /subscribe
   4. Free-tier users can set up Slack (no Pro plan gate)
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 06-01-PLAN.md -- Slack OAuth step + server endpoints: setup-slack pipeline step with localhost callback, server-side token exchange, pipeline wiring
 
 ### Phase 7: First Win + Success Summary
 **Goal**: The user finishes the wizard knowing exactly what happened, what to do next, and sees their first traces appear in the dashboard
@@ -114,7 +118,9 @@ Plans:
   1. User sees the exact command to run their app (e.g., "npm run dev" or "python main.py")
   2. Deep-link to dashboard runs page opens so user can watch traces appear in real-time
   3. Success summary prints: framework detected, all files created/modified, metadata hooks added, MCP editors configured, Slack status, and exact next step
-**Plans**: TBD
+**Plans:** 1 plan
+Plans:
+- [ ] 06-01-PLAN.md -- Slack OAuth step + server endpoints: setup-slack pipeline step with localhost callback, server-side token exchange, pipeline wiring
 
 ## Progress
 
@@ -129,5 +135,5 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 3. Detection + Package Installation | 0/2 | Planning complete | - |
 | 4. Instrumentation + Gotcha Fixes | 0/4 | Planning complete | - |
 | 5. MCP Editor Integration | 1/1 | Complete   | 2026-03-31 |
-| 6. Slack Integration | 0/? | Not started | - |
+| 6. Slack Integration | 0/1 | Planning complete | - |
 | 7. First Win + Success Summary | 0/? | Not started | - |
