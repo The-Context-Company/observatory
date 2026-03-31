@@ -54,7 +54,7 @@ function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
 export async function runPipeline(
   steps: Step[],
   ctx: WizardContext,
-): Promise<void> {
+): Promise<boolean> {
   setupSignalHandlers(ctx, steps);
 
   for (const step of steps) {
@@ -80,7 +80,9 @@ export async function runPipeline(
           `${step.name} failed${result.message ? `: ${result.message}` : ""}`,
         );
         await runCleanup();
-        return;
+        return false;
     }
   }
+
+  return true;
 }

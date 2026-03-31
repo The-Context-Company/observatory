@@ -73,7 +73,10 @@ ${pc.dim("Options:")}
   const steps: Step[] = await getSteps();
 
   // Run pipeline
-  await runPipeline(steps, ctx);
+  const success = await runPipeline(steps, ctx);
+  if (!success) {
+    process.exit(1);
+  }
 
   // Outro
   p.outro(
