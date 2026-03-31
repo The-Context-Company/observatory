@@ -5,8 +5,9 @@ import { detectFrameworkStep } from "./steps/detect-framework.js";
 import { gitCheckStep } from "./steps/git-check.js";
 import { installPackagesStep } from "./steps/install-packages.js";
 import { instrumentStep } from "./steps/instrument.js";
-import { placeholderSteps } from "./steps/placeholder.js";
 import { setupMcpStep } from "./steps/setup-mcp.js";
+import { authStep } from "./steps/auth.js";
+import { provisionKeysStep } from "./steps/provision-keys.js";
 import { setupSlackStep } from "./steps/setup-slack.js";
 import { successSummaryStep } from "./steps/success-summary.js";
 import type { Step, WizardContext } from "./types.js";
@@ -75,7 +76,10 @@ ${pc.dim("Options:")}
   const steps: Step[] = await getSteps();
 
   // Run pipeline
-  await runPipeline(steps, ctx);
+  const success = await runPipeline(steps, ctx);
+  if (!success) {
+    process.exit(1);
+  }
 
   // Outro
   p.outro(
@@ -89,10 +93,10 @@ ${pc.dim("Options:")}
  */
 async function getSteps(): Promise<Step[]> {
   // Pipeline order: git-check -> auth -> keys -> detect -> install -> instrument -> mcp -> slack -> summary
-  const authSteps = placeholderSteps.slice(0, 2); // authenticate, provision-keys
   return [
     gitCheckStep,
-    ...authSteps,
+    authStep,
+    provisionKeysStep,
     detectFrameworkStep,
     installPackagesStep,
     instrumentStep,
