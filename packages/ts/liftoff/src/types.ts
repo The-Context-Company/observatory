@@ -3,9 +3,25 @@ export type Framework =
   | "claude-agent-sdk"
   | "langchain-ts"
   | "mastra"
-  | "custom-ts";
+  | "pi-mono"
+  | "openclaw"
+  | "custom-ts"
+  | "langchain-python"
+  | "crewai"
+  | "agno"
+  | "litellm"
+  | "custom-python";
 
-export type PackageManager = "npm" | "yarn" | "pnpm" | "bun";
+export type PackageManager =
+  | "npm"
+  | "yarn"
+  | "pnpm"
+  | "bun"
+  | "pip"
+  | "poetry"
+  | "uv";
+
+export type ProjectLanguage = "typescript" | "python" | "unknown";
 
 export type Mode = "cloud" | "local";
 
@@ -45,17 +61,89 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     id: "mastra",
     name: "Mastra",
     description: "Instrument Mastra agents and workflows",
-    docsUrl: "https://docs.thecontext.company/frameworks/mastra/setup",
+    docsUrl:
+      "https://docs.thecontext.company/frameworks/mastra/setup",
+    supportsLocalMode: false,
+  },
+  {
+    id: "pi-mono",
+    name: "Pi-Mono",
+    description: "Instrument Pi coding agent",
+    docsUrl: "https://docs.thecontext.company/",
+    supportsLocalMode: false,
+  },
+  {
+    id: "openclaw",
+    name: "OpenClaw",
+    description: "Instrument OpenClaw agents",
+    docsUrl: "https://docs.thecontext.company/",
     supportsLocalMode: false,
   },
   {
     id: "custom-ts",
     name: "Custom (TypeScript)",
-    description: "Manual instrumentation for custom TypeScript agents",
+    description:
+      "Manual instrumentation for custom TypeScript agents",
+    docsUrl: "https://docs.thecontext.company/",
+    supportsLocalMode: false,
+  },
+  {
+    id: "langchain-python",
+    name: "LangChain (Python)",
+    description: "Instrument LangChain Python agents",
+    docsUrl: "https://docs.thecontext.company/",
+    supportsLocalMode: false,
+  },
+  {
+    id: "crewai",
+    name: "CrewAI",
+    description: "Instrument CrewAI agents",
+    docsUrl: "https://docs.thecontext.company/",
+    supportsLocalMode: false,
+  },
+  {
+    id: "agno",
+    name: "Agno",
+    description: "Instrument Agno agents",
+    docsUrl: "https://docs.thecontext.company/",
+    supportsLocalMode: false,
+  },
+  {
+    id: "litellm",
+    name: "LiteLLM",
+    description: "Instrument LiteLLM proxy",
+    docsUrl: "https://docs.thecontext.company/",
+    supportsLocalMode: false,
+  },
+  {
+    id: "custom-python",
+    name: "Custom (Python)",
+    description:
+      "Manual instrumentation for custom Python agents",
     docsUrl: "https://docs.thecontext.company/",
     supportsLocalMode: false,
   },
 ];
+
+/** Maps each framework to its required packages */
+export const FRAMEWORK_PACKAGES: Record<Framework, string[]> = {
+  "nextjs-aisdk": [
+    "@contextcompany/otel",
+    "@vercel/otel",
+    "@opentelemetry/api",
+  ],
+  "claude-agent-sdk": ["@contextcompany/claude"],
+  "langchain-ts": ["@contextcompany/langchain"],
+  "mastra": ["@contextcompany/mastra"],
+  "pi-mono": ["@contextcompany/pi"],
+  "openclaw": ["@contextcompany/openclaw"],
+  "custom-ts": ["@contextcompany/custom"],
+  "langchain-python": ["contextcompany[langchain]"],
+  "crewai": ["contextcompany[crewai]"],
+  "agno": ["contextcompany[agno]"],
+  "litellm": ["contextcompany[litellm]"],
+  "custom-python": ["contextcompany"],
+};
 
 /** Result of a pipeline step execution */
 export interface StepResult {
@@ -82,6 +170,8 @@ export interface WizardContext {
   framework?: Framework;
   /** Detected package manager */
   packageManager?: PackageManager;
+  /** Detected project language */
+  language?: ProjectLanguage;
   /** Cloud (dashboard) or Local (no account needed) */
   mode: Mode;
   /** TCC API key (provisioned or provided via --key flag) */
