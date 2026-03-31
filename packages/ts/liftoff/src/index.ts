@@ -3,6 +3,7 @@ import pc from "picocolors";
 import { runPipeline } from "./pipeline.js";
 import { authStep } from "./steps/auth.js";
 import { gitCheckStep } from "./steps/git-check.js";
+import { installPackagesStep } from "./steps/install-packages.js";
 import { placeholderSteps } from "./steps/placeholder.js";
 import { provisionKeysStep } from "./steps/provision-keys.js";
 import type { Step, WizardContext } from "./types.js";
