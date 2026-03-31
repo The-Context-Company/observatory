@@ -8,8 +8,8 @@
 ### CLI Foundation
 
 - [x] **CLI-01**: User can run `npx @contextcompany/liftoff` to start the wizard
-- [ ] **CLI-02**: Wizard auto-detects framework from project files (package.json, pyproject.toml, requirements.txt) and confirms with user
-- [ ] **CLI-03**: Wizard detects package manager (npm/yarn/pnpm/bun for TS, pip/poetry/uv for Python)
+- [x] **CLI-02**: Wizard auto-detects framework from project files (package.json, pyproject.toml, requirements.txt) and confirms with user
+- [x] **CLI-03**: Wizard detects package manager (npm/yarn/pnpm/bun for TS, pip/poetry/uv for Python)
 - [x] **CLI-04**: Wizard checks git status and warns if working tree is dirty (but does not block)
 - [x] **CLI-05**: Ctrl+C cleanly exits with no partial state left behind
 - [x] **CLI-06**: Running wizard twice is idempotent — detects existing setup and skips/updates
@@ -44,16 +44,16 @@
 - [ ] **DET-08**: Detect Pi-Mono (package.json: @anthropic-ai/pi-mono or similar)
 - [ ] **DET-09**: Detect OpenClaw (package.json: openclaw)
 - [ ] **DET-10**: Detect LiteLLM Python (pyproject.toml/requirements.txt: litellm)
-- [ ] **DET-11**: Fall back to Custom TS or Custom Python — for users on unsupported frameworks, custom-built agent frameworks, or highly custom setups where library instrumentation would break. Custom gives most granularity over what is logged.
+- [x] **DET-11**: Fall back to Custom TS or Custom Python — for users on unsupported frameworks, custom-built agent frameworks, or highly custom setups where library instrumentation would break. Custom gives most granularity over what is logged.
 - [ ] **DET-12**: Handle monorepos — detect primary framework, don't false-positive on sub-dependencies
 
 ### Package Installation
 
-- [ ] **PKG-01**: Install correct framework-specific package (@contextcompany/otel for AI SDK, @contextcompany/claude for Claude, etc.)
-- [ ] **PKG-02**: Install using detected package manager with spinner
-- [ ] **PKG-03**: For Python, install contextcompany with correct extras (contextcompany[langchain], contextcompany[crewai], contextcompany[agno], contextcompany[litellm])
-- [ ] **PKG-04**: Install @contextcompany/pi for Pi-Mono, @contextcompany/openclaw for OpenClaw
-- [ ] **PKG-05**: Skip installation if packages already installed
+- [x] **PKG-01**: Install correct framework-specific package (@contextcompany/otel for AI SDK, @contextcompany/claude for Claude, etc.)
+- [x] **PKG-02**: Install using detected package manager with spinner
+- [x] **PKG-03**: For Python, install contextcompany with correct extras (contextcompany[langchain], contextcompany[crewai], contextcompany[agno], contextcompany[litellm])
+- [x] **PKG-04**: Install @contextcompany/pi for Pi-Mono, @contextcompany/openclaw for OpenClaw
+- [x] **PKG-05**: Skip installation if packages already installed
 
 ### Instrumentation
 
@@ -155,8 +155,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CLI-01 | Phase 1 | Complete |
-| CLI-02 | Phase 3 | Pending |
-| CLI-03 | Phase 3 | Pending |
+| CLI-02 | Phase 3 | Complete |
+| CLI-03 | Phase 3 | Complete |
 | CLI-04 | Phase 1 | Complete |
 | CLI-05 | Phase 1 | Complete |
 | CLI-06 | Phase 1 | Complete |
@@ -182,13 +182,13 @@
 | DET-08 | Phase 3 | Pending |
 | DET-09 | Phase 3 | Pending |
 | DET-10 | Phase 3 | Pending |
-| DET-11 | Phase 3 | Pending |
+| DET-11 | Phase 3 | Complete |
 | DET-12 | Phase 3 | Pending |
-| PKG-01 | Phase 3 | Pending |
-| PKG-02 | Phase 3 | Pending |
-| PKG-03 | Phase 3 | Pending |
-| PKG-04 | Phase 3 | Pending |
-| PKG-05 | Phase 3 | Pending |
+| PKG-01 | Phase 3 | Complete |
+| PKG-02 | Phase 3 | Complete |
+| PKG-03 | Phase 3 | Complete |
+| PKG-04 | Phase 3 | Complete |
+| PKG-05 | Phase 3 | Complete |
 | INST-01 | Phase 4 | Pending |
 | INST-02 | Phase 4 | Pending |
 | INST-03 | Phase 4 | Pending |
