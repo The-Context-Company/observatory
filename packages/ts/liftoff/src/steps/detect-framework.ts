@@ -1,7 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { FRAMEWORKS, type Framework, type Step, type StepResult, type WizardContext } from "../types.js";
-import { detectFramework } from "../utils/framework-detection.js";
+import { detectFramework, detectLanguage, detectTypeScript, detectSrcDir, detectAppRouter } from "../utils/framework-detection.js";
 import { detectPackageManager } from "../utils/package-manager.js";
 
 /**
@@ -46,8 +46,14 @@ export const detectFrameworkStep: Step = {
 
     ctx.framework = choice;
 
-    // Detect package manager
-    ctx.packageManager = detectPackageManager(ctx.installDir);
+    // Detect project characteristics (D-04, D-05)
+    ctx.language = detectLanguage(ctx.installDir);
+    ctx.typescript = detectTypeScript(ctx.installDir);
+    ctx.srcDir = detectSrcDir(ctx.installDir);
+    ctx.appDir = detectAppRouter(ctx.installDir);
+
+    // Detect package manager (D-06: pass language for correct Python PM detection)
+    ctx.packageManager = detectPackageManager(ctx.installDir, ctx.language);
 
     const frameworkName =
       FRAMEWORKS.find((f) => f.id === ctx.framework)?.name ?? ctx.framework;
