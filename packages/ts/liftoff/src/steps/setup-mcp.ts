@@ -71,6 +71,8 @@ export const setupMcpStep: Step = {
     }
 
     // Configure each selected editor
+    const configuredEditors: string[] = [];
+
     for (const editorId of selected) {
       const config = EDITOR_CONFIGS[editorId];
 
@@ -79,6 +81,7 @@ export const setupMcpStep: Step = {
         const result = runClaudeMcpAdd(ctx.readonlyKey!);
         if (result.success) {
           p.log.success(`Configured ${config.name}`);
+          configuredEditors.push(config.name);
         } else {
           p.log.warn(
             `Could not configure ${config.name}: ${result.error}`,
@@ -89,6 +92,7 @@ export const setupMcpStep: Step = {
         try {
           writeMcpConfig(editorId, ctx.installDir, ctx.readonlyKey!);
           p.log.success(`Configured ${config.name}`);
+          configuredEditors.push(config.name);
         } catch (err) {
           p.log.warn(
             `Could not configure ${config.name}: ${err instanceof Error ? err.message : String(err)}`,
@@ -97,6 +101,7 @@ export const setupMcpStep: Step = {
       }
     }
 
+    ctx.editorsConfigured = configuredEditors;
     ctx.completedSteps.push("setup-mcp");
     return { status: "completed" };
   },
