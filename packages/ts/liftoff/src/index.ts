@@ -69,7 +69,7 @@ ${pc.dim("Options:")}
   // Phase 4: instrumentation
   // Phase 5: mcp-setup
   // Phase 6: slack-setup ✓
-  // Phase 7: success-summary
+  // Phase 7: success-summary (done)
   const steps: Step[] = await getSteps();
 
   // Run pipeline
