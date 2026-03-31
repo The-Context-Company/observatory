@@ -78,10 +78,10 @@
 
 ### Gotcha Fixes
 
-- [ ] **FIX-01**: For Vercel AI SDK: enable experimental_telemetry: { isEnabled: true } in AI calls
-- [ ] **FIX-02**: For Next.js: ensure instrumentationHook is enabled in next.config
-- [ ] **FIX-03**: Auto-add tcc.conversational: true to instrumentation metadata
-- [ ] **FIX-04**: Auto-add tcc.sessionId and tcc.runId capture patterns appropriate to framework (not required, but heavily preferred — if the codebase has any concept of a chat/conversation with memory of previous messages, sessionId groups those into the same session for analysis)
+- [x] **FIX-01**: For Vercel AI SDK: enable experimental_telemetry: { isEnabled: true } in AI calls
+- [x] **FIX-02**: For Next.js: ensure instrumentationHook is enabled in next.config
+- [x] **FIX-03**: Auto-add tcc.conversational: true to instrumentation metadata
+- [x] **FIX-04**: Auto-add tcc.sessionId and tcc.runId capture patterns appropriate to framework (not required, but heavily preferred — if the codebase has any concept of a chat/conversation with memory of previous messages, sessionId groups those into the same session for analysis)
 - [x] **FIX-05**: AI-inferred metadata (userId, orgId, etc.) handled via INST-15 — gotcha fixes focus on framework config, not metadata
 
 ### MCP Setup
@@ -207,10 +207,10 @@
 | INST-16 | Phase 4 | Complete |
 | INST-17 | Phase 4 | Complete |
 | INST-18 | Phase 4 | Complete |
-| FIX-01 | Phase 4 | Pending |
-| FIX-02 | Phase 4 | Pending |
-| FIX-03 | Phase 4 | Pending |
-| FIX-04 | Phase 4 | Pending |
+| FIX-01 | Phase 4 | Complete |
+| FIX-02 | Phase 4 | Complete |
+| FIX-03 | Phase 4 | Complete |
+| FIX-04 | Phase 4 | Complete |
 | FIX-05 | Phase 4 | Complete |
 | MCP-01 | Phase 5 | Pending |
 | MCP-02 | Phase 5 | Pending |

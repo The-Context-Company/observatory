@@ -79,7 +79,7 @@ Plans:
 - [x] 04-01-PLAN.md -- AI instrumentation endpoint: POST /api/cli/instrument in context repo
 - [x] 04-02-PLAN.md -- Framework templates: deterministic fallback templates for all 12 frameworks
 - [x] 04-03-PLAN.md -- Utilities: colored diff display + codebase context extraction
-- [ ] 04-04-PLAN.md -- Instrument step + gotcha fixes: pipeline step with AI-first flow, template fallback, and gotcha detection
+- [x] 04-04-PLAN.md -- Instrument step + gotcha fixes: pipeline step with AI-first flow, template fallback, and gotcha detection
 **UI hint**: yes
 
 ### Phase 5: MCP Editor Integration
