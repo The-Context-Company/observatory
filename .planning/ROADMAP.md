@@ -143,11 +143,11 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 **Goal:** Wire disconnected auth/provision steps, add language detection calls, fix --key mode MCP flow with inline OAuth, and fix pipeline exit codes
 **Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08, D-09, D-10, D-11, D-12, D-13, D-14
 **Depends on:** Phase 7
-**Plans:** 2 plans
+**Plans:** 1/2 plans executed
 
 Plans:
 - [ ] 07.2-01-PLAN.md -- Wire real auth/provision steps, add language detection, fix pipeline exit code
-- [ ] 07.2-02-PLAN.md -- Add inline OAuth flow to setup-mcp for --key mode MCP
+- [x] 07.2-02-PLAN.md -- Add inline OAuth flow to setup-mcp for --key mode MCP
 
 ### Phase 07.1: Move CLI routes from dashboard to public-api (INSERTED)
 

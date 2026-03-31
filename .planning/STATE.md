@@ -2,15 +2,15 @@
 gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
-status: verifying
-stopped_at: Completed 07.1-03-PLAN.md
-last_updated: "2026-03-31T09:06:03.914Z"
+status: executing
+stopped_at: Completed 07.2-02-PLAN.md
+last_updated: "2026-03-31T09:22:53.138Z"
 last_activity: 2026-03-31
 progress:
-  total_phases: 8
+  total_phases: 10
   completed_phases: 8
-  total_plans: 18
-  completed_plans: 18
+  total_plans: 20
+  completed_plans: 19
   percent: 0
 ---
 
@@ -21,13 +21,13 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Get developers to their first "oh shit, this found something useful" moment as fast as possible.
-**Current focus:** Phase 07.1 — move-cli-routes-from-dashboard-to-public-api
+**Current focus:** Phase 07.2 — quality-audit-and-key-mcp-fix
 
 ## Current Position
 
-Phase: 07.1 (move-cli-routes-from-dashboard-to-public-api) — EXECUTING
-Plan: 3 of 3
-Status: Phase complete — ready for verification
+Phase: 07.2 (quality-audit-and-key-mcp-fix) — EXECUTING
+Plan: 2 of 2
+Status: Ready to execute
 Last activity: 2026-03-31
 
 Progress: [░░░░░░░░░░] 0%
@@ -67,6 +67,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 07.1 P02 | 55s | 1 tasks | 4 files |
 | Phase 07.1 P01 | 234s | 2 tasks | 6 files |
 | Phase 07.1 P03 | 48s | 1 tasks | 7 files |
+| Phase 07.2 P02 | 67s | 1 tasks | 1 files |
 
 ## Accumulated Context
 
@@ -104,6 +105,7 @@ Recent decisions affecting current work:
 - [Phase 07.1]: User-facing dashboard URLs (settings, org pages) remain as www.thecontext.company; only API fetch URLs changed to api.thecontext.company
 - [Phase 07.1]: Used WorkOS v8 AuthenticationResponse.organizationId directly (not v7 organizationMemberships array)
 - [Phase 07.1]: Verified public-api routes exist before deleting old dashboard routes
+- [Phase 07.2]: Inline OAuth mirrors auth.ts pattern but only provisions readonly key for MCP
 
 ### Roadmap Evolution
 
@@ -120,6 +122,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T09:06:03.911Z
-Stopped at: Completed 07.1-03-PLAN.md
+Last session: 2026-03-31T09:22:53.135Z
+Stopped at: Completed 07.2-02-PLAN.md
 Resume file: None
