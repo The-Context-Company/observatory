@@ -8,8 +8,8 @@
 ### CLI Foundation
 
 - [x] **CLI-01**: User can run `npx @contextcompany/liftoff` to start the wizard
-- [ ] **CLI-02**: Wizard auto-detects framework from project files (package.json, pyproject.toml, requirements.txt) and confirms with user
-- [ ] **CLI-03**: Wizard detects package manager (npm/yarn/pnpm/bun for TS, pip/poetry/uv for Python)
+- [x] **CLI-02**: Wizard auto-detects framework from project files (package.json, pyproject.toml, requirements.txt) and confirms with user
+- [x] **CLI-03**: Wizard detects package manager (npm/yarn/pnpm/bun for TS, pip/poetry/uv for Python)
 - [x] **CLI-04**: Wizard checks git status and warns if working tree is dirty (but does not block)
 - [x] **CLI-05**: Ctrl+C cleanly exits with no partial state left behind
 - [x] **CLI-06**: Running wizard twice is idempotent — detects existing setup and skips/updates
@@ -34,18 +34,18 @@
 
 ### Framework Detection
 
-- [ ] **DET-01**: Detect Next.js + Vercel AI SDK (package.json: next + ai/@ai-sdk/*)
-- [ ] **DET-02**: Detect Claude Agent SDK (package.json: @anthropic-ai/claude-agent-sdk)
-- [ ] **DET-03**: Detect LangChain TS (package.json: @langchain/core or langchain)
-- [ ] **DET-04**: Detect Mastra (package.json: @mastra/core)
-- [ ] **DET-05**: Detect LangChain Python (pyproject.toml/requirements.txt: langchain)
-- [ ] **DET-06**: Detect CrewAI (pyproject.toml/requirements.txt: crewai)
-- [ ] **DET-07**: Detect Agno (pyproject.toml/requirements.txt: agno)
-- [ ] **DET-08**: Detect Pi-Mono (package.json: @anthropic-ai/pi-mono or similar)
-- [ ] **DET-09**: Detect OpenClaw (package.json: openclaw)
-- [ ] **DET-10**: Detect LiteLLM Python (pyproject.toml/requirements.txt: litellm)
-- [ ] **DET-11**: Fall back to Custom TS or Custom Python — for users on unsupported frameworks, custom-built agent frameworks, or highly custom setups where library instrumentation would break. Custom gives most granularity over what is logged.
-- [ ] **DET-12**: Handle monorepos — detect primary framework, don't false-positive on sub-dependencies
+- [x] **DET-01**: Detect Next.js + Vercel AI SDK (package.json: next + ai/@ai-sdk/*)
+- [x] **DET-02**: Detect Claude Agent SDK (package.json: @anthropic-ai/claude-agent-sdk)
+- [x] **DET-03**: Detect LangChain TS (package.json: @langchain/core or langchain)
+- [x] **DET-04**: Detect Mastra (package.json: @mastra/core)
+- [x] **DET-05**: Detect LangChain Python (pyproject.toml/requirements.txt: langchain)
+- [x] **DET-06**: Detect CrewAI (pyproject.toml/requirements.txt: crewai)
+- [x] **DET-07**: Detect Agno (pyproject.toml/requirements.txt: agno)
+- [x] **DET-08**: Detect Pi-Mono (package.json: @anthropic-ai/pi-mono or similar)
+- [x] **DET-09**: Detect OpenClaw (package.json: openclaw)
+- [x] **DET-10**: Detect LiteLLM Python (pyproject.toml/requirements.txt: litellm)
+- [x] **DET-11**: Fall back to Custom TS or Custom Python — for users on unsupported frameworks, custom-built agent frameworks, or highly custom setups where library instrumentation would break. Custom gives most granularity over what is logged.
+- [x] **DET-12**: Handle monorepos — detect primary framework, don't false-positive on sub-dependencies
 
 ### Package Installation
 
@@ -155,8 +155,8 @@
 | Requirement | Phase | Status |
 |-------------|-------|--------|
 | CLI-01 | Phase 1 | Complete |
-| CLI-02 | Phase 3 | Pending |
-| CLI-03 | Phase 3 | Pending |
+| CLI-02 | Phase 3 | Complete |
+| CLI-03 | Phase 3 | Complete |
 | CLI-04 | Phase 1 | Complete |
 | CLI-05 | Phase 1 | Complete |
 | CLI-06 | Phase 1 | Complete |
@@ -172,18 +172,18 @@
 | KEY-03 | Phase 2 | Complete |
 | KEY-04 | Phase 2 | Complete |
 | KEY-05 | Phase 2 | Complete |
-| DET-01 | Phase 3 | Pending |
-| DET-02 | Phase 3 | Pending |
-| DET-03 | Phase 3 | Pending |
-| DET-04 | Phase 3 | Pending |
-| DET-05 | Phase 3 | Pending |
-| DET-06 | Phase 3 | Pending |
-| DET-07 | Phase 3 | Pending |
-| DET-08 | Phase 3 | Pending |
-| DET-09 | Phase 3 | Pending |
-| DET-10 | Phase 3 | Pending |
-| DET-11 | Phase 3 | Pending |
-| DET-12 | Phase 3 | Pending |
+| DET-01 | Phase 3 | Complete |
+| DET-02 | Phase 3 | Complete |
+| DET-03 | Phase 3 | Complete |
+| DET-04 | Phase 3 | Complete |
+| DET-05 | Phase 3 | Complete |
+| DET-06 | Phase 3 | Complete |
+| DET-07 | Phase 3 | Complete |
+| DET-08 | Phase 3 | Complete |
+| DET-09 | Phase 3 | Complete |
+| DET-10 | Phase 3 | Complete |
+| DET-11 | Phase 3 | Complete |
+| DET-12 | Phase 3 | Complete |
 | PKG-01 | Phase 3 | Pending |
 | PKG-02 | Phase 3 | Pending |
 | PKG-03 | Phase 3 | Pending |
