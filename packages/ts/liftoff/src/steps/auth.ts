@@ -5,8 +5,8 @@ import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
 import { startCallbackServer } from "../utils/localhost-server.js";
 
-/** Dashboard base URL (hosts /api/cli/* routes) */
-const DASHBOARD_BASE = "https://www.thecontext.company";
+/** Public API base URL (hosts /cli/* routes) */
+const API_BASE = "https://api.thecontext.company";
 const AUTH_TIMEOUT_MS = 30_000;
 
 /** Active server reference for cleanup on Ctrl+C */
@@ -73,7 +73,7 @@ export const authStep: Step = {
 
       // 3. Open browser for authentication
       p.log.info("Opening browser for authentication...");
-      const url = `${DASHBOARD_BASE}/api/cli/auth/start?port=${server.port}&state=${state}`;
+      const url = `${API_BASE}/cli/auth/start?port=${server.port}&state=${state}`;
       await open(url);
 
       // 4. Wait for callback
@@ -89,7 +89,7 @@ export const authStep: Step = {
       }
 
       // 6. Exchange code for tokens
-      const response = await fetch(`${DASHBOARD_BASE}/api/cli/auth`, {
+      const response = await fetch(`${API_BASE}/cli/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: result.code }),
