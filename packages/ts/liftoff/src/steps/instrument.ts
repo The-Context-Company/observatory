@@ -17,11 +17,11 @@ import {
   type FileOperation,
 } from "../utils/templates/index.js";
 
-/** Base URL for production dashboard (hosts /api/cli/* routes) */
-const DASHBOARD_BASE = "https://www.thecontext.company";
+/** Public API base URL (hosts /cli/* routes) */
+const API_BASE = "https://api.thecontext.company";
 
-/** Base URL for development dashboard */
-const DEV_DASHBOARD_BASE = "https://dev.thecontext.company";
+/** Dev API base URL */
+const DEV_API_BASE = "https://dev-api.thecontext.company";
 
 /** Timeout for AI instrumentation request (ms) */
 const AI_TIMEOUT_MS = 15_000;
@@ -255,7 +255,7 @@ export const instrumentStep: Step = {
 };
 
 /**
- * Attempt AI-powered instrumentation via the /api/cli/instrument endpoint.
+ * Attempt AI-powered instrumentation via the /cli/instrument endpoint.
  *
  * Uses AbortController with a 15-second timeout to prevent hung CLI.
  * Returns null on any failure (timeout, network error, bad response).
@@ -268,9 +268,9 @@ async function tryAIInstrumentation(
   s.start("Generating project-specific instrumentation...");
 
   const baseUrl = ctx.apiKey?.startsWith("dev_")
-    ? DEV_DASHBOARD_BASE
-    : DASHBOARD_BASE;
-  const url = `${baseUrl}/api/cli/instrument`;
+    ? DEV_API_BASE
+    : API_BASE;
+  const url = `${baseUrl}/cli/instrument`;
 
   const controller = new AbortController();
   const timeout = setTimeout(

@@ -4,8 +4,8 @@ import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
 import { startCallbackServer } from "../utils/localhost-server.js";
 
-/** Dashboard base URL (hosts /api/cli/* routes) */
-const DASHBOARD_BASE = "https://www.thecontext.company";
+/** Public API base URL (hosts /cli/* routes) */
+const API_BASE = "https://api.thecontext.company";
 
 const SLACK_SCOPES = [
   "channels:history",
@@ -30,7 +30,7 @@ async function fetchSlackClientId(
   accessToken: string,
 ): Promise<string | null> {
   try {
-    const res = await fetch(`${DASHBOARD_BASE}/api/cli/slack-client-id`, {
+    const res = await fetch(`${API_BASE}/cli/slack-client-id`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return null;
@@ -50,7 +50,7 @@ async function exchangeSlackCode(
   redirectUri: string,
 ): Promise<{ ok: true; teamName: string } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${DASHBOARD_BASE}/api/cli/slack-callback`, {
+    const res = await fetch(`${API_BASE}/cli/slack-callback`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
