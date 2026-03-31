@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 05-01-PLAN.md
-last_updated: "2026-03-31T07:41:40.532Z"
+stopped_at: Completed 06-01-PLAN.md
+last_updated: "2026-03-31T07:49:48.637Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 7
-  completed_phases: 5
-  total_plans: 13
-  completed_plans: 13
+  completed_phases: 6
+  total_plans: 14
+  completed_plans: 14
   percent: 0
 ---
 
@@ -21,11 +21,11 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Get developers to their first "oh shit, this found something useful" moment as fast as possible.
-**Current focus:** Phase 05 — mcp-editor-integration
+**Current focus:** Phase 06 — slack-integration
 
 ## Current Position
 
-Phase: 05 (mcp-editor-integration) — EXECUTING
+Phase: 06 (slack-integration) — EXECUTING
 Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-03-31
@@ -62,6 +62,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04 P01 | 163s | 1 tasks | 3 files |
 | Phase 04 P04 | 149s | 2 tasks | 4 files |
 | Phase 05 P01 | 113s | 2 tasks | 5 files |
+| Phase 06 P01 | 178s | 2 tasks | 6 files |
 
 ## Accumulated Context
 
@@ -93,6 +94,8 @@ Recent decisions affecting current work:
 - [Phase 05]: File-based editors use project-level config except Windsurf (global ~/.codeium/windsurf/mcp_config.json)
 - [Phase 05]: Claude Code uses CLI claude mcp add instead of file write
 - [Phase 05]: Readonly key (tcc_key_) used as Bearer token in all MCP configs
+- [Phase 06]: CLI opens browser directly to Slack OAuth URL, server-side code exchange via /api/cli/slack-callback
+- [Phase 06]: Slack client ID fetched from server at runtime via /api/cli/slack-client-id (not hardcoded)
 
 ### Pending Todos
 
@@ -105,6 +108,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T07:41:40.529Z
-Stopped at: Completed 05-01-PLAN.md
+Last session: 2026-03-31T07:49:48.634Z
+Stopped at: Completed 06-01-PLAN.md
 Resume file: None

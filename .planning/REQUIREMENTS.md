@@ -96,11 +96,11 @@
 
 ### Slack Setup
 
-- [ ] **SLK-01**: Ask user if they want Slack alerts after instrumentation completes
-- [ ] **SLK-02**: Open browser to Slack OAuth for workspace connection (reuse localhost callback pattern)
-- [ ] **SLK-03**: Guide user to add bot to channel and run /subscribe
-- [ ] **SLK-04**: No Pro plan gate — free users get limited Slack reports
-- [ ] **SLK-05**: Graceful skip if user declines or Slack auth fails
+- [x] **SLK-01**: Ask user if they want Slack alerts after instrumentation completes
+- [x] **SLK-02**: Open browser to Slack OAuth for workspace connection (reuse localhost callback pattern)
+- [x] **SLK-03**: Guide user to add bot to channel and run /subscribe
+- [x] **SLK-04**: No Pro plan gate — free users get limited Slack reports
+- [x] **SLK-05**: Graceful skip if user declines or Slack auth fails
 
 ### First Win
 
@@ -219,11 +219,11 @@
 | MCP-05 | Phase 5 | Complete |
 | MCP-06 | Phase 5 | Complete |
 | MCP-07 | Phase 5 | Complete |
-| SLK-01 | Phase 6 | Pending |
-| SLK-02 | Phase 6 | Pending |
-| SLK-03 | Phase 6 | Pending |
-| SLK-04 | Phase 6 | Pending |
-| SLK-05 | Phase 6 | Pending |
+| SLK-01 | Phase 6 | Complete |
+| SLK-02 | Phase 6 | Complete |
+| SLK-03 | Phase 6 | Complete |
+| SLK-04 | Phase 6 | Complete |
+| SLK-05 | Phase 6 | Complete |
 | WIN-01 | Phase 7 | Pending |
 | WIN-02 | Phase 7 | Pending |
 | WIN-03 | Phase 7 | Pending |
