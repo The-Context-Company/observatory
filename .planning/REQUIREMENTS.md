@@ -104,18 +104,18 @@
 
 ### First Win
 
-- [ ] **WIN-01**: After all setup, tell user to run one real request with their app
-- [ ] **WIN-02**: Deep-link to dashboard runs page (https://www.thecontext.company/prod/runs) so user sees traces appear
-- [ ] **WIN-03**: Print exact next command to run ("npm run dev" / "python main.py" etc.)
+- [x] **WIN-01**: After all setup, tell user to run one real request with their app
+- [x] **WIN-02**: Deep-link to dashboard runs page (https://www.thecontext.company/prod/runs) so user sees traces appear
+- [x] **WIN-03**: Print exact next command to run ("npm run dev" / "python main.py" etc.)
 
 ### Success Summary
 
-- [ ] **SUM-01**: Print framework detected and version
-- [ ] **SUM-02**: Print all files created/modified with paths
-- [ ] **SUM-03**: Print metadata hooks added (conversational, sessionId, userId)
-- [ ] **SUM-04**: Print MCP editors configured
-- [ ] **SUM-05**: Print Slack status (connected/skipped)
-- [ ] **SUM-06**: Print exact next step to see first traces
+- [x] **SUM-01**: Print framework detected and version
+- [x] **SUM-02**: Print all files created/modified with paths
+- [x] **SUM-03**: Print metadata hooks added (conversational, sessionId, userId)
+- [x] **SUM-04**: Print MCP editors configured
+- [x] **SUM-05**: Print Slack status (connected/skipped)
+- [x] **SUM-06**: Print exact next step to see first traces
 
 ### Server-Side (context repo)
 
@@ -224,15 +224,15 @@
 | SLK-03 | Phase 6 | Complete |
 | SLK-04 | Phase 6 | Complete |
 | SLK-05 | Phase 6 | Complete |
-| WIN-01 | Phase 7 | Pending |
-| WIN-02 | Phase 7 | Pending |
-| WIN-03 | Phase 7 | Pending |
-| SUM-01 | Phase 7 | Pending |
-| SUM-02 | Phase 7 | Pending |
-| SUM-03 | Phase 7 | Pending |
-| SUM-04 | Phase 7 | Pending |
-| SUM-05 | Phase 7 | Pending |
-| SUM-06 | Phase 7 | Pending |
+| WIN-01 | Phase 7 | Complete |
+| WIN-02 | Phase 7 | Complete |
+| WIN-03 | Phase 7 | Complete |
+| SUM-01 | Phase 7 | Complete |
+| SUM-02 | Phase 7 | Complete |
+| SUM-03 | Phase 7 | Complete |
+| SUM-04 | Phase 7 | Complete |
+| SUM-05 | Phase 7 | Complete |
+| SUM-06 | Phase 7 | Complete |
 
 **Coverage:**
 - v1 requirements: 72 total
