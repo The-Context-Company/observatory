@@ -17,11 +17,11 @@ import {
   type FileOperation,
 } from "../utils/templates/index.js";
 
-/** Base URL for production dashboard (hosts /api/cli/* endpoints) */
-const PROD_API_URL = "https://www.thecontext.company";
+/** Base URL for production dashboard (hosts /api/cli/* routes) */
+const DASHBOARD_BASE = "https://www.thecontext.company";
 
 /** Base URL for development dashboard */
-const DEV_API_URL = "https://dev.thecontext.company";
+const DEV_DASHBOARD_BASE = "https://dev.thecontext.company";
 
 /** Timeout for AI instrumentation request (ms) */
 const AI_TIMEOUT_MS = 15_000;
@@ -268,8 +268,8 @@ async function tryAIInstrumentation(
   s.start("Generating project-specific instrumentation...");
 
   const baseUrl = ctx.apiKey?.startsWith("dev_")
-    ? DEV_API_URL
-    : PROD_API_URL;
+    ? DEV_DASHBOARD_BASE
+    : DASHBOARD_BASE;
   const url = `${baseUrl}/api/cli/instrument`;
 
   const controller = new AbortController();

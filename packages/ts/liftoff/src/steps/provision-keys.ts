@@ -10,7 +10,8 @@ import {
 } from "../utils/env.js";
 import { readPackageJson } from "../utils/file-utils.js";
 
-const API_BASE = "https://www.thecontext.company";
+/** Dashboard base URL (hosts /api/cli/* routes) */
+const DASHBOARD_BASE = "https://www.thecontext.company";
 
 /**
  * Lightweight Next.js detection via package.json dependencies.
@@ -45,7 +46,7 @@ export const provisionKeysStep: Step = {
     try {
       spinner.start("Provisioning API keys...");
 
-      const response = await fetch(`${API_BASE}/api/cli/keys`, {
+      const response = await fetch(`${DASHBOARD_BASE}/api/cli/keys`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
