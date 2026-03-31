@@ -7,6 +7,7 @@ import { installPackagesStep } from "./steps/install-packages.js";
 import { instrumentStep } from "./steps/instrument.js";
 import { placeholderSteps } from "./steps/placeholder.js";
 import { setupMcpStep } from "./steps/setup-mcp.js";
+import { setupSlackStep } from "./steps/setup-slack.js";
 import type { Step, WizardContext } from "./types.js";
 
 async function main(): Promise<void> {
@@ -68,7 +69,7 @@ ${pc.dim("Options:")}
   // Phase 3: detection, package-install
   // Phase 4: instrumentation
   // Phase 5: mcp-setup
-  // Phase 6: slack-setup
+  // Phase 6: slack-setup ✓
   // Phase 7: success-summary
   const steps: Step[] = await getSteps();
 
@@ -88,7 +89,7 @@ ${pc.dim("Options:")}
 async function getSteps(): Promise<Step[]> {
   // Pipeline order: git-check -> auth -> keys -> detect -> install -> instrument -> mcp -> slack -> summary
   const authSteps = placeholderSteps.slice(0, 2); // authenticate, provision-keys
-  const postMcpSteps = placeholderSteps.slice(2); // setup-slack, success-summary
+  const summarySteps = placeholderSteps.slice(2); // success-summary only
   return [
     gitCheckStep,
     ...authSteps,
@@ -96,7 +97,8 @@ async function getSteps(): Promise<Step[]> {
     installPackagesStep,
     instrumentStep,
     setupMcpStep,
-    ...postMcpSteps,
+    setupSlackStep,
+    ...summarySteps,
   ];
 }
 
