@@ -20,8 +20,6 @@ function createPlaceholderStep(name: string, description: string): Step {
  * As each phase is implemented, its placeholder is replaced with a real step import.
  */
 export const placeholderSteps: Step[] = [
-  createPlaceholderStep("authenticate", "Browser OAuth login"),
-  createPlaceholderStep("provision-keys", "API key provisioning"),
   createPlaceholderStep(
     "detect-framework",
     "Framework and package manager detection",
