@@ -18,10 +18,10 @@
 ### Authentication
 
 - [ ] **AUTH-01**: Wizard opens browser to WorkOS OAuth login via localhost callback server
-- [ ] **AUTH-02**: Localhost callback server listens on 127.0.0.1 (not localhost) before browser opens
+- [x] **AUTH-02**: Localhost callback server listens on 127.0.0.1 (not localhost) before browser opens
 - [ ] **AUTH-03**: User can skip auth only with explicit --key flag (existing TCC_API_KEY in .env does NOT skip auth — user may want to provision MCP/Slack which require identity)
 - [ ] **AUTH-04**: Wizard handles auth timeout gracefully (30s default, shows manual key fallback)
-- [ ] **AUTH-05**: Auth tokens stored securely for session (not persisted to disk beyond .env keys)
+- [x] **AUTH-05**: Auth tokens stored securely for session (not persisted to disk beyond .env keys)
 - [ ] **AUTH-06**: When --key is used, wizard warns that MCP and Slack setup will be skipped (no user identity available)
 
 ### Key Provisioning
@@ -162,10 +162,10 @@
 | CLI-06 | Phase 1 | Complete |
 | CLI-07 | Phase 1 | Complete |
 | AUTH-01 | Phase 2 | Pending |
-| AUTH-02 | Phase 2 | Pending |
+| AUTH-02 | Phase 2 | Complete |
 | AUTH-03 | Phase 2 | Pending |
 | AUTH-04 | Phase 2 | Pending |
-| AUTH-05 | Phase 2 | Pending |
+| AUTH-05 | Phase 2 | Complete |
 | AUTH-06 | Phase 2 | Pending |
 | KEY-01 | Phase 2 | Pending |
 | KEY-02 | Phase 2 | Pending |
