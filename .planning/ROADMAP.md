@@ -138,6 +138,17 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 6. Slack Integration | 0/1 | Planning complete | - |
 | 7. First Win + Success Summary | 1/1 | Complete   | 2026-03-31 |
 
+### Phase 07.2: Quality audit and --key MCP fix (INSERTED)
+
+**Goal:** Wire disconnected auth/provision steps, add language detection calls, fix --key mode MCP flow with inline OAuth, and fix pipeline exit codes
+**Requirements**: D-01, D-02, D-03, D-04, D-05, D-06, D-07, D-08, D-09, D-10, D-11, D-12, D-13, D-14
+**Depends on:** Phase 7
+**Plans:** 2 plans
+
+Plans:
+- [ ] 07.2-01-PLAN.md -- Wire real auth/provision steps, add language detection, fix pipeline exit code
+- [ ] 07.2-02-PLAN.md -- Add inline OAuth flow to setup-mcp for --key mode MCP
+
 ### Phase 07.1: Move CLI routes from dashboard to public-api (INSERTED)
 
 **Goal:** All 7 CLI API routes live in public-api at api.thecontext.company/cli/* instead of dashboard, and the liftoff CLI points at the new URLs
@@ -149,3 +160,13 @@ Plans:
 - [x] 07.1-01-PLAN.md -- Create CLI routes in public-api: deps, env vars, encryption, postgres, 7 Hono routes, mount in index.ts
 - [x] 07.1-02-PLAN.md -- Update liftoff CLI base URLs: DASHBOARD_BASE to API_BASE in all 4 step files
 - [x] 07.1-03-PLAN.md -- Delete old dashboard CLI routes: rm -rf demo/src/app/api/cli/
+
+### Phase 07.1.1: Quality audit and --key MCP fix (INSERTED)
+
+**Goal:** [Urgent work - to be planned]
+**Requirements**: TBD
+**Depends on:** Phase 7.1
+**Plans:** 0 plans
+
+Plans:
+- [ ] TBD (run /gsd:plan-phase 07.1.1 to break down)
