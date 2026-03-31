@@ -22,15 +22,15 @@
 - [ ] **AUTH-03**: User can skip auth only with explicit --key flag (existing TCC_API_KEY in .env does NOT skip auth — user may want to provision MCP/Slack which require identity)
 - [ ] **AUTH-04**: Wizard handles auth timeout gracefully (30s default, shows manual key fallback)
 - [x] **AUTH-05**: Auth tokens stored securely for session (not persisted to disk beyond .env keys)
-- [ ] **AUTH-06**: When --key is used, wizard warns that MCP and Slack setup will be skipped (no user identity available)
+- [x] **AUTH-06**: When --key is used, wizard warns that MCP and Slack setup will be skipped (no user identity available)
 
 ### Key Provisioning
 
-- [ ] **KEY-01**: After auth, wizard provisions org-level prod API key (tcc_prod_) via Unkey for TCC_API_KEY
-- [ ] **KEY-02**: After auth, wizard provisions user-level readonly key (tcc_key_) via Unkey for MCP
-- [ ] **KEY-03**: Keys are written to appropriate .env file (.env.local for Next.js, .env for others)
-- [ ] **KEY-04**: Existing .env values are never overwritten — wizard warns and skips if key exists
-- [ ] **KEY-05**: .env file is ensured in .gitignore
+- [x] **KEY-01**: After auth, wizard provisions org-level prod API key (tcc_prod_) via Unkey for TCC_API_KEY
+- [x] **KEY-02**: After auth, wizard provisions user-level readonly key (tcc_key_) via Unkey for MCP
+- [x] **KEY-03**: Keys are written to appropriate .env file (.env.local for Next.js, .env for others)
+- [x] **KEY-04**: Existing .env values are never overwritten — wizard warns and skips if key exists
+- [x] **KEY-05**: .env file is ensured in .gitignore
 
 ### Framework Detection
 
@@ -163,15 +163,15 @@
 | CLI-07 | Phase 1 | Pending |
 | AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Complete |
-| AUTH-03 | Phase 2 | Pending |
-| AUTH-04 | Phase 2 | Pending |
+| AUTH-03 | Phase 2 | Complete |
+| AUTH-04 | Phase 2 | Complete |
 | AUTH-05 | Phase 2 | Complete |
-| AUTH-06 | Phase 2 | Pending |
-| KEY-01 | Phase 2 | Pending |
-| KEY-02 | Phase 2 | Pending |
-| KEY-03 | Phase 2 | Pending |
-| KEY-04 | Phase 2 | Pending |
-| KEY-05 | Phase 2 | Pending |
+| AUTH-06 | Phase 2 | Complete |
+| KEY-01 | Phase 2 | Complete |
+| KEY-02 | Phase 2 | Complete |
+| KEY-03 | Phase 2 | Complete |
+| KEY-04 | Phase 2 | Complete |
+| KEY-05 | Phase 2 | Complete |
 | DET-01 | Phase 3 | Pending |
 | DET-02 | Phase 3 | Pending |
 | DET-03 | Phase 3 | Pending |
