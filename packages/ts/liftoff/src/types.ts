@@ -198,4 +198,6 @@ export interface WizardContext {
   keyProvided: boolean;
   /** Git working tree is dirty */
   gitDirty?: boolean;
+  /** Whether Slack workspace was connected (set by setup-slack step) */
+  slackConnected?: boolean;
 }

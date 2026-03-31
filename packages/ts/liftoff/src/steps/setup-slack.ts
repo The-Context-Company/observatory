@@ -1,0 +1,205 @@
+import crypto from "node:crypto";
+import * as p from "@clack/prompts";
+import pc from "picocolors";
+import type { Step, StepResult, WizardContext } from "../types.js";
+import { startCallbackServer } from "../utils/localhost-server.js";
+
+const BASE_URL = "https://www.thecontext.company";
+
+const SLACK_SCOPES = [
+  "channels:history",
+  "channels:read",
+  "chat:write",
+  "chat:write.public",
+  "commands",
+  "channels:join",
+  "groups:read",
+  "im:history",
+  "im:read",
+].join(",");
+
+/** Module-level close function so cleanup can reach it */
+let closeServer: (() => void) | null = null;
+
+/**
+ * Fetch the Slack client ID from the context repo API.
+ * Returns null on failure (caller should skip gracefully).
+ */
+async function fetchSlackClientId(
+  accessToken: string,
+): Promise<string | null> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/cli/slack-client-id`, {
+      headers: { Authorization: `Bearer ${accessToken}` },
+    });
+    if (!res.ok) return null;
+    const data = (await res.json()) as { clientId?: string };
+    return data.clientId ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Exchange the OAuth code on the server side (CLI cannot hold client secret).
+ */
+async function exchangeSlackCode(
+  accessToken: string,
+  code: string,
+  redirectUri: string,
+): Promise<{ ok: true; teamName: string } | { ok: false; error: string }> {
+  try {
+    const res = await fetch(`${BASE_URL}/api/cli/slack-callback`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ code, redirectUri }),
+    });
+    const data = (await res.json()) as {
+      ok: boolean;
+      teamName?: string;
+      error?: string;
+    };
+    if (data.ok && data.teamName) {
+      return { ok: true, teamName: data.teamName };
+    }
+    return { ok: false, error: data.error ?? "Unknown error" };
+  } catch (err) {
+    return {
+      ok: false,
+      error: err instanceof Error ? err.message : String(err),
+    };
+  }
+}
+
+/**
+ * Pipeline step: connect the user's Slack workspace for alerts.
+ *
+ * Prompts for confirmation, opens browser to Slack OAuth, receives the
+ * callback on a localhost server, exchanges the code via the context repo
+ * API, and shows post-connect guidance.
+ *
+ * Skips when:
+ * - `--key` mode (no user identity)
+ * - No accessToken (auth step didn't run or failed)
+ * - Already completed in this session
+ */
+export const setupSlackStep: Step = {
+  name: "setup-slack",
+
+  async shouldRun(ctx: WizardContext): Promise<boolean> {
+    if (ctx.keyProvided) return false;
+    if (!ctx.accessToken) return false;
+    if (ctx.completedSteps.includes("setup-slack")) return false;
+    return true;
+  },
+
+  async run(ctx: WizardContext): Promise<StepResult> {
+    // Prompt user (SLK-01)
+    const wantsSlack = await p.confirm({
+      message: "Would you like to set up Slack alerts?",
+    });
+
+    if (p.isCancel(wantsSlack) || !wantsSlack) {
+      return { status: "skipped", message: "Slack setup skipped" };
+    }
+
+    // Show explanation
+    p.log.info(
+      "Slack alerts notify your team when agent failures are detected.\n" +
+        "We'll open your browser to connect a Slack workspace.",
+    );
+
+    // Fetch Slack client ID from server
+    const clientId = await fetchSlackClientId(ctx.accessToken!);
+    if (!clientId) {
+      p.log.warn(
+        "Could not retrieve Slack configuration. Skipping Slack setup.",
+      );
+      return {
+        status: "skipped",
+        message: "Failed to fetch Slack client ID",
+      };
+    }
+
+    // Start OAuth flow (SLK-02)
+    const state = crypto.randomBytes(16).toString("hex");
+    const { port, waitForCallback, close } =
+      await startCallbackServer(state, 60_000);
+    closeServer = close;
+
+    const redirectUri = `http://127.0.0.1:${port}/callback`;
+    const slackOAuthUrl =
+      `https://slack.com/oauth/v2/authorize` +
+      `?client_id=${clientId}` +
+      `&scope=${encodeURIComponent(SLACK_SCOPES)}` +
+      `&redirect_uri=${encodeURIComponent(redirectUri)}` +
+      `&state=${state}`;
+
+    // Open browser
+    const openModule = await import("open");
+    await openModule.default(slackOAuthUrl);
+
+    // Wait for callback
+    const s = p.spinner();
+    s.start("Waiting for Slack authorization...");
+    const result = await waitForCallback();
+    s.stop();
+
+    if (!result) {
+      close();
+      closeServer = null;
+      p.log.warn(
+        "Slack authorization timed out or was cancelled.",
+      );
+      return {
+        status: "skipped",
+        message: "Slack auth timed out",
+      };
+    }
+
+    // Exchange code via server endpoint
+    const exchange = await exchangeSlackCode(
+      ctx.accessToken!,
+      result.code,
+      redirectUri,
+    );
+    close();
+    closeServer = null;
+
+    if (!exchange.ok) {
+      p.log.warn(
+        `Could not complete Slack setup: ${exchange.error}`,
+      );
+      return {
+        status: "skipped",
+        message: "Slack token exchange failed",
+      };
+    }
+
+    // Success
+    p.log.success(
+      `Connected to Slack workspace: ${exchange.teamName}`,
+    );
+    ctx.slackConnected = true;
+
+    // Post-connect guidance (SLK-03)
+    p.log.info(
+      pc.cyan("Next steps for Slack alerts:\n") +
+        "1. Add the Context Company bot to a channel\n" +
+        "2. Type /subscribe in that channel to start receiving alerts",
+    );
+
+    ctx.completedSteps.push("setup-slack");
+    return { status: "completed" };
+  },
+
+  async cleanup(_ctx: WizardContext): Promise<void> {
+    if (closeServer) {
+      closeServer();
+      closeServer = null;
+    }
+  },
+};
