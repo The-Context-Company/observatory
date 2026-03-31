@@ -1,0 +1,45 @@
+{
+  "name": "@contextcompany/liftoff",
+  "version": "0.1.0",
+  "description": "The Context Company CLI — zero-friction AI agent observability setup",
+  "type": "module",
+  "bin": {
+    "contextcompany-liftoff": "dist/index.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch"
+  },
+  "keywords": [
+    "contextcompany",
+    "observability",
+    "cli",
+    "liftoff",
+    "setup",
+    "instrumentation"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-Context-Company/observatory",
+    "directory": "packages/ts/liftoff"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "@clack/prompts": "^0.9.1",
+    "picocolors": "^1.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}
