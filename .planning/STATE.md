@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v1.0
 milestone_name: milestone
 status: verifying
-stopped_at: Completed 04-04-PLAN.md
-last_updated: "2026-03-31T07:34:04.435Z"
+stopped_at: Completed 05-01-PLAN.md
+last_updated: "2026-03-31T07:41:40.532Z"
 last_activity: 2026-03-31
 progress:
   total_phases: 7
-  completed_phases: 4
-  total_plans: 12
-  completed_plans: 12
+  completed_phases: 5
+  total_plans: 13
+  completed_plans: 13
   percent: 0
 ---
 
@@ -21,12 +21,12 @@ progress:
 See: .planning/PROJECT.md (updated 2026-03-30)
 
 **Core value:** Get developers to their first "oh shit, this found something useful" moment as fast as possible.
-**Current focus:** Phase 04 — instrumentation-gotcha-fixes
+**Current focus:** Phase 05 — mcp-editor-integration
 
 ## Current Position
 
-Phase: 04 (instrumentation-gotcha-fixes) — EXECUTING
-Plan: 4 of 4
+Phase: 05 (mcp-editor-integration) — EXECUTING
+Plan: 1 of 1
 Status: Phase complete — ready for verification
 Last activity: 2026-03-31
 
@@ -61,6 +61,7 @@ Progress: [░░░░░░░░░░] 0%
 | Phase 04 P02 | 2min | 2 tasks | 14 files |
 | Phase 04 P01 | 163s | 1 tasks | 3 files |
 | Phase 04 P04 | 149s | 2 tasks | 4 files |
+| Phase 05 P01 | 113s | 2 tasks | 5 files |
 
 ## Accumulated Context
 
@@ -89,6 +90,9 @@ Recent decisions affecting current work:
 - [Phase 04]: Used claude-sonnet-4-20250514 for /api/cli/instrument endpoint (fast, cheap, good at code)
 - [Phase 04]: AbortController with 15s timeout for AI fetch (cleaner than Promise.race)
 - [Phase 04]: Gotcha fixes only for nextjs-aisdk (experimental_telemetry and instrumentationHook)
+- [Phase 05]: File-based editors use project-level config except Windsurf (global ~/.codeium/windsurf/mcp_config.json)
+- [Phase 05]: Claude Code uses CLI claude mcp add instead of file write
+- [Phase 05]: Readonly key (tcc_key_) used as Bearer token in all MCP configs
 
 ### Pending Todos
 
@@ -101,6 +105,6 @@ None yet.
 
 ## Session Continuity
 
-Last session: 2026-03-31T07:34:04.432Z
-Stopped at: Completed 04-04-PLAN.md
+Last session: 2026-03-31T07:41:40.529Z
+Stopped at: Completed 05-01-PLAN.md
 Resume file: None
