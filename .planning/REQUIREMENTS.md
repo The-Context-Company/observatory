@@ -49,11 +49,11 @@
 
 ### Package Installation
 
-- [ ] **PKG-01**: Install correct framework-specific package (@contextcompany/otel for AI SDK, @contextcompany/claude for Claude, etc.)
-- [ ] **PKG-02**: Install using detected package manager with spinner
-- [ ] **PKG-03**: For Python, install contextcompany with correct extras (contextcompany[langchain], contextcompany[crewai], contextcompany[agno], contextcompany[litellm])
-- [ ] **PKG-04**: Install @contextcompany/pi for Pi-Mono, @contextcompany/openclaw for OpenClaw
-- [ ] **PKG-05**: Skip installation if packages already installed
+- [x] **PKG-01**: Install correct framework-specific package (@contextcompany/otel for AI SDK, @contextcompany/claude for Claude, etc.)
+- [x] **PKG-02**: Install using detected package manager with spinner
+- [x] **PKG-03**: For Python, install contextcompany with correct extras (contextcompany[langchain], contextcompany[crewai], contextcompany[agno], contextcompany[litellm])
+- [x] **PKG-04**: Install @contextcompany/pi for Pi-Mono, @contextcompany/openclaw for OpenClaw
+- [x] **PKG-05**: Skip installation if packages already installed
 
 ### Instrumentation
 

@@ -58,7 +58,7 @@ Decimal phases appear between their surrounding integers in numeric order.
 **Plans:** 2 plans
 Plans:
 - [ ] 03-01-PLAN.md -- Types expansion + detection utilities: extend Framework/PackageManager types, port detection from init, add Python parsing
-- [ ] 03-02-PLAN.md -- Pipeline steps + wiring: detect-framework and install-packages steps, replace placeholders, wire into pipeline
+- [x] 03-02-PLAN.md -- Pipeline steps + wiring: detect-framework and install-packages steps, replace placeholders, wire into pipeline
 
 ### Phase 4: Instrumentation + Gotcha Fixes
 **Goal**: The user's codebase is instrumented with AI-generated, project-specific patches that wire up observability and metadata, and framework-specific gotchas are automatically fixed
