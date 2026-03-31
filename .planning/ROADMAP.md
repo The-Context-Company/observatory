@@ -74,7 +74,12 @@ Plans:
   3. User sees a summary/diff of AI-generated changes before they are applied (unless in auto-apply mode)
   4. Framework gotchas are automatically fixed (experimental_telemetry for AI SDK, instrumentationHook for Next.js, tcc.conversational and tcc.sessionId patterns)
   5. AI-generated changes do not modify business logic or control flow beyond instrumentation
-**Plans**: TBD
+**Plans:** 4 plans
+Plans:
+- [ ] 04-01-PLAN.md -- AI instrumentation endpoint: POST /api/cli/instrument in context repo
+- [ ] 04-02-PLAN.md -- Framework templates: deterministic fallback templates for all 12 frameworks
+- [ ] 04-03-PLAN.md -- Utilities: colored diff display + codebase context extraction
+- [ ] 04-04-PLAN.md -- Instrument step + gotcha fixes: pipeline step with AI-first flow, template fallback, and gotcha detection
 **UI hint**: yes
 
 ### Phase 5: MCP Editor Integration
@@ -120,7 +125,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 | 1. Server Endpoints + CLI Scaffold | 0/3 | Planning complete | - |
 | 2. Authentication + Key Provisioning | 0/? | Not started | - |
 | 3. Detection + Package Installation | 0/2 | Planning complete | - |
-| 4. Instrumentation + Gotcha Fixes | 0/? | Not started | - |
+| 4. Instrumentation + Gotcha Fixes | 0/4 | Planning complete | - |
 | 5. MCP Editor Integration | 0/? | Not started | - |
 | 6. Slack Integration | 0/? | Not started | - |
 | 7. First Win + Success Summary | 0/? | Not started | - |
