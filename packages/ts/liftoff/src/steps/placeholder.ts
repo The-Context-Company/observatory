@@ -22,7 +22,6 @@ function createPlaceholderStep(name: string, description: string): Step {
 export const placeholderSteps: Step[] = [
   createPlaceholderStep("authenticate", "Browser OAuth login"),
   createPlaceholderStep("provision-keys", "API key provisioning"),
-  createPlaceholderStep("instrument", "Codebase instrumentation"),
   createPlaceholderStep("setup-mcp", "MCP editor integration"),
   createPlaceholderStep("setup-slack", "Slack alerts connection"),
   createPlaceholderStep("success-summary", "Setup summary and next steps"),
