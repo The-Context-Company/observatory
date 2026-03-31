@@ -17,10 +17,10 @@ import {
   type FileOperation,
 } from "../utils/templates/index.js";
 
-/** Base URL for production API */
-const PROD_API_URL = "https://api.thecontext.company";
+/** Base URL for production dashboard (hosts /api/cli/* endpoints) */
+const PROD_API_URL = "https://www.thecontext.company";
 
-/** Base URL for development API */
+/** Base URL for development dashboard */
 const DEV_API_URL = "https://dev.thecontext.company";
 
 /** Timeout for AI instrumentation request (ms) */
