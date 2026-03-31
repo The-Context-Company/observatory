@@ -1,8 +1,10 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { runPipeline } from "./pipeline.js";
+import { authStep } from "./steps/auth.js";
 import { gitCheckStep } from "./steps/git-check.js";
 import { placeholderSteps } from "./steps/placeholder.js";
+import { provisionKeysStep } from "./steps/provision-keys.js";
 import type { Step, WizardContext } from "./types.js";
 
 async function main(): Promise<void> {
@@ -82,7 +84,7 @@ ${pc.dim("Options:")}
  * Each phase adds its steps here as they are implemented.
  */
 async function getSteps(): Promise<Step[]> {
-  return [gitCheckStep, ...placeholderSteps];
+  return [gitCheckStep, authStep, provisionKeysStep, ...placeholderSteps];
 }
 
 main().catch((err) => {
