@@ -1,7 +1,7 @@
 {
   "name": "@contextcompany/custom",
-  "version": "1.0.1",
-  "description": "The Context Company's manual instrumentation SDK for custom TypeScript agents",
+  "version": "1.0.2",
+  "description": "The Context Company integration for custom TypeScript agents",
   "type": "module",
   "files": [
     "dist",
@@ -47,10 +47,8 @@
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {
-    "@contextcompany/api": "^1.0.1"
-  },
   "devDependencies": {
+    "@contextcompany/api": "workspace:*",
     "@types/node": "^20",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3"

@@ -50,11 +50,7 @@ export function registerOTelTCC(opts: RegisterOpts = {}) {
       "TCC: Missing API key. Set TCC_API_KEY as an environment variable or provide apiKey in registerOTelTCC"
     );
 
-  const url = opts.url ?? getTCCUrl(
-    apiKey,
-    "https://api.thecontext.company/v1/traces",
-    "https://dev.thecontext.company/v1/traces"
-  );
+  const url = opts.url ?? getTCCUrl("/v1/traces", apiKey);
 
   const isProduction = url === "https://api.thecontext.company/v1/traces";
 

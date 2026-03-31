@@ -59,7 +59,9 @@ observatory/
 │   │   ├── claude/      # @contextcompany/claude - Claude Agent SDK instrumentation
 │   │   ├── langchain/   # @contextcompany/langchain - LangChain/LangGraph integration
 │   │   ├── mastra/      # @contextcompany/mastra - Mastra framework integration
-│   │   └── custom/      # @contextcompany/custom - Manual instrumentation SDK
+│   │   ├── custom/      # @contextcompany/custom - Manual instrumentation SDK
+│   │   ├── openclaw/    # @contextcompany/openclaw - OpenClaw OTLP collector
+│   │   └── pi/          # @contextcompany/pi - Pi Agent SDK instrumentation
 │   └── python/          # contextcompany - Python SDK (LangChain, CrewAI, Agno, LiteLLM)
 └── examples/            # Working examples for all supported frameworks
 ```
@@ -93,6 +95,14 @@ Integration for the Mastra framework. Provides observability for Mastra agents a
 #### `@contextcompany/custom`
 
 Manual instrumentation SDK for custom TypeScript agents. Supports a builder pattern (instrument live execution) and a factory pattern (send pre-built data).
+
+#### `@contextcompany/openclaw`
+
+Integration for OpenClaw via OpenTelemetry. Provides a lightweight OTLP collector that receives traces from OpenClaw's built-in `diagnostics-otel` plugin, maps them to TCC's format, and forwards them to the API. Can be run as a CLI (`npx @contextcompany/openclaw`) or used programmatically.
+
+#### `@contextcompany/pi`
+
+Instrumentation for the Pi Agent SDK (`@mariozechner/pi-coding-agent`). Provides a non-invasive `instrumentPiSession()` function that subscribes to session events and automatically captures agent runs, LLM steps (with token usage and costs), and tool executions.
 
 #### `contextcompany` (Python)
 
@@ -205,6 +215,63 @@ Now you can make changes to the widget package and see them reflected in real-ti
    - Changes to the package require a rebuild
    - The `pnpm dev` watch mode will automatically rebuild on file changes
 
+#### Testing `@contextcompany/openclaw` changes
+
+1. **Build the package**:
+
+   ```bash
+   cd packages/ts/openclaw
+   pnpm build
+   ```
+
+2. **Start the collector** in debug mode:
+
+   ```bash
+   TCC_API_KEY=your_key node dist/cli.js --debug
+   ```
+
+3. **Send a test OTLP payload** (from another terminal):
+
+   ```bash
+   curl -X POST http://localhost:4318/v1/traces \
+     -H "Content-Type: application/json" \
+     -d '{"resourceSpans":[{"resource":{"attributes":[]},"scopeSpans":[{"spans":[{"traceId":"abc123","spanId":"def456","name":"openclaw.request","startTimeUnixNano":"1700000000000000000","endTimeUnixNano":"1700000001000000000","attributes":[],"status":{"code":0}}]}]}]}'
+   ```
+
+4. Verify the collector logs show the span was received, parsed, and forwarded.
+
+#### Testing `@contextcompany/pi` changes
+
+1. **Build the package**:
+
+   ```bash
+   cd packages/ts/pi
+   pnpm build
+   ```
+
+2. **Test in a project** that uses `@mariozechner/pi-coding-agent`:
+
+   ```json
+   {
+     "dependencies": {
+       "@contextcompany/pi": "workspace:*"
+     }
+   }
+   ```
+
+3. **Add instrumentation** to your Pi session:
+
+   ```typescript
+   import { createAgentSession } from '@mariozechner/pi-coding-agent';
+   import { instrumentPiSession } from '@contextcompany/pi';
+
+   const { session } = await createAgentSession();
+   instrumentPiSession(session, { debug: true });
+   await session.prompt('Hello');
+   ```
+
+4. Verify debug logs show events being captured and sent.
+
 #### Testing Python changes
 
 1. **Navigate to the Python package**:
@@ -240,7 +307,7 @@ Commit messages control version bumps and changelogs automatically. CI reads you
 | `feat(scope)!:` | major |
 | `docs:` `chore:` `refactor:` `test:` `ci:` `style:` | no release |
 
-Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `langchain`, `api`, `python`
+Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `openclaw`, `pi`, `langchain`, `api`, `python`
 
 Omit scope for repo-wide changes: `chore: upgrade dependencies`
 

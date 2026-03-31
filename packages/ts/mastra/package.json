@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/mastra",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Context Company integration for Mastra",
   "type": "module",
   "files": [
@@ -43,10 +43,8 @@
   "peerDependencies": {
     "@mastra/core": "^0.24.0"
   },
-  "dependencies": {
-    "@contextcompany/api": "^1.0.1"
-  },
   "devDependencies": {
+    "@contextcompany/api": "workspace:*",
     "@mastra/core": "^0.24.6",
     "@types/node": "^20",
     "tsup": "^8.5.0",

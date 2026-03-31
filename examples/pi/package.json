@@ -1,0 +1,22 @@
+{
+  "name": "pi-example",
+  "version": "1.0.2",
+  "description": "Example Pi agent with TCC instrumentation",
+  "type": "module",
+  "private": true,
+  "scripts": {
+    "dev": "tsx src/index.ts"
+  },
+  "author": "The Context Company",
+  "license": "MIT",
+  "dependencies": {
+    "@mariozechner/pi-coding-agent": "^0.62.0",
+    "@contextcompany/pi": "workspace:*",
+    "dotenv": "^17.2.2"
+  },
+  "devDependencies": {
+    "@types/node": "^20",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

@@ -28,11 +28,7 @@ export class TCCSpanProcessor implements SpanProcessor {
         "Missing API key: set TCC_API_KEY as an environment variable or provide apiKey in TCCSpanProcessor"
       );
 
-    const url = options.otlpUrl ?? getTCCUrl(
-      apiKey,
-      "https://api.thecontext.company/v1/traces",
-      "https://dev.thecontext.company/v1/traces"
-    );
+    const url = options.otlpUrl ?? getTCCUrl("/v1/traces", apiKey);
 
     debug(`Using OTLP URL: ${url}`);
 

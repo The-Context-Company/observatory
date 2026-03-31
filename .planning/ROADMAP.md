@@ -32,7 +32,11 @@ Decimal phases appear between their surrounding integers in numeric order.
   3. Running the wizard a second time detects previous setup and does not duplicate work
   4. POST /api/cli/auth and POST /api/cli/keys endpoints are deployed and return correct responses in the context repo
   5. Slack integration no longer requires a Pro plan in the context repo
-**Plans**: TBD
+**Plans:** 3 plans
+Plans:
+- [x] 01-01-PLAN.md -- Server endpoints (context repo): CLI auth + key provisioning API routes, Slack Pro gate removal
+- [x] 01-02-PLAN.md -- CLI rename + pipeline scaffold: rename to @contextcompany/liftoff, Step interface, pipeline runner, entry point
+- [ ] 01-03-PLAN.md -- CLI steps: git-check step, placeholder steps, end-to-end wiring
 
 ### Phase 2: Authentication + Key Provisioning
 **Goal**: Users can authenticate via browser and get both API keys provisioned without ever visiting the dashboard
@@ -110,7 +114,7 @@ Phases execute in numeric order: 1 -> 2 -> 3 -> 4 -> 5 -> 6 -> 7
 
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
-| 1. Server Endpoints + CLI Scaffold | 0/? | Not started | - |
+| 1. Server Endpoints + CLI Scaffold | 0/3 | Planning complete | - |
 | 2. Authentication + Key Provisioning | 0/? | Not started | - |
 | 3. Detection + Package Installation | 0/? | Not started | - |
 | 4. Instrumentation + Gotcha Fixes | 0/? | Not started | - |

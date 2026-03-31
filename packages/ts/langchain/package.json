@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/langchain",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "The Context Company integration for LangChain.js and LangGraph",
   "type": "module",
   "files": [
@@ -50,10 +50,8 @@
   "peerDependencies": {
     "@langchain/core": ">=0.2.0"
   },
-  "dependencies": {
-    "@contextcompany/api": "^1.0.1"
-  },
   "devDependencies": {
+    "@contextcompany/api": "workspace:*",
     "@langchain/core": "^0.3.80",
     "@types/node": "^20.19.37",
     "tsup": "^8.5.1",

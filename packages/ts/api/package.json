@@ -1,7 +1,7 @@
 {
   "name": "@contextcompany/api",
-  "version": "1.0.1",
-  "description": "The Context Company core API utilities",
+  "version": "1.0.2",
+  "description": "The Context Company shared API utilities",
   "type": "module",
   "files": [
     "dist"

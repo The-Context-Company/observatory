@@ -7,13 +7,13 @@
 
 ### CLI Foundation
 
-- [ ] **CLI-01**: User can run `npx @contextcompany/liftoff` to start the wizard
+- [x] **CLI-01**: User can run `npx @contextcompany/liftoff` to start the wizard
 - [ ] **CLI-02**: Wizard auto-detects framework from project files (package.json, pyproject.toml, requirements.txt) and confirms with user
 - [ ] **CLI-03**: Wizard detects package manager (npm/yarn/pnpm/bun for TS, pip/poetry/uv for Python)
-- [ ] **CLI-04**: Wizard checks git status and warns if working tree is dirty (but does not block)
-- [ ] **CLI-05**: Ctrl+C cleanly exits with no partial state left behind
-- [ ] **CLI-06**: Running wizard twice is idempotent — detects existing setup and skips/updates
-- [ ] **CLI-07**: Progress indicators (spinners) shown for each step
+- [x] **CLI-04**: Wizard checks git status and warns if working tree is dirty (but does not block)
+- [x] **CLI-05**: Ctrl+C cleanly exits with no partial state left behind
+- [x] **CLI-06**: Running wizard twice is idempotent — detects existing setup and skips/updates
+- [x] **CLI-07**: Progress indicators (spinners) shown for each step
 
 ### Authentication
 
@@ -119,10 +119,10 @@
 
 ### Server-Side (context repo)
 
-- [ ] **SRV-01**: New API endpoint for CLI OAuth token exchange (POST /api/cli/auth)
-- [ ] **SRV-02**: New API endpoint for CLI key provisioning (POST /api/cli/keys)
-- [ ] **SRV-03**: Remove Pro plan requirement for Slack integration
-- [ ] **SRV-04**: Endpoints authenticate via WorkOS session token from OAuth callback
+- [x] **SRV-01**: New API endpoint for CLI OAuth token exchange (POST /api/cli/auth)
+- [x] **SRV-02**: New API endpoint for CLI key provisioning (POST /api/cli/keys)
+- [x] **SRV-03**: Remove Pro plan requirement for Slack integration
+- [x] **SRV-04**: Endpoints authenticate via WorkOS session token from OAuth callback
 
 ## v2 Requirements
 
@@ -154,13 +154,13 @@
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| CLI-01 | Phase 1 | Pending |
+| CLI-01 | Phase 1 | Complete |
 | CLI-02 | Phase 3 | Pending |
 | CLI-03 | Phase 3 | Pending |
-| CLI-04 | Phase 1 | Pending |
-| CLI-05 | Phase 1 | Pending |
-| CLI-06 | Phase 1 | Pending |
-| CLI-07 | Phase 1 | Pending |
+| CLI-04 | Phase 1 | Complete |
+| CLI-05 | Phase 1 | Complete |
+| CLI-06 | Phase 1 | Complete |
+| CLI-07 | Phase 1 | Complete |
 | AUTH-01 | Phase 2 | Pending |
 | AUTH-02 | Phase 2 | Pending |
 | AUTH-03 | Phase 2 | Pending |

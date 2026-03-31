@@ -29,11 +29,7 @@ export class TCCMastraExporter implements AITracingExporter {
     this.apiKey = apiKey;
     this.endpoint =
       config.endpoint ||
-      getTCCUrl(
-        apiKey,
-        "https://api.thecontext.company/v1/mastra",
-        "https://dev.thecontext.company/v1/mastra"
-      );
+      getTCCUrl("/v1/mastra", apiKey);
     this.debug = config.debug || false;
   }
 

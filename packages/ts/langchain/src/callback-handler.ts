@@ -465,11 +465,7 @@ export class TCCCallbackHandler
     this.apiKey = apiKey;
     this.endpoint =
       config.endpoint ||
-      getTCCUrl(
-        apiKey,
-        "https://api.thecontext.company/v1/custom",
-        "https://dev.thecontext.company/v1/custom"
-      );
+      getTCCUrl("/v1/custom", apiKey);
     this.fixedRunId = config.runId;
     this.sessionId = config.sessionId;
     this.conversational = config.conversational ?? false;

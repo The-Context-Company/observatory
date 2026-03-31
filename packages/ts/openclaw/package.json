@@ -1,0 +1,64 @@
+{
+  "name": "@contextcompany/openclaw",
+  "version": "1.0.2",
+  "description": "The Context Company integration for OpenClaw",
+  "type": "module",
+  "files": [
+    "dist",
+    "openclaw.plugin.json",
+    "src",
+    "README.md"
+  ],
+  "openclaw": {
+    "extensions": [
+      "src/index.ts"
+    ],
+    "plugin": "openclaw.plugin.json"
+  },
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "pnpm build --watch"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "openclaw",
+    "observability",
+    "tracing",
+    "monitoring",
+    "context-company",
+    "ai-agents"
+  ],
+  "homepage": "https://github.com/The-Context-Company/observatory/tree/main/packages/ts/openclaw#readme",
+  "bugs": {
+    "url": "https://github.com/The-Context-Company/observatory/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-Context-Company/observatory",
+    "directory": "packages/ts/openclaw"
+  },
+  "author": "The Context Company",
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "devDependencies": {
+    "@contextcompany/api": "workspace:*",
+    "@types/node": "^20",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3"
+  }
+}
