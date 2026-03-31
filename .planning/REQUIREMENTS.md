@@ -70,9 +70,9 @@
 - [x] **INST-11**: Instrument OpenClaw with @contextcompany/openclaw
 - [x] **INST-12**: Instrument LiteLLM Python with contextcompany[litellm]
 - [x] **INST-13**: Respect existing src/ directory structure and TypeScript/JavaScript preference
-- [ ] **INST-14**: Wizard uses AI as the primary instrumentation path to generate minimal, project-specific patches for supported and custom codebases
-- [ ] **INST-15**: AI infers and wires high-value existing metadata visible in the codebase (userId, orgId, sessionId, request IDs, route context, conversation/thread IDs, environment, etc.); sessionId is especially important — if the codebase has any chat/conversation concept with message memory, AI should wire that as tcc.sessionId to group runs into sessions; if uncertain about any value, adds TODOs instead of guessing
-- [ ] **INST-16**: AI-generated changes must not modify business logic or control flow beyond what is required for instrumentation
+- [x] **INST-14**: Wizard uses AI as the primary instrumentation path to generate minimal, project-specific patches for supported and custom codebases
+- [x] **INST-15**: AI infers and wires high-value existing metadata visible in the codebase (userId, orgId, sessionId, request IDs, route context, conversation/thread IDs, environment, etc.); sessionId is especially important — if the codebase has any chat/conversation concept with message memory, AI should wire that as tcc.sessionId to group runs into sessions; if uncertain about any value, adds TODOs instead of guessing
+- [x] **INST-16**: AI-generated changes must not modify business logic or control flow beyond what is required for instrumentation
 - [x] **INST-17**: For recognized frameworks, wizard may choose between AI-generated patches and deterministic templates, preferring whichever produces more complete instrumentation for that codebase
 - [x] **INST-18**: User is shown a summary or diff of AI-generated changes before apply, unless running in explicit auto-apply mode
 
@@ -202,9 +202,9 @@
 | INST-11 | Phase 4 | Complete |
 | INST-12 | Phase 4 | Complete |
 | INST-13 | Phase 4 | Complete |
-| INST-14 | Phase 4 | Pending |
-| INST-15 | Phase 4 | Pending |
-| INST-16 | Phase 4 | Pending |
+| INST-14 | Phase 4 | Complete |
+| INST-15 | Phase 4 | Complete |
+| INST-16 | Phase 4 | Complete |
 | INST-17 | Phase 4 | Complete |
 | INST-18 | Phase 4 | Complete |
 | FIX-01 | Phase 4 | Pending |
