@@ -121,7 +121,7 @@ Check out the [examples/](./examples) directory for working demos across all sup
 
 ### Acknowledgments
 
-- Big thanks to [Anthony Hoang](https://github.com/anth0nycodes) for being an active contributor and maintainer!
+- Big thanks to [Anthony Hoang](https://github.com/anth0nycodes) and [Eric Zhang](https://github.com/Eric-Zhang-Developer) for being active contributors!
 - Special thanks to [@RobPruzan](https://github.com/RobPruzan) for helping with the design of the tool and being an early adopter.
 - [React Scan](https://react-scan.com/) has a phenomenal DX and Preact widget that we took inspiration from.
 - The implementation behind the [Next.js Devtools](https://github.com/vercel/next.js/tree/canary/packages/next/src/next-devtools) overlay widget was insightful.
