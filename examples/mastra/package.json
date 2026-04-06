@@ -19,7 +19,7 @@
     "@mastra/core": "^0.24.6",
     "@contextcompany/mastra": "workspace:*",
     "dotenv": "^16.4.7",
-    "zod": "^4.1.13"
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
