@@ -30,16 +30,19 @@ export interface FrameworkInfo {
   name: string;
   description: string;
   docsUrl: string;
+  language: "typescript" | "python";
   /** Whether this framework supports local mode */
   supportsLocalMode: boolean;
 }
 
 export const FRAMEWORKS: FrameworkInfo[] = [
+  // TypeScript / JavaScript
   {
     id: "nextjs-aisdk",
-    name: "Next.js + Vercel AI SDK",
+    name: "Vercel AI SDK",
     description: "Instrument AI SDK calls in your Next.js app",
     docsUrl: "https://docs.thecontext.company/frameworks/ai-sdk/setup",
+    language: "typescript",
     supportsLocalMode: true,
   },
   {
@@ -47,80 +50,88 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     name: "Claude Agent SDK",
     description: "Instrument Claude Agent SDK agents",
     docsUrl: "https://docs.thecontext.company/frameworks/claude-agent-sdk",
+    language: "typescript",
     supportsLocalMode: false,
   },
   {
     id: "langchain-ts",
-    name: "LangChain / LangGraph (TypeScript)",
+    name: "LangChain / LangGraph",
     description: "Instrument LangChain.js and LangGraph agents",
-    docsUrl:
-      "https://docs.thecontext.company/frameworks/langchain-langgraph",
+    docsUrl: "https://docs.thecontext.company/frameworks/langchain-langgraph",
+    language: "typescript",
     supportsLocalMode: false,
   },
   {
     id: "mastra",
     name: "Mastra",
     description: "Instrument Mastra agents and workflows",
-    docsUrl:
-      "https://docs.thecontext.company/frameworks/mastra/setup",
+    docsUrl: "https://docs.thecontext.company/frameworks/mastra/setup",
+    language: "typescript",
     supportsLocalMode: false,
   },
   {
     id: "pi-mono",
     name: "Pi-Mono",
     description: "Instrument Pi coding agent",
-    docsUrl: "https://docs.thecontext.company/",
+    docsUrl: "https://docs.thecontext.company/frameworks/pi-mono",
+    language: "typescript",
     supportsLocalMode: false,
   },
   {
     id: "openclaw",
     name: "OpenClaw",
     description: "Instrument OpenClaw agents",
-    docsUrl: "https://docs.thecontext.company/",
+    docsUrl: "https://docs.thecontext.company/frameworks/openclaw",
+    language: "typescript",
     supportsLocalMode: false,
   },
   {
     id: "custom-ts",
-    name: "Custom (TypeScript)",
-    description:
-      "Manual instrumentation for custom TypeScript agents",
-    docsUrl: "https://docs.thecontext.company/",
+    name: "Custom",
+    description: "Manual instrumentation for custom agents",
+    docsUrl: "https://docs.thecontext.company/frameworks/custom-instrumentation/typescript/setup",
+    language: "typescript",
     supportsLocalMode: false,
   },
+  // Python
   {
     id: "langchain-python",
-    name: "LangChain (Python)",
-    description: "Instrument LangChain Python agents",
-    docsUrl: "https://docs.thecontext.company/",
+    name: "LangChain / LangGraph",
+    description: "Instrument LangChain and LangGraph agents",
+    docsUrl: "https://docs.thecontext.company/frameworks/langchain-langgraph",
+    language: "python",
     supportsLocalMode: false,
   },
   {
     id: "crewai",
     name: "CrewAI",
     description: "Instrument CrewAI agents",
-    docsUrl: "https://docs.thecontext.company/",
+    docsUrl: "https://docs.thecontext.company/frameworks/crewai",
+    language: "python",
     supportsLocalMode: false,
   },
   {
     id: "agno",
     name: "Agno",
     description: "Instrument Agno agents",
-    docsUrl: "https://docs.thecontext.company/",
+    docsUrl: "https://docs.thecontext.company/frameworks/agno",
+    language: "python",
     supportsLocalMode: false,
   },
   {
     id: "litellm",
     name: "LiteLLM",
     description: "Instrument LiteLLM proxy",
-    docsUrl: "https://docs.thecontext.company/",
+    docsUrl: "https://docs.thecontext.company/frameworks/litellm",
+    language: "python",
     supportsLocalMode: false,
   },
   {
     id: "custom-python",
-    name: "Custom (Python)",
-    description:
-      "Manual instrumentation for custom Python agents",
-    docsUrl: "https://docs.thecontext.company/",
+    name: "Custom",
+    description: "Manual instrumentation for custom agents",
+    docsUrl: "https://docs.thecontext.company/frameworks/custom-instrumentation/python/setup",
+    language: "python",
     supportsLocalMode: false,
   },
 ];

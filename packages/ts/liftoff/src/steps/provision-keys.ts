@@ -60,11 +60,11 @@ export const provisionKeysStep: Step = {
           .json()
           .catch(() => ({}) as Record<string, unknown>);
         spinner.stop("Key provisioning failed");
+        const detail = (errorBody as { error?: string }).error || "unknown";
+        p.log.error(`Status: ${response.status} | Error: ${detail} | OrgId sent: ${ctx.organizationId ?? "null"}`);
         return {
           status: "failed",
-          message:
-            (errorBody as { error?: string }).error ||
-            "Key provisioning failed",
+          message: detail,
         };
       }
 
