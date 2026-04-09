@@ -29,7 +29,8 @@
     "build": "npm run build:css && tsup",
     "dev": "npm run build:css && tsup --watch",
     "dev:all": "concurrently \"postcss src/styles.tailwind.css -o src/styles.css --watch\" \"tsup --watch\" \"npm run serve\"",
-    "serve": "npx serve dist -p 3001 --cors"
+    "serve": "npx serve dist -p 3001 --cors",
+    "test": "vitest"
   },
   "keywords": [
     "observability",
