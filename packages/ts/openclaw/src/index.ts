@@ -1,1 +1,6 @@
-export { default, register, type OpenClawPluginConfig } from "./plugin.js";
+export {
+  default,
+  register,
+  type OpenClawPluginConfig,
+  type OpenClawHandle,
+} from "./plugin.js";

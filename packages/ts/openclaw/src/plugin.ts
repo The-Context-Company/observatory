@@ -8,14 +8,14 @@
  */
 
 import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
-import type { ActiveSession, OpenClawPluginConfig } from "./types.js";
-export type { OpenClawPluginConfig } from "./types.js";
+import type { ActiveSession, OpenClawHandle, OpenClawPluginConfig } from "./types.js";
+export type { OpenClawPluginConfig, OpenClawHandle } from "./types.js";
 import { safeClone, sendToTcc } from "./transport.js";
 
 function registerHooks(
   api: any,
   configOverrides?: OpenClawPluginConfig,
-): void {
+): OpenClawHandle {
   const activeSessions = new Map<string, ActiveSession>();
 
   const pluginConfig: Record<string, unknown> = {
@@ -36,7 +36,11 @@ function registerHooks(
 
   if (!apiKey) {
     log.warn("No TCC_API_KEY found. Set env var or plugin config. Disabled.");
-    return;
+    return {
+      getRunId: () => null,
+      setRunId: () => {},
+      setMetadata: () => {},
+    };
   }
 
   const url =
@@ -46,6 +50,18 @@ function registerHooks(
     getTCCUrl("/v1/openclaw", apiKey);
 
   log.info(`exporting runs to ${url}`);
+
+  // -------------------------------------------------------------------
+  // Run ID + metadata state
+  // -------------------------------------------------------------------
+  let lastRunId: string | null = null;
+  let nextRunId: string | null =
+    typeof pluginConfig.runId === "string" ? pluginConfig.runId : null;
+  const sessionId =
+    typeof pluginConfig.sessionId === "string" ? pluginConfig.sessionId : undefined;
+  let extraMetadata: Record<string, string> = {
+    ...((pluginConfig.metadata as Record<string, string>) ?? {}),
+  };
 
   // -------------------------------------------------------------------
   // Stale session cleanup — flush sessions that never got an agent_end
@@ -59,7 +75,16 @@ function registerHooks(
         if (debug) log.info(`flushing stale session: ${key}`);
 
         sendToTcc(
-          { framework: "openclaw", events: session.events, stale: true },
+          {
+            framework: "openclaw",
+            runId: session.runId,
+            events: session.events,
+            stale: true,
+            ...(sessionId ? { sessionId } : {}),
+            ...(Object.keys(extraMetadata).length > 0
+              ? { metadata: { ...extraMetadata } }
+              : {}),
+          },
           apiKey,
           url,
           debug,
@@ -84,8 +109,12 @@ function registerHooks(
 
     let session = activeSessions.get(sessionKey);
     if (!session) {
-      session = { events: [], startedAt: Date.now() };
+      const runId = nextRunId ?? crypto.randomUUID();
+      nextRunId = null;
+      lastRunId = runId;
+      session = { events: [], startedAt: Date.now(), runId };
       activeSessions.set(sessionKey, session);
+      if (debug) log.info(`run started (runId: ${runId})`);
     }
 
     session.events.push({
@@ -133,11 +162,16 @@ function registerHooks(
       if (!session) return;
 
       if (debug)
-        log.info(`agent_end — sending ${session.events.length} events`);
+        log.info(`agent_end — sending ${session.events.length} events (runId: ${session.runId})`);
 
-      const payload = {
+      const payload: Record<string, unknown> = {
         framework: "openclaw",
+        runId: session.runId,
         events: session.events,
+        ...(sessionId ? { sessionId } : {}),
+        ...(Object.keys(extraMetadata).length > 0
+          ? { metadata: { ...extraMetadata } }
+          : {}),
       };
 
       sendToTcc(payload, apiKey, url, debug, log).catch((err) => {
@@ -147,6 +181,16 @@ function registerHooks(
       activeSessions.delete(sessionKey);
     });
   });
+
+  return {
+    getRunId: () => lastRunId,
+    setRunId: (id: string) => {
+      nextRunId = id;
+    },
+    setMetadata: (meta: Record<string, string>) => {
+      Object.assign(extraMetadata, meta);
+    },
+  };
 }
 
 /**
@@ -195,6 +239,6 @@ export default plugin;
 export function register(
   api: any,
   configOverrides?: OpenClawPluginConfig,
-): void {
-  registerHooks(api, configOverrides);
+): OpenClawHandle {
+  return registerHooks(api, configOverrides);
 }
