@@ -1,0 +1,18 @@
+{
+  "plugins": {
+    "allow": ["@contextcompany/openclaw"],
+    "entries": {
+      "@contextcompany/openclaw": {
+        "enabled": true,
+        "config": {
+          "apiKey": "${TCC_API_KEY}",
+          "sessionId": "my-session-123",
+          "metadata": {
+            "environment": "development",
+            "userId": "user_abc"
+          }
+        }
+      }
+    }
+  }
+}

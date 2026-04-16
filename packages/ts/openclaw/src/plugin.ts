@@ -215,7 +215,7 @@ function registerHooks(
  * ```
  */
 const plugin = {
-  id: "@contextcompany/openclaw",
+  id: "openclaw",
   name: "The Context Company",
   description: "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
   register(api: any) {

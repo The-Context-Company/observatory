@@ -1,5 +1,5 @@
 {
-  "id": "@contextcompany/openclaw",
+  "id": "openclaw",
   "name": "The Context Company",
   "description": "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
   "configSchema": {
