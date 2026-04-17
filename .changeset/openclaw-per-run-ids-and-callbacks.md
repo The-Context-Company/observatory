@@ -19,4 +19,4 @@ The plugin now sends `tcc.runId`, `tcc.sessionId`, and `tcc.conversational` insi
 **Fixes**
 
 - `run_id` is now unique per agent turn. Previously the converter fell back to OpenClaw's internal stable run identifier, which caused multiple turns in the same session to share a run ID.
-- `session_id` can now be bound to a channel thread (e.g. `slack:<channel>:<thread_ts>`) via a custom extension, grouping all runs in a thread under one TCC session. Previously `session_id` was a random UUID regenerated per turn.
+- `session_id` is now thread-scoped for channel-based setups out of the box. The plugin listens on `before_dispatch` and auto-derives `sessionId` as `<accountId>:<channelId>:<conversationId>` whenever both are available (Slack threads, Discord threads, Telegram chats, iMessage conversations, etc.). Falls back to `ctx.sessionKey` for non-channel flows (CLI, cron, subagents). User overrides via config `sessionId` or `onRunStart`'s `setSessionId` always win.

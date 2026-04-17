@@ -80,6 +80,13 @@ function registerHooks(
     string,
     { runId?: string; sessionId?: string; metadata?: Record<string, string> }
   >();
+  // Populated by before_dispatch for channel-based setups (Slack, Discord,
+  // Telegram, iMessage, etc). Lets us auto-scope sessionId to a conversation
+  // (e.g. a Slack thread) without the user writing an extension.
+  const threadBySessionKey = new Map<
+    string,
+    { accountId?: string; channelId: string; conversationId?: string }
+  >();
 
   const merged: Record<string, unknown> = {
     ...(api.pluginConfig ?? {}),
@@ -201,14 +208,25 @@ function registerHooks(
       runId = crypto.randomUUID();
     }
 
+    // sessionId resolution order:
+    //   1. user config `sessionId` (static or function)
+    //   2. auto-derived from before_dispatch (channel + conversation, e.g.
+    //      Slack thread) so a thread maps to a stable TCC session
+    //   3. ctx.sessionKey as the last-ditch fallback
     const defaultSessionId = resolveDefaultSessionId(pluginConfig.sessionId, ctx);
+    const thread = threadBySessionKey.get(sessionKey);
+    const dispatchSessionId = thread
+      ? [thread.accountId, thread.channelId, thread.conversationId]
+          .filter((v): v is string => typeof v === "string" && v.length > 0)
+          .join(":")
+      : undefined;
     const defaultMetadata = resolveDefaultMetadata(pluginConfig.metadata, ctx);
 
     session = {
       events: [],
       startedAt: Date.now(),
       runId,
-      sessionId: defaultSessionId ?? ctx.sessionKey,
+      sessionId: defaultSessionId ?? dispatchSessionId ?? ctx.sessionKey,
       metadata: defaultMetadata,
     };
     activeSessions.set(sessionKey, session);
@@ -245,6 +263,29 @@ function registerHooks(
   // -------------------------------------------------------------------
   // Hooks
   // -------------------------------------------------------------------
+
+  // Channel-based setups (Slack, Discord, Telegram, iMessage, …) fire
+  // before_dispatch with both sessionKey AND conversationId in context.
+  // Stash so we can map thread → sessionId when the agent turn starts.
+  //
+  // Non-channel setups (agent CLI, cron, subagents) never fire this, so
+  // the default falls back to ctx.sessionKey unchanged.
+  api.on("before_dispatch", (_event: any, ctx: any) => {
+    const sessionKey: string | undefined = ctx?.sessionKey;
+    const channelId: string | undefined = ctx?.channelId;
+    if (!sessionKey || !channelId) return;
+    threadBySessionKey.set(sessionKey, {
+      accountId: typeof ctx?.accountId === "string" ? ctx.accountId : undefined,
+      channelId,
+      conversationId:
+        typeof ctx?.conversationId === "string" ? ctx.conversationId : undefined,
+    });
+  });
+
+  api.on("session_end", (_event: any, ctx: any) => {
+    const sessionKey: string | undefined = ctx?.sessionKey;
+    if (sessionKey) threadBySessionKey.delete(sessionKey);
+  });
 
   api.on("before_agent_start", async (event: any, ctx: any) => {
     const runCtx = toRunContext(ctx);
