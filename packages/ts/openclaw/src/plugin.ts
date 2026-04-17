@@ -364,6 +364,12 @@ function registerHooks(
       const session = activeSessions.get(sessionKey);
       if (!session) return;
 
+      // Detach the session from the map BEFORE any await. If a rapid
+      // follow-up turn arrives for the same sessionKey while we're
+      // awaiting onRunEnd, ensureSession must create a fresh session
+      // rather than appending to this already-flushed one.
+      activeSessions.delete(sessionKey);
+
       if (debug)
         log.info(
           `agent_end — sending ${session.events.length} events (runId: ${session.runId})`,
@@ -388,8 +394,6 @@ function registerHooks(
           log.warn(`onRunEnd threw: ${err}`);
         }
       }
-
-      activeSessions.delete(sessionKey);
     });
   });
 
