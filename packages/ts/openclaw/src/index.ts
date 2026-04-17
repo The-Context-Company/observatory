@@ -4,3 +4,5 @@ export {
   type OpenClawPluginConfig,
   type OpenClawHandle,
 } from "./plugin.js";
+
+export { submitFeedback } from "@contextcompany/api";

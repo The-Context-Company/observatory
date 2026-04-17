@@ -1,13 +1,14 @@
 /**
- * OpenClaw extension: TCC observability with run ID + metadata support.
+ * OpenClaw extension: TCC observability with per-run IDs and metadata.
  *
- * Place this in your OpenClaw extensions directory and the gateway
+ * Drop this file into your OpenClaw extensions directory — the gateway
  * will load it automatically on startup.
  *
- * The handle returned by register() lets you:
- *   - Get the run ID after a run completes (for feedback submission)
- *   - Set a custom run ID before the next run starts
- *   - Attach metadata to all subsequent runs
+ * What it demonstrates:
+ *   - Auto-minted UUID per agent turn (safe for concurrent Slack threads).
+ *   - Per-run metadata via `onRunStart` (e.g. user id, channel, prompt preview).
+ *   - Feedback hookup via `onRunEnd` (log or stash the runId for a 👍/👎 button).
+ *   - Custom runId override when the caller wants deterministic IDs.
  */
 
 import { register, type OpenClawHandle } from "@contextcompany/openclaw";
@@ -16,41 +17,58 @@ let handle: OpenClawHandle;
 
 export default async function (api: any) {
   handle = register(api, {
-    // API key — falls back to TCC_API_KEY env var if not set here
+    // API key — falls back to TCC_API_KEY env var if not set here.
     // apiKey: "tcc_...",
 
-    // Group runs in the same conversation
-    sessionId: "my-session-id",
+    // Default session id applied to every run. `ctx.sessionKey` is stable
+    // per OpenClaw session — in Slack with thread-bound sessions, this
+    // maps 1:1 to a thread.
+    sessionId: (ctx) => ctx.sessionKey ?? "default",
 
-    // Attach metadata to every run
-    metadata: {
-      environment: "production",
-      userId: "user_abc",
+    // Default metadata merged into every run. Per-run overrides win.
+    metadata: (ctx) => ({
+      channel: ctx.channelId ?? "unknown",
+      agent: ctx.agentId ?? "unknown",
+    }),
+
+    // Called at before_agent_start for every new turn. `runId` is the
+    // auto-minted UUID for this run; override or enrich it here.
+    onRunStart: ({ runId, ctx, prompt, setRunId, setMetadata }) => {
+      // Example: override with a caller-supplied UUID if available.
+      // setRunId(myUuid);
+
+      // Example: attach per-run metadata.
+      setMetadata({
+        promptPreview: prompt.slice(0, 120),
+        trigger: ctx.trigger ?? "user",
+      });
+
+      console.log(`[tcc] run start — runId: ${runId} session: ${ctx.sessionKey}`);
+    },
+
+    // Called at agent_end after the payload is flushed. Use this to wire
+    // up feedback — stash the runId somewhere the user's 👍/👎 button
+    // can read, or post an ephemeral message to the thread.
+    onRunEnd: ({ runId, ctx, success }) => {
+      console.log(
+        `[tcc] run end — runId: ${runId} success: ${success} session: ${ctx.sessionKey}`,
+      );
+      // Example:
+      //   import { submitFeedback } from "@contextcompany/otel";
+      //   lastRunIdByThread.set(ctx.sessionKey, runId);
+      //   // later, when user clicks 👍:
+      //   await submitFeedback({ runId, score: "thumbs_up" });
     },
 
     debug: true,
   });
-
-  // --- Example: hook into agent_end to log the run ID ---
-
-  api.on("agent_end", () => {
-    // getRunId() returns the ID of the run that just finished
-    const runId = handle.getRunId();
-    console.log(`[tcc] run finished — runId: ${runId}`);
-
-    // You can now use this runId to submit feedback:
-    //
-    //   import { submitFeedback } from "@contextcompany/otel";
-    //   await submitFeedback({ runId, score: "thumbs_up" });
-  });
 }
 
 /**
- * Export the handle so other extensions can access it if needed.
+ * Expose the handle for other extensions.
  *
- * Example from another extension:
  *   import { getHandle } from "../tcc-observability/index.ts";
- *   const runId = getHandle().getRunId();
+ *   const runId = getHandle().getRunIdForSession(sessionKey);
  */
 export function getHandle(): OpenClawHandle {
   return handle;

@@ -4,24 +4,89 @@
  * Thin forwarder: collects raw hook events during an agent run,
  * then sends them all as one batch on agent_end.
  *
+ * Per-session state is keyed by ctx.sessionKey — safe under concurrent
+ * runs (e.g. multiple Slack threads served by the same gateway).
+ *
  * All parsing/transformation happens server-side.
  */
 
 import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
-import type { ActiveSession, OpenClawHandle, OpenClawPluginConfig } from "./types.js";
-export type { OpenClawPluginConfig, OpenClawHandle } from "./types.js";
+import type {
+  ActiveSession,
+  OpenClawHandle,
+  OpenClawPluginConfig,
+  OpenClawRunContext,
+  OpenClawRunStartHandler,
+  OpenClawRunEndHandler,
+  OpenClawDefaultSessionId,
+  OpenClawDefaultMetadata,
+} from "./types.js";
+export type {
+  OpenClawPluginConfig,
+  OpenClawHandle,
+  OpenClawRunContext,
+  OpenClawRunStartHandler,
+  OpenClawRunEndHandler,
+} from "./types.js";
 import { safeClone, sendToTcc } from "./transport.js";
+
+function resolveDefaultSessionId(
+  def: OpenClawDefaultSessionId | undefined,
+  ctx: OpenClawRunContext,
+): string | undefined {
+  if (typeof def === "function") {
+    try {
+      return def(ctx);
+    } catch {
+      return undefined;
+    }
+  }
+  return def;
+}
+
+function resolveDefaultMetadata(
+  def: OpenClawDefaultMetadata | undefined,
+  ctx: OpenClawRunContext,
+): Record<string, string> {
+  if (typeof def === "function") {
+    try {
+      return { ...(def(ctx) ?? {}) };
+    } catch {
+      return {};
+    }
+  }
+  return { ...(def ?? {}) };
+}
+
+function toRunContext(ctx: unknown): OpenClawRunContext {
+  const c = (ctx ?? {}) as Record<string, unknown>;
+  return {
+    agentId: typeof c.agentId === "string" ? c.agentId : undefined,
+    sessionKey: typeof c.sessionKey === "string" ? c.sessionKey : undefined,
+    sessionId: typeof c.sessionId === "string" ? c.sessionId : undefined,
+    channelId: typeof c.channelId === "string" ? c.channelId : undefined,
+    workspaceDir: typeof c.workspaceDir === "string" ? c.workspaceDir : undefined,
+    trigger: typeof c.trigger === "string" ? c.trigger : undefined,
+  };
+}
 
 function registerHooks(
   api: any,
   configOverrides?: OpenClawPluginConfig,
 ): OpenClawHandle {
   const activeSessions = new Map<string, ActiveSession>();
+  // Per-session pending overrides applied at the next before_agent_start.
+  const pendingOverrides = new Map<
+    string,
+    { runId?: string; sessionId?: string; metadata?: Record<string, string> }
+  >();
 
-  const pluginConfig: Record<string, unknown> = {
+  const merged: Record<string, unknown> = {
     ...(api.pluginConfig ?? {}),
     ...configOverrides,
   };
+  const pluginConfig = merged as OpenClawPluginConfig & Record<string, unknown>;
+
   const debug =
     pluginConfig.debug === true || process.env.TCC_DEBUG === "true";
 
@@ -38,8 +103,10 @@ function registerHooks(
     log.warn("No TCC_API_KEY found. Set env var or plugin config. Disabled.");
     return {
       getRunId: () => null,
+      getRunIdForSession: () => null,
       setRunId: () => {},
       setMetadata: () => {},
+      setRunContext: () => {},
     };
   }
 
@@ -52,16 +119,17 @@ function registerHooks(
   log.info(`exporting runs to ${url}`);
 
   // -------------------------------------------------------------------
-  // Run ID + metadata state
+  // Global/default state
   // -------------------------------------------------------------------
   let lastRunId: string | null = null;
-  let nextRunId: string | null =
+  // Legacy one-shot: consumed by the next session that starts.
+  let legacyNextRunId: string | null =
     typeof pluginConfig.runId === "string" ? pluginConfig.runId : null;
-  const sessionId =
-    typeof pluginConfig.sessionId === "string" ? pluginConfig.sessionId : undefined;
-  let extraMetadata: Record<string, string> = {
-    ...((pluginConfig.metadata as Record<string, string>) ?? {}),
-  };
+  // Mutable defaults appended to every run (merged with callback-level overrides).
+  const globalDefaultMetadata: Record<string, string> = {};
+
+  const onRunStart = pluginConfig.onRunStart;
+  const onRunEnd = pluginConfig.onRunEnd;
 
   // -------------------------------------------------------------------
   // Stale session cleanup — flush sessions that never got an agent_end
@@ -75,16 +143,7 @@ function registerHooks(
         if (debug) log.info(`flushing stale session: ${key}`);
 
         sendToTcc(
-          {
-            framework: "openclaw",
-            runId: session.runId,
-            events: session.events,
-            stale: true,
-            ...(sessionId ? { sessionId } : {}),
-            ...(Object.keys(extraMetadata).length > 0
-              ? { metadata: { ...extraMetadata } }
-              : {}),
-          },
+          buildPayload(session, /* stale */ true),
           apiKey,
           url,
           debug,
@@ -96,26 +155,84 @@ function registerHooks(
         activeSessions.delete(key);
       }
     }
-  }, 5 * 60 * 1000); // check every 5 minutes
+  }, 5 * 60 * 1000);
 
   if (cleanupInterval.unref) cleanupInterval.unref();
 
-  // -------------------------------------------------------------------
-  // Helper: push a raw event into the session's event list
-  // -------------------------------------------------------------------
-  function pushEvent(hook: string, event: unknown, ctx: unknown): void {
-    const sessionKey = (ctx as any)?.sessionKey;
-    if (!sessionKey) return;
+  function buildPayload(
+    session: ActiveSession,
+    stale: boolean,
+  ): Record<string, unknown> {
+    // tcc.* keys are the canonical contract. User-supplied metadata goes
+    // through first; the plugin's authoritative runId/sessionId stamp last
+    // so there's a single source of truth.
+    const metadata: Record<string, unknown> = {
+      ...globalDefaultMetadata,
+      ...session.metadata,
+      "tcc.runId": session.runId,
+      ...(session.sessionId ? { "tcc.sessionId": session.sessionId } : {}),
+    };
+    return {
+      framework: "openclaw",
+      events: session.events,
+      metadata,
+      ...(stale ? { stale: true } : {}),
+    };
+  }
 
+  // -------------------------------------------------------------------
+  // Session lifecycle
+  // -------------------------------------------------------------------
+
+  function ensureSession(
+    sessionKey: string,
+    ctx: OpenClawRunContext,
+  ): ActiveSession {
     let session = activeSessions.get(sessionKey);
-    if (!session) {
-      const runId = nextRunId ?? crypto.randomUUID();
-      nextRunId = null;
-      lastRunId = runId;
-      session = { events: [], startedAt: Date.now(), runId };
-      activeSessions.set(sessionKey, session);
-      if (debug) log.info(`run started (runId: ${runId})`);
+    if (session) return session;
+
+    // Mint a fresh runId per turn. Legacy top-level runId (if present) wins
+    // ONLY the first time — same as before, preserved for backwards compat.
+    let runId: string;
+    if (legacyNextRunId) {
+      runId = legacyNextRunId;
+      legacyNextRunId = null;
+    } else {
+      runId = crypto.randomUUID();
     }
+
+    const defaultSessionId = resolveDefaultSessionId(pluginConfig.sessionId, ctx);
+    const defaultMetadata = resolveDefaultMetadata(pluginConfig.metadata, ctx);
+
+    session = {
+      events: [],
+      startedAt: Date.now(),
+      runId,
+      sessionId: defaultSessionId ?? ctx.sessionKey,
+      metadata: defaultMetadata,
+    };
+    activeSessions.set(sessionKey, session);
+
+    // Apply any pending setRunContext overrides queued before the session
+    // started.
+    const pending = pendingOverrides.get(sessionKey);
+    if (pending) {
+      if (pending.runId) session.runId = pending.runId;
+      if (pending.sessionId) session.sessionId = pending.sessionId;
+      if (pending.metadata) Object.assign(session.metadata, pending.metadata);
+      pendingOverrides.delete(sessionKey);
+    }
+
+    lastRunId = session.runId;
+    if (debug) log.info(`run started (runId: ${session.runId})`);
+    return session;
+  }
+
+  function pushEvent(hook: string, event: unknown, ctx: unknown): void {
+    const runCtx = toRunContext(ctx);
+    const sessionKey = runCtx.sessionKey;
+    if (!sessionKey) return;
+    const session = ensureSession(sessionKey, runCtx);
 
     session.events.push({
       hook,
@@ -126,8 +243,52 @@ function registerHooks(
   }
 
   // -------------------------------------------------------------------
-  // Hooks: collect raw events
+  // Hooks
   // -------------------------------------------------------------------
+
+  api.on("before_agent_start", async (event: any, ctx: any) => {
+    const runCtx = toRunContext(ctx);
+    const sessionKey = runCtx.sessionKey;
+    if (!sessionKey) return;
+
+    const session = ensureSession(sessionKey, runCtx);
+
+    if (onRunStart) {
+      const mutators = {
+        setRunId: (id: string) => {
+          session.runId = id;
+          lastRunId = id;
+        },
+        setSessionId: (id: string) => {
+          session.sessionId = id;
+        },
+        setMetadata: (meta: Record<string, unknown>) => {
+          for (const [k, v] of Object.entries(meta)) {
+            // Route tcc.* shortcuts into canonical session slots so they
+            // win at send time, regardless of which API the user picked.
+            if (k === "tcc.runId" && typeof v === "string") {
+              session.runId = v;
+              lastRunId = v;
+            } else if (k === "tcc.sessionId" && typeof v === "string") {
+              session.sessionId = v;
+            } else {
+              session.metadata[k] = v as string;
+            }
+          }
+        },
+      };
+      try {
+        await onRunStart({
+          runId: session.runId,
+          ctx: runCtx,
+          prompt: typeof event?.prompt === "string" ? event.prompt : "",
+          ...mutators,
+        });
+      } catch (err) {
+        log.warn(`onRunStart threw: ${err}`);
+      }
+    }
+  });
 
   api.on("llm_input", (event: any, ctx: any) => {
     pushEvent("llm_input", event, ctx);
@@ -150,33 +311,42 @@ function registerHooks(
   });
 
   api.on("agent_end", (event: any, ctx: any) => {
-    const sessionKey = ctx?.sessionKey;
+    const runCtx = toRunContext(ctx);
+    const sessionKey = runCtx.sessionKey;
     if (!sessionKey) return;
 
     pushEvent("agent_end", event, ctx);
 
-    // Defer sending to a microtask so llm_output (which fires on the
-    // same synchronous tick as agent_end) gets collected first.
-    queueMicrotask(() => {
+    // Defer send to a microtask so llm_output (on the same synchronous tick)
+    // is collected first.
+    queueMicrotask(async () => {
       const session = activeSessions.get(sessionKey);
       if (!session) return;
 
       if (debug)
-        log.info(`agent_end — sending ${session.events.length} events (runId: ${session.runId})`);
+        log.info(
+          `agent_end — sending ${session.events.length} events (runId: ${session.runId})`,
+        );
 
-      const payload: Record<string, unknown> = {
-        framework: "openclaw",
-        runId: session.runId,
-        events: session.events,
-        ...(sessionId ? { sessionId } : {}),
-        ...(Object.keys(extraMetadata).length > 0
-          ? { metadata: { ...extraMetadata } }
-          : {}),
-      };
+      const payload = buildPayload(session, false);
 
       sendToTcc(payload, apiKey, url, debug, log).catch((err) => {
         log.warn(`failed to send events: ${err}`);
       });
+
+      if (onRunEnd) {
+        try {
+          await onRunEnd({
+            runId: session.runId,
+            ctx: runCtx,
+            success: event?.success !== false,
+            sessionId: session.sessionId,
+            metadata: { ...globalDefaultMetadata, ...session.metadata },
+          });
+        } catch (err) {
+          log.warn(`onRunEnd threw: ${err}`);
+        }
+      }
 
       activeSessions.delete(sessionKey);
     });
@@ -184,11 +354,38 @@ function registerHooks(
 
   return {
     getRunId: () => lastRunId,
+    getRunIdForSession: (sessionKey: string) =>
+      activeSessions.get(sessionKey)?.runId ?? null,
     setRunId: (id: string) => {
-      nextRunId = id;
+      legacyNextRunId = id;
     },
     setMetadata: (meta: Record<string, string>) => {
-      Object.assign(extraMetadata, meta);
+      Object.assign(globalDefaultMetadata, meta);
+    },
+    setRunContext: (
+      sessionKey: string,
+      ctx: {
+        runId?: string;
+        sessionId?: string;
+        metadata?: Record<string, string>;
+      },
+    ) => {
+      const existing = activeSessions.get(sessionKey);
+      if (existing) {
+        if (ctx.runId) {
+          existing.runId = ctx.runId;
+          lastRunId = ctx.runId;
+        }
+        if (ctx.sessionId) existing.sessionId = ctx.sessionId;
+        if (ctx.metadata) Object.assign(existing.metadata, ctx.metadata);
+        return;
+      }
+      const pending = pendingOverrides.get(sessionKey) ?? {};
+      if (ctx.runId) pending.runId = ctx.runId;
+      if (ctx.sessionId) pending.sessionId = ctx.sessionId;
+      if (ctx.metadata)
+        pending.metadata = { ...(pending.metadata ?? {}), ...ctx.metadata };
+      pendingOverrides.set(sessionKey, pending);
     },
   };
 }
@@ -196,28 +393,12 @@ function registerHooks(
 /**
  * Full OpenClaw plugin object — install via `openclaw plugins install`
  * and configure in `openclaw.json` under `plugins.entries`.
- *
- * @example
- * ```json
- * {
- *   "plugins": {
- *     "allow": ["@contextcompany/openclaw"],
- *     "entries": {
- *       "@contextcompany/openclaw": {
- *         "enabled": true,
- *         "config": {
- *           "apiKey": "${TCC_API_KEY}"
- *         }
- *       }
- *     }
- *   }
- * }
- * ```
  */
 const plugin = {
   id: "openclaw",
   name: "The Context Company",
-  description: "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
+  description:
+    "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
   register(api: any) {
     registerHooks(api);
   },
@@ -232,7 +413,14 @@ export default plugin;
  * ```ts
  * import { register } from "@contextcompany/openclaw";
  * export default async function (api) {
- *   register(api, { apiKey: "tcc_...", debug: true });
+ *   const handle = register(api, {
+ *     onRunStart: ({ runId, ctx, setMetadata }) => {
+ *       setMetadata({ channel: ctx.channelId ?? "unknown" });
+ *     },
+ *     onRunEnd: ({ runId }) => {
+ *       // stash runId for feedback submission
+ *     },
+ *   });
  * }
  * ```
  */
