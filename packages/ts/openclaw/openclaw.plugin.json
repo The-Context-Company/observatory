@@ -1,5 +1,5 @@
 {
-  "id": "@contextcompany/openclaw",
+  "id": "openclaw",
   "name": "The Context Company",
   "description": "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
   "configSchema": {
@@ -9,7 +9,10 @@
       "enabled": { "type": "boolean" },
       "apiKey": { "type": "string" },
       "endpoint": { "type": "string" },
-      "debug": { "type": "boolean" }
+      "debug": { "type": "boolean" },
+      "runId": { "type": "string" },
+      "sessionId": { "type": "string" },
+      "metadata": { "type": "object", "additionalProperties": { "type": "string" } }
     }
   },
   "uiHints": {
@@ -31,6 +34,20 @@
     "debug": {
       "label": "Debug Logging",
       "help": "Log hook events and transport details to console."
+    },
+    "runId": {
+      "label": "Run ID",
+      "placeholder": "my-custom-run-id",
+      "help": "Explicit run ID for the first run. If not set, a random UUID is generated."
+    },
+    "sessionId": {
+      "label": "Session ID",
+      "placeholder": "conversation-123",
+      "help": "Group multiple runs in the same conversation or session."
+    },
+    "metadata": {
+      "label": "Metadata",
+      "help": "Arbitrary key-value metadata attached to every run."
     }
   }
 }

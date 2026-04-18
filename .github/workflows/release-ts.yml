@@ -16,6 +16,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      # Allow npm to run even though root package.json pins pnpm. Needed so
+      # changesets can invoke `npm publish` inside each package.
+      COREPACK_ENABLE_STRICT: "0"
 
     steps:
       - uses: actions/checkout@v4
@@ -33,7 +37,13 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Upgrade npm for OIDC trusted publishing
-        run: npm install -g npm@latest
+        # Node 22's bundled npm can itself be corrupted ("Cannot find module
+        # 'promise-retry'") and can't even run `npm install` on itself.
+        # Use corepack to bypass the broken bundled npm entirely.
+        run: |
+          corepack enable npm
+          corepack prepare npm@11.5.2 --activate
+          npm --version
 
       - run: pnpm install --frozen-lockfile
 

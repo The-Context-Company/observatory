@@ -49,18 +49,41 @@ If you prefer to register from a custom extension:
 import { register } from "@contextcompany/openclaw";
 
 export default async function (api) {
-  register(api);
+  const handle = register(api);
+
+  // After a run completes, get the run ID (e.g. for feedback)
+  const runId = handle.getRunId();
 }
 ```
 
 With explicit config:
 
 ```ts
-register(api, {
+const handle = register(api, {
   apiKey: "tcc_...",
   endpoint: "https://api.thecontext.company/v1/openclaw",
   debug: true,
+  runId: "my-custom-run-id",       // optional: set a specific run ID
+  sessionId: "conversation-123",   // optional: group runs in a session
+  metadata: { userId: "u_abc" },   // optional: attach metadata to runs
 });
+```
+
+### Run ID & Metadata Access
+
+`register()` returns a handle you can use to control run IDs and metadata:
+
+```ts
+const handle = register(api, { apiKey: "tcc_..." });
+
+// Set the run ID for the *next* run (before it starts)
+handle.setRunId("my-custom-run-id");
+
+// Get the run ID of the last (or current) run (e.g. to submit feedback)
+const runId = handle.getRunId();
+
+// Add metadata for subsequent runs
+handle.setMetadata({ userId: "u_abc", environment: "staging" });
 ```
 
 ## Configuration
@@ -70,6 +93,9 @@ register(api, {
 | `apiKey` | `TCC_API_KEY` | — | Your Context Company API key |
 | `endpoint` | `TCC_URL` | Auto-detected from key | Ingestion endpoint URL |
 | `debug` | `TCC_DEBUG` | `false` | Enable debug logging |
+| `runId` | — | Random UUID | Explicit run ID for the first run |
+| `sessionId` | — | — | Session ID to group related runs |
+| `metadata` | — | — | Key-value metadata attached to runs |
 
 ## How It Works
 
