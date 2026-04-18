@@ -33,10 +33,13 @@ jobs:
           registry-url: "https://registry.npmjs.org"
 
       - name: Upgrade npm for OIDC trusted publishing
-        # Node 22's bundled npm can have a broken self-upgrade path
-        # ("Cannot find module 'promise-retry'"). --force skips the broken
-        # dep check during install. Pin to @11 to avoid future regressions.
-        run: npm install -g --force npm@11
+        # Node 22's bundled npm can itself be corrupted ("Cannot find module
+        # 'promise-retry'") and can't even run `npm install` on itself.
+        # Use corepack to bypass the broken bundled npm entirely.
+        run: |
+          corepack enable npm
+          corepack prepare npm@11.5.2 --activate
+          npm --version
 
       - run: pnpm install --frozen-lockfile
 
