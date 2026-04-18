@@ -16,6 +16,10 @@ permissions:
 jobs:
   release:
     runs-on: ubuntu-latest
+    env:
+      # Allow npm to run even though root package.json pins pnpm. Needed so
+      # changesets can invoke `npm publish` inside each package.
+      COREPACK_ENABLE_STRICT: "0"
 
     steps:
       - uses: actions/checkout@v4
