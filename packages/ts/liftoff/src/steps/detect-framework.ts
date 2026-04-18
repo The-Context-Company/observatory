@@ -88,11 +88,11 @@ export const detectFrameworkStep: Step = {
       hint: opt.value === detectedPm ? "detected" : undefined,
     }));
 
-    const options = ctx.language === "python" ? pyOptions : tsOptions;
+    const pmOptions = ctx.language === "python" ? pyOptions : tsOptions;
 
     const pmChoice = await p.select({
       message: "Which package manager do you use?",
-      options,
+      options: pmOptions,
       initialValue: detectedPm ?? undefined,
     });
     if (p.isCancel(pmChoice)) {
