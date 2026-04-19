@@ -1,4 +1,4 @@
-import { createTwoFilesPatch } from "diff";
+import { structuredPatch } from "diff";
 import pc from "picocolors";
 import * as p from "@clack/prompts";
 
@@ -17,27 +17,87 @@ export interface FileChange {
 }
 
 /**
- * Colorize a unified diff patch string for terminal display.
+ * Render a unified diff as Claude-Code-style line-numbered output:
  *
- * - Green for added lines (`+`)
- * - Red for removed lines (`-`)
- * - Cyan for hunk headers (`@@`)
- * - Bold for file headers (`+++`/`---`)
- * - Dim for context lines
+ *   12 │   const x = 1;
+ *   13 │ - const y = 2;
+ *   13 │ + const y = 3;
+ *   14 │   const z = 4;
+ *
+ * Skips the unified-diff file headers and `@@` hunk markers — those
+ * are noise when the filename is already in the box title.
+ *
+ * For brand-new files (oldContent === ""), shows just the new content
+ * with "+" prefixes and line numbers starting at 1.
  */
-export function formatColoredDiff(patch: string): string {
-  return patch
-    .split("\n")
-    .map((line) => {
-      if (line.startsWith("+++") || line.startsWith("---")) {
-        return pc.bold(line);
+export function formatColoredDiff(
+  oldContent: string,
+  newContent: string,
+  filePath: string,
+): string {
+  // New-file case: show the whole new content with + prefix + line nums.
+  if (oldContent === "") {
+    const lines = newContent.split("\n");
+    // Drop the trailing empty line that `split` produces on a final newline.
+    if (lines[lines.length - 1] === "") lines.pop();
+    const width = String(lines.length).length;
+    return lines
+      .map((line, i) => {
+        const ln = String(i + 1).padStart(width, " ");
+        return pc.dim(ln) + pc.dim(" │ ") + pc.green("+ " + line);
+      })
+      .join("\n");
+  }
+
+  const patch = structuredPatch(
+    filePath,
+    filePath,
+    oldContent,
+    newContent,
+    "",
+    "",
+    { context: 3 },
+  );
+
+  const out: string[] = [];
+  const numWidth = Math.max(
+    3,
+    String(
+      patch.hunks.reduce(
+        (m, h) =>
+          Math.max(m, h.oldStart + h.oldLines, h.newStart + h.newLines),
+        0,
+      ),
+    ).length,
+  );
+
+  for (let h = 0; h < patch.hunks.length; h++) {
+    const hunk = patch.hunks[h];
+    if (h > 0) out.push(pc.dim("  " + "…".padStart(numWidth)) + pc.dim(" │"));
+
+    let oldLn = hunk.oldStart;
+    let newLn = hunk.newStart;
+    for (const raw of hunk.lines) {
+      const marker = raw[0];
+      const content = raw.slice(1);
+      if (marker === "-") {
+        const ln = String(oldLn).padStart(numWidth, " ");
+        out.push(pc.dim(ln) + pc.dim(" │ ") + pc.red("- " + content));
+        oldLn++;
+      } else if (marker === "+") {
+        const ln = String(newLn).padStart(numWidth, " ");
+        out.push(pc.dim(ln) + pc.dim(" │ ") + pc.green("+ " + content));
+        newLn++;
+      } else {
+        const ln = String(newLn).padStart(numWidth, " ");
+        out.push(pc.dim(ln) + pc.dim(" │   ") + pc.dim(content));
+        oldLn++;
+        newLn++;
       }
-      if (line.startsWith("+")) return pc.green(line);
-      if (line.startsWith("-")) return pc.red(line);
-      if (line.startsWith("@@")) return pc.cyan(line);
-      return pc.dim(line);
-    })
-    .join("\n");
+    }
+  }
+
+  return out.join("\n");
 }
 
 /**
@@ -55,20 +115,17 @@ export async function reviewAndApplyChanges(
   for (const change of changes) {
     const isNew = change.oldContent === "";
 
-    const patch = createTwoFilesPatch(
-      change.filePath,
-      change.filePath,
-      change.oldContent,
-      change.newContent,
-    );
-
     const label = isNew
-      ? `${pc.green("CREATE")} ${change.filePath}`
-      : `${pc.yellow("MODIFY")} ${change.filePath}`;
+      ? `${pc.green("NEW")}  ${pc.bold(change.filePath)}`
+      : `${pc.yellow("EDIT")} ${pc.bold(change.filePath)}`;
 
     p.note(
-      formatColoredDiff(patch),
-      `${label} -- ${change.description}`,
+      formatColoredDiff(
+        change.oldContent,
+        change.newContent,
+        change.filePath,
+      ),
+      `${label}  ${pc.dim("— " + change.description)}`,
     );
 
     const shouldApply = await p.confirm({

@@ -12,6 +12,31 @@ import { setupSlackStep } from "./steps/setup-slack.js";
 import { successSummaryStep } from "./steps/success-summary.js";
 import type { Step, WizardContext } from "./types.js";
 
+/**
+ * Print the LIFTOFF banner in ANSI-shadow block letters plus a
+ * "The Context Company" tagline. Rendered before the clack intro so
+ * users see a distinct brand frame before the wizard starts.
+ */
+function printBanner(): void {
+  const logo = [
+    "██╗     ██╗███████╗████████╗ ██████╗ ███████╗███████╗",
+    "██║     ██║██╔════╝╚══██╔══╝██╔═══██╗██╔════╝██╔════╝",
+    "██║     ██║█████╗     ██║   ██║   ██║█████╗  █████╗  ",
+    "██║     ██║██╔══╝     ██║   ██║   ██║██╔══╝  ██╔══╝  ",
+    "███████╗██║██║        ██║   ╚██████╔╝██║     ██║     ",
+    "╚══════╝╚═╝╚═╝        ╚═╝    ╚═════╝ ╚═╝     ╚═╝     ",
+  ];
+  console.log();
+  for (const line of logo) console.log("  " + pc.cyan(line));
+  console.log();
+  console.log(
+    "  " +
+      pc.bold("The Context Company") +
+      pc.dim(" · AI observability in 2 minutes"),
+  );
+  console.log();
+}
+
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
 
@@ -44,10 +69,9 @@ ${pc.dim("Options:")}
       ? args[keyIndex + 1]
       : undefined;
 
-  // Show intro
-  p.intro(
-    `${pc.bgCyan(pc.black(" @contextcompany/liftoff "))} ${pc.dim("— AI observability setup")}`,
-  );
+  // Show banner + intro
+  printBanner();
+  p.intro(pc.dim("Setup wizard"));
 
   // Initialize context
   const ctx: WizardContext = {

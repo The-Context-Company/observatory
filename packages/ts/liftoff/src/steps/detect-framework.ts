@@ -24,15 +24,31 @@ export const detectFrameworkStep: Step = {
     const detected = detectFramework(ctx.installDir);
     const detectedLang = detectLanguage(ctx.installDir);
 
-    // Split frameworks by language
     const tsFrameworks = FRAMEWORKS.filter((f) => f.language === "typescript");
     const pyFrameworks = FRAMEWORKS.filter((f) => f.language === "python");
 
-    // Put the detected language group first
-    const [firstGroup, firstLabel, secondGroup, secondLabel] =
-      detectedLang === "python"
-        ? [pyFrameworks, "Python", tsFrameworks, "TypeScript / JavaScript"]
-        : [tsFrameworks, "TypeScript / JavaScript", pyFrameworks, "Python"];
+    // If we couldn't infer the language from project files, ask which one.
+    // Otherwise, just show that language's frameworks — keeps the framework
+    // prompt focused and avoids non-selectable group headers in the list.
+    let language: "typescript" | "python";
+    if (detectedLang === "typescript" || detectedLang === "python") {
+      language = detectedLang;
+    } else {
+      const langChoice = await p.select({
+        message: "Which language is this project in?",
+        options: [
+          { value: "typescript", label: "TypeScript / JavaScript" },
+          { value: "python", label: "Python" },
+        ],
+      });
+      if (p.isCancel(langChoice)) {
+        return { status: "failed", message: "User cancelled" };
+      }
+      language = langChoice as "typescript" | "python";
+    }
+
+    const frameworksForLang =
+      language === "python" ? pyFrameworks : tsFrameworks;
 
     const makeOption = (f: (typeof FRAMEWORKS)[number]) => ({
       value: f.id as Framework,
@@ -40,17 +56,9 @@ export const detectFrameworkStep: Step = {
       hint: f.id === detected ? "detected" : undefined,
     });
 
-    const options = [
-      { value: "__ts_header__" as Framework, label: pc.dim(`── ${firstLabel} ──`), hint: "" },
-      ...firstGroup.map(makeOption),
-      { value: "__py_header__" as Framework, label: pc.dim(`── ${secondLabel} ──`), hint: "" },
-      ...secondGroup.map(makeOption),
-    ];
-
-    // Present framework selection
     const choice = await p.select({
-      message: "Which framework are you using?",
-      options,
+      message: `Which ${language === "python" ? "Python" : "TypeScript / JavaScript"} framework are you using?`,
+      options: frameworksForLang.map(makeOption),
       initialValue: detected ?? undefined,
     });
 

@@ -120,21 +120,11 @@ export const successSummaryStep: Step = {
     const runCmd = getRunDevCommand(pm);
 
     p.log.step(
-      `${pc.bold("Next step:")} Run your app and see traces in the dashboard\n\n` +
-        `  ${pc.cyan(pc.bold(runCmd))}\n`,
+      `${pc.bold("You're instrumented.")} Start your app and traces will begin flowing.\n\n` +
+        `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
+        `${pc.dim("Then open the dashboard to watch them arrive:")}\n` +
+        `  ${pc.underline(DASHBOARD_URL)}`,
     );
-
-    // Deep-link to dashboard (WIN-02)
-    p.log.info(
-      `${pc.dim("Dashboard:")} ${pc.underline(DASHBOARD_URL)}`,
-    );
-
-    try {
-      const openModule = await import("open");
-      await openModule.default(DASHBOARD_URL);
-    } catch {
-      // Browser open is best-effort
-    }
 
     ctx.completedSteps.push("success-summary");
     return { status: "completed" };
