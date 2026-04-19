@@ -46,7 +46,7 @@ function printBanner(): void {
   console.log();
   console.log("  " + pc.bold("The Context Company"));
   console.log(
-    "  " + pc.dim("liftoff · AI observability in 2 minutes"),
+    "  " + pc.dim("liftoff · Monitoring for AI Agents"),
   );
   console.log();
 }
