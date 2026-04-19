@@ -19,39 +19,34 @@ import type { Step, WizardContext } from "./types.js";
  * clack intro so the terminal has a distinct brand frame on launch.
  */
 function printBanner(): void {
-  // Each chevron is 5 rows tall, 6 chars wide. The middle (yellow)
-  // chevron has its apex hollowed out — matching the split/dashed
-  // middle chevron in the Context Company logo.
-  const solid = ["██    ", "  ██  ", "    ██", "  ██  ", "██    "];
-  const split = ["██    ", "  ██  ", "      ", "  ██  ", "██    "];
+  // Chevron shape: 5 rows of 6 chars, plus a trailing spacer row so
+  // the 6-row TCC block aligns on the same baseline. Middle chevron
+  // has a hollow apex — mirrors the split/dashed middle chevron in
+  // the actual Context Company logo.
+  const solid = ["██    ", "  ██  ", "    ██", "  ██  ", "██    ", "      "];
+  const split = ["██    ", "  ██  ", "      ", "  ██  ", "██    ", "      "];
   const gap = "  ";
 
-  const liftoff = [
-    "██╗     ██╗███████╗████████╗ ██████╗ ███████╗███████╗",
-    "██║     ██║██╔════╝╚══██╔══╝██╔═══██╗██╔════╝██╔════╝",
-    "██║     ██║█████╗     ██║   ██║   ██║█████╗  █████╗  ",
-    "██║     ██║██╔══╝     ██║   ██║   ██║██╔══╝  ██╔══╝  ",
-    "███████╗██║██║        ██║   ╚██████╔╝██║     ██║     ",
-    "╚══════╝╚═╝╚═╝        ╚═╝    ╚═════╝ ╚═╝     ╚═╝     ",
+  // TCC in ANSI-shadow block letters (6 rows tall).
+  const tcc = [
+    "████████╗ ██████╗ ██████╗",
+    "╚══██╔══╝██╔════╝██╔════╝",
+    "   ██║   ██║     ██║     ",
+    "   ██║   ██║     ██║     ",
+    "   ██║   ╚██████╗╚██████╗",
+    "   ╚═╝    ╚═════╝ ╚═════╝",
   ];
 
-  // Chevron row visual width: 6 + 2 + 6 + 2 + 6 = 22 cols
-  const chevronBlock = " ".repeat(22);
-
   console.log();
-  // Rows 0-4: chevrons side-by-side with the LIFTOFF block, right-aligned vertically
-  for (let i = 0; i < liftoff.length; i++) {
+  for (let i = 0; i < tcc.length; i++) {
     const chev =
-      i < solid.length
-        ? pc.blue(solid[i]) + gap + pc.yellow(split[i]) + gap + pc.red(solid[i])
-        : chevronBlock;
-    console.log("  " + chev + "   " + pc.bold(liftoff[i]));
+      pc.blue(solid[i]) + gap + pc.yellow(split[i]) + gap + pc.red(solid[i]);
+    console.log("  " + chev + "   " + pc.bold(tcc[i]));
   }
   console.log();
+  console.log("  " + pc.bold("The Context Company"));
   console.log(
-    "  " +
-      pc.bold("The Context Company") +
-      pc.dim(" · AI observability in 2 minutes"),
+    "  " + pc.dim("liftoff · AI observability in 2 minutes"),
   );
   console.log();
 }
