@@ -10,12 +10,20 @@ import { provisionKeysStep } from "./steps/provision-keys.js";
 import type { Step, WizardContext } from "./types.js";
 
 /**
- * Print the LIFTOFF banner in ANSI-shadow block letters plus a
- * "The Context Company" tagline. Rendered before the clack intro so
- * users see a distinct brand frame before the wizard starts.
+ * Print the liftoff banner: the three Context Company chevrons
+ * (blue / yellow-split / red) next to LIFTOFF in ANSI-shadow block
+ * letters, with the company name as a subtitle. Rendered before the
+ * clack intro so the terminal has a distinct brand frame on launch.
  */
 function printBanner(): void {
-  const logo = [
+  // Each chevron is 5 rows tall, 6 chars wide. The middle (yellow)
+  // chevron has its apex hollowed out — matching the split/dashed
+  // middle chevron in the Context Company logo.
+  const solid = ["██    ", "  ██  ", "    ██", "  ██  ", "██    "];
+  const split = ["██    ", "  ██  ", "      ", "  ██  ", "██    "];
+  const gap = "  ";
+
+  const liftoff = [
     "██╗     ██╗███████╗████████╗ ██████╗ ███████╗███████╗",
     "██║     ██║██╔════╝╚══██╔══╝██╔═══██╗██╔════╝██╔════╝",
     "██║     ██║█████╗     ██║   ██║   ██║█████╗  █████╗  ",
@@ -23,8 +31,19 @@ function printBanner(): void {
     "███████╗██║██║        ██║   ╚██████╔╝██║     ██║     ",
     "╚══════╝╚═╝╚═╝        ╚═╝    ╚═════╝ ╚═╝     ╚═╝     ",
   ];
+
+  // Chevron row visual width: 6 + 2 + 6 + 2 + 6 = 22 cols
+  const chevronBlock = " ".repeat(22);
+
   console.log();
-  for (const line of logo) console.log("  " + pc.cyan(line));
+  // Rows 0-4: chevrons side-by-side with the LIFTOFF block, right-aligned vertically
+  for (let i = 0; i < liftoff.length; i++) {
+    const chev =
+      i < solid.length
+        ? pc.blue(solid[i]) + gap + pc.yellow(split[i]) + gap + pc.red(solid[i])
+        : chevronBlock;
+    console.log("  " + chev + "   " + pc.bold(liftoff[i]));
+  }
   console.log();
   console.log(
     "  " +
