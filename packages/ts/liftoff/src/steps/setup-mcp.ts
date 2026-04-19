@@ -27,9 +27,25 @@ async function acquireReadonlyKey(ctx: WizardContext): Promise<boolean> {
     // 2. Start localhost callback server
     const server = await startCallbackServer(state, AUTH_TIMEOUT_MS);
 
-    // 3. Open browser
-    p.log.info("Opening browser for authentication...");
     const url = `${API_BASE}/cli/auth/start?port=${server.port}&state=${state}`;
+
+    // 3. Announce before opening the browser so the user isn't surprised.
+    p.note(
+      `MCP setup needs a readonly key. We'll open your browser to sign in.\n${pc.dim(url)}`,
+      "Sign in",
+    );
+
+    const proceed = await p.confirm({
+      message: "Open browser to continue?",
+      initialValue: true,
+    });
+
+    if (p.isCancel(proceed) || !proceed) {
+      server.close();
+      return false;
+    }
+
+    // 4. Open browser
     await open(url);
 
     // 4. Wait for callback

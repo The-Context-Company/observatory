@@ -71,9 +71,27 @@ export const authStep: Step = {
       const server = await startCallbackServer(state, AUTH_TIMEOUT_MS);
       activeServer = server;
 
-      // 3. Open browser for authentication
-      p.log.info("Opening browser for authentication...");
       const url = `${API_BASE}/cli/auth/start?port=${server.port}&state=${state}`;
+
+      // 3. Tell the user what's about to happen, then wait for acknowledgement
+      //    so they don't get surprised by a browser window appearing.
+      p.note(
+        `We'll open your browser to sign in to The Context Company.\n${pc.dim(url)}`,
+        "Sign in",
+      );
+
+      const proceed = await p.confirm({
+        message: "Open browser to continue?",
+        initialValue: true,
+      });
+
+      if (p.isCancel(proceed) || !proceed) {
+        server.close();
+        activeServer = null;
+        return { status: "failed", message: "User cancelled" };
+      }
+
+      // 4. Open browser for authentication
       await open(url);
 
       // 4. Wait for callback
