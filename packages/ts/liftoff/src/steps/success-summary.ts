@@ -36,56 +36,11 @@ export const successSummaryStep: Step = {
       `${pc.dim("Framework")}    ${frameworkName}`,
     );
 
-    // Files created/modified (SUM-02)
-    const hasCreated = ctx.filesCreated && ctx.filesCreated.length > 0;
-    const hasModified =
-      ctx.filesModified && ctx.filesModified.length > 0;
-
-    if (hasCreated || hasModified) {
-      const fileLines: string[] = [];
-      if (hasCreated) {
-        for (const f of ctx.filesCreated!) {
-          fileLines.push(
-            `             ${pc.green("+")} ${f}`,
-          );
-        }
-      }
-      if (hasModified) {
-        for (const f of ctx.filesModified!) {
-          fileLines.push(
-            `             ${pc.yellow("~")} ${f}`,
-          );
-        }
-      }
-      lines.push(`${pc.dim("Files")}        ${fileLines[0]?.trim()}`);
-      for (let i = 1; i < fileLines.length; i++) {
-        lines.push(fileLines[i]);
-      }
-    } else {
-      lines.push(
-        `${pc.dim("Files")}        ${pc.dim("No instrumentation files changed")}`,
-      );
-    }
-
-    // Metadata hooks (SUM-03)
-    if (ctx.metadataHooks) {
-      const sid = ctx.metadataHooks.sessionId
-        ? pc.green("wired")
-        : pc.dim("TODO");
-      const uid = ctx.metadataHooks.userId
-        ? pc.green("wired")
-        : pc.dim("TODO");
-      const conv = ctx.metadataHooks.conversational
-        ? pc.green("wired")
-        : pc.dim("TODO");
-      lines.push(
-        `${pc.dim("Metadata")}     sessionId: ${sid}, userId: ${uid}, conversational: ${conv}`,
-      );
-    } else {
-      lines.push(
-        `${pc.dim("Metadata")}     ${pc.dim("Template instrumentation (no AI metadata)")}`,
-      );
-    }
+    // Instrumentation handoff status — liftoff now hands a prompt
+    // to the user's coding agent rather than writing files itself.
+    lines.push(
+      `${pc.dim("Instrument")}   ${pc.dim("Prompt copied — paste into your AI coding agent")}`,
+    );
 
     // MCP editors (SUM-04)
     if (
@@ -120,9 +75,10 @@ export const successSummaryStep: Step = {
     const runCmd = getRunDevCommand(pm);
 
     p.log.step(
-      `${pc.bold("You're instrumented.")} Start your app and traces will begin flowing.\n\n` +
+      `${pc.bold("Next:")} paste the prompt (copied above) into your AI coding agent.\n` +
+        `Once it finishes wiring instrumentation, run your app:\n\n` +
         `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
-        `${pc.dim("Then open the dashboard to watch them arrive:")}\n` +
+        `${pc.dim("Traces will start flowing to the dashboard:")}\n` +
         `  ${pc.underline(DASHBOARD_URL)}`,
     );
 

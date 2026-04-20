@@ -211,16 +211,6 @@ export interface WizardContext {
   gitDirty?: boolean;
   /** Whether Slack workspace was connected (set by setup-slack step) */
   slackConnected?: boolean;
-  /** File paths created by instrumentation */
-  filesCreated?: string[];
-  /** File paths modified by instrumentation */
-  filesModified?: string[];
   /** Display names of MCP editors configured */
   editorsConfigured?: string[];
-  /** Which metadata hooks were wired by AI instrumentation */
-  metadataHooks?: {
-    sessionId?: boolean;
-    userId?: boolean;
-    conversational?: boolean;
-  };
 }
