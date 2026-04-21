@@ -73,26 +73,10 @@ export function parsePyprojectDeps(installDir: string): string[] {
     }
   }
 
-  // Match optional-dependencies sections
-  const optMatch = content.matchAll(
-    /\[project\.optional-dependencies\.\w+\]\s*\n([\s\S]*?)(?=\n\[|\n*$)/g,
-  );
-  for (const m of optMatch) {
-    const items = m[1].match(/"([^"]+)"|'([^']+)'/g);
-    if (items) {
-      for (const item of items) {
-        const cleaned = item.replace(/["']/g, "");
-        const name = normalizePyPkg(cleaned);
-        if (name) {
-          deps.push(name);
-        }
-      }
-    }
-  }
-
-  // Also match inline optional-dependencies format:
-  // [project.optional-dependencies]
-  // extra = ["pkg1", "pkg2"]
+  // Note: `[project.optional-dependencies.<name>]` is not valid
+  // PEP 621 — optional deps live under a single
+  // `[project.optional-dependencies]` section as key-value pairs.
+  // Only the inline-format parser below is needed.
   const inlineOptMatch = content.match(
     /\[project\.optional-dependencies\]\s*\n([\s\S]*?)(?=\n\[|$)/,
   );
