@@ -5,67 +5,150 @@ import { detectFramework, detectLanguage } from "../utils/framework-detection.js
 import { detectPackageManager } from "../utils/package-manager.js";
 
 /**
+ * Collapse per-language duplicates: LangChain/LangGraph and Custom each
+ * have TS and Python flavors (langchain-ts/langchain-python,
+ * custom-ts/custom-python). Showing both in a single list produced two
+ * identical-looking rows. Instead, surface these as "families" — if
+ * the user picks one, a second prompt resolves the language.
+ */
+type DisplayValue =
+  | Framework
+  | "__langchain__"
+  | "__custom__";
+
+interface DisplayEntry {
+  value: DisplayValue;
+  name: string;
+  /** Language of the entry for sorting and hinting. "both" = family. */
+  lang: "typescript" | "python" | "both";
+}
+
+const DISPLAY_ENTRIES: DisplayEntry[] = [
+  { value: "nextjs-aisdk", name: "Vercel AI SDK", lang: "typescript" },
+  { value: "claude-agent-sdk", name: "Claude Agent SDK", lang: "typescript" },
+  { value: "mastra", name: "Mastra", lang: "typescript" },
+  { value: "pi-mono", name: "Pi-Mono", lang: "typescript" },
+  { value: "openclaw", name: "OpenClaw", lang: "typescript" },
+  { value: "__langchain__", name: "LangChain / LangGraph", lang: "both" },
+  { value: "__custom__", name: "Custom", lang: "both" },
+  { value: "crewai", name: "CrewAI", lang: "python" },
+  { value: "agno", name: "Agno", lang: "python" },
+  { value: "litellm", name: "LiteLLM", lang: "python" },
+];
+
+/**
+ * Given a detected framework id, return what should be pre-selected
+ * in the display prompt. Maps language-specific ids (e.g.
+ * "langchain-ts") to their family value ("__langchain__").
+ */
+function detectedToDisplayValue(
+  detected: Framework | null,
+): DisplayValue | undefined {
+  if (!detected) return undefined;
+  if (detected === "langchain-ts" || detected === "langchain-python") {
+    return "__langchain__";
+  }
+  if (detected === "custom-ts" || detected === "custom-python") {
+    return "__custom__";
+  }
+  return detected;
+}
+
+/**
+ * If the user picked a family, we know from detection (or ask) which
+ * language flavor. Pre-select the detected variant.
+ */
+function familyLangFromDetected(
+  detected: Framework | null,
+): "typescript" | "python" | undefined {
+  if (detected === "langchain-ts" || detected === "custom-ts") return "typescript";
+  if (detected === "langchain-python" || detected === "custom-python")
+    return "python";
+  return undefined;
+}
+
+/**
  * Pipeline step: detect the user's framework and package manager.
  *
- * Auto-detects the framework from project files and presents
- * it to the user for confirmation via an interactive select prompt.
- * If no framework is detected, the user picks manually from the list.
+ * Auto-detects the framework from project files and presents it for
+ * confirmation. LangChain and Custom collapse to single entries with
+ * a follow-up language prompt.
  */
 export const detectFrameworkStep: Step = {
   name: "detect-framework",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
-    // Skip if framework is already set (idempotency)
     return !ctx.framework;
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
-    // Auto-detect framework from project files
     const detected = detectFramework(ctx.installDir);
     const detectedLang = detectLanguage(ctx.installDir);
 
-    // Show all 12 frameworks in a single list regardless of what was
-    // detected. Detection can miss (polyglot repos, atypical manifests,
-    // monorepo with one-language root manifest but a differently-typed
-    // sub-app), so we always give the user an override. Language +
-    // "detected" status surface in the hint column.
+    // Order: put entries matching the detected language first,
+    // "both" families in the middle, then the other language.
     const tsFirst = detectedLang !== "python";
-    const orderedFrameworks = tsFirst
-      ? [
-          ...FRAMEWORKS.filter((f) => f.language === "typescript"),
-          ...FRAMEWORKS.filter((f) => f.language === "python"),
-        ]
-      : [
-          ...FRAMEWORKS.filter((f) => f.language === "python"),
-          ...FRAMEWORKS.filter((f) => f.language === "typescript"),
-        ];
+    const primary = tsFirst ? "typescript" : "python";
+    const secondary = tsFirst ? "python" : "typescript";
+    const ordered = [
+      ...DISPLAY_ENTRIES.filter((e) => e.lang === primary),
+      ...DISPLAY_ENTRIES.filter((e) => e.lang === "both"),
+      ...DISPLAY_ENTRIES.filter((e) => e.lang === secondary),
+    ];
 
-    const makeOption = (f: (typeof FRAMEWORKS)[number]) => {
-      const langLabel = f.language === "python" ? "python" : "typescript";
-      const isDetected = f.id === detected;
-      return {
-        value: f.id as Framework,
-        label: f.name,
-        hint: isDetected ? `${langLabel} · detected` : langLabel,
-      };
-    };
+    const initialValue = detectedToDisplayValue(detected);
 
     const choice = await p.select({
       message: "Which framework are you using?",
-      options: orderedFrameworks.map(makeOption),
-      initialValue: detected ?? undefined,
+      options: ordered.map((e) => {
+        const langHint =
+          e.lang === "both" ? "typescript + python" : e.lang;
+        const isDetected = e.value === initialValue;
+        return {
+          value: e.value,
+          label: e.name,
+          hint: isDetected ? `${langHint} · detected` : langHint,
+        };
+      }),
+      initialValue,
     });
 
     if (p.isCancel(choice)) {
       return { status: "failed", message: "User cancelled" };
     }
 
-    ctx.framework = choice;
-    // Resolve the language from the selection, not the filesystem —
-    // so if the user overrides detection (picked a Python framework
-    // in a repo that also had a package.json), we honor the override.
+    // Resolve the display choice to a concrete Framework id.
+    let framework: Framework;
+    if (choice === "__langchain__" || choice === "__custom__") {
+      const presetLang = familyLangFromDetected(detected);
+      const langChoice = await p.select({
+        message: `Is this a TypeScript or Python ${
+          choice === "__langchain__" ? "LangChain" : "custom agent"
+        } project?`,
+        options: [
+          { value: "typescript", label: "TypeScript" },
+          { value: "python", label: "Python" },
+        ],
+        initialValue: presetLang,
+      });
+      if (p.isCancel(langChoice)) {
+        return { status: "failed", message: "User cancelled" };
+      }
+      framework =
+        choice === "__langchain__"
+          ? langChoice === "python"
+            ? "langchain-python"
+            : "langchain-ts"
+          : langChoice === "python"
+            ? "custom-python"
+            : "custom-ts";
+    } else {
+      framework = choice as Framework;
+    }
+
+    ctx.framework = framework;
     ctx.language =
-      FRAMEWORKS.find((f) => f.id === choice)?.language ?? "unknown";
+      FRAMEWORKS.find((f) => f.id === framework)?.language ?? "unknown";
 
     // Package manager: auto-detect from lockfile. Only prompt if the
     // detection is ambiguous — nobody needs to be asked what PM they
