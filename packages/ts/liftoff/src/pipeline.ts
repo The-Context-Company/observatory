@@ -3,42 +3,46 @@ import pc from "picocolors";
 import type { Step, WizardContext } from "./types.js";
 
 /**
- * Cleanup functions registered by steps, called in reverse on exit.
- * Exported for testing; not part of public API.
- * @internal
+ * Track the step currently inside .run() so a signal handler can
+ * cleanup it in addition to any already-completed steps. Nothing
+ * else should touch this — it's pipeline internals.
  */
-export const cleanupStack: Array<() => Promise<void>> = [];
-
-let isCleaningUp = false;
-
-async function runCleanup(): Promise<void> {
-  if (isCleaningUp) return;
-  isCleaningUp = true;
-  for (const cleanup of [...cleanupStack].reverse()) {
-    try {
-      await cleanup();
-    } catch {
-      // Best-effort cleanup -- don't let one failure block others
-    }
-  }
-  cleanupStack.length = 0;
-}
+let runningStep: Step | null = null;
 
 function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
+  let handled = false;
   const handler = async () => {
+    if (handled) return;
+    handled = true;
     p.cancel("Setup cancelled.");
-    // Run step-specific cleanups for steps that have run
-    for (const stepName of [...ctx.completedSteps].reverse()) {
-      const step = steps.find((s) => s.name === stepName);
-      if (step?.cleanup) {
-        try {
-          await step.cleanup(ctx);
-        } catch {
-          // Best-effort
-        }
+
+    // Cleanup the running step first (it owns live resources like
+    // the localhost OAuth server), then walk completedSteps in
+    // reverse order. Skip the running step if it happens to also be
+    // in completedSteps (shouldn't, but belt-and-suspenders).
+    const seen = new Set<string>();
+    const queue: Step[] = [];
+    if (runningStep) {
+      queue.push(runningStep);
+      seen.add(runningStep.name);
+    }
+    for (const name of [...ctx.completedSteps].reverse()) {
+      if (seen.has(name)) continue;
+      const s = steps.find((x) => x.name === name);
+      if (s) {
+        queue.push(s);
+        seen.add(name);
       }
     }
-    await runCleanup();
+
+    for (const step of queue) {
+      if (!step.cleanup) continue;
+      try {
+        await step.cleanup(ctx);
+      } catch {
+        // Best-effort — don't let one cleanup failure block the rest.
+      }
+    }
     process.exit(0);
   };
 
@@ -64,7 +68,13 @@ export async function runPipeline(
       continue;
     }
 
-    const result = await step.run(ctx);
+    runningStep = step;
+    let result;
+    try {
+      result = await step.run(ctx);
+    } finally {
+      runningStep = null;
+    }
 
     switch (result.status) {
       case "completed":
@@ -79,7 +89,6 @@ export async function runPipeline(
         p.log.error(
           `${step.name} failed${result.message ? `: ${result.message}` : ""}`,
         );
-        await runCleanup();
         return false;
     }
   }
