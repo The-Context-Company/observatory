@@ -1,7 +1,17 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { FRAMEWORKS, type Framework, type PackageManager, type Step, type StepResult, type WizardContext } from "../types.js";
-import { detectFramework, detectLanguage } from "../utils/framework-detection.js";
+import {
+  FRAMEWORKS,
+  type Framework,
+  type PackageManager,
+  type Step,
+  type StepResult,
+  type WizardContext,
+} from "../types.js";
+import {
+  detectFramework,
+  detectLanguage,
+} from "../utils/framework-detection.js";
 import { detectPackageManager } from "../utils/package-manager.js";
 
 /**
@@ -70,13 +80,13 @@ export const detectFrameworkStep: Step = {
     // Package manager: auto-detect from lockfile. Only prompt if the
     // detection is ambiguous — nobody needs to be asked what PM they
     // use when there's a pnpm-lock.yaml sitting right there.
-    const detectedPm = detectPackageManager(ctx.installDir, language);
+    const detectedPm = detectPackageManager(ctx.installDir, ctx.language);
 
     if (detectedPm) {
       ctx.packageManager = detectedPm as PackageManager;
     } else {
       const pmOptions =
-        language === "python"
+        ctx.language === "python"
           ? [
               { value: "pip", label: "pip" },
               { value: "uv", label: "uv" },
@@ -104,7 +114,7 @@ export const detectFrameworkStep: Step = {
     p.log.success(
       `Framework: ${pc.bold(frameworkName)}${
         detectedPm ? pc.dim(` (${ctx.packageManager})`) : ""
-      }`,
+      }`
     );
 
     return { status: "completed" };

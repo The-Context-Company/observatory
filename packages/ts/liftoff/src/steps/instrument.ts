@@ -48,9 +48,7 @@ export const instrumentStep: Step = {
   name: "instrument",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
-    return (
-      !!ctx.framework && !ctx.completedSteps.includes("instrument")
-    );
+    return !!ctx.framework && !ctx.completedSteps.includes("instrument");
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
@@ -60,11 +58,10 @@ export const instrumentStep: Step = {
     const response = await fetchPrompt(ctx);
 
     if (!response) {
-      const fallbackUrl =
-        fw?.docsUrl ?? "https://docs.thecontext.company";
+      const fallbackUrl = fw?.docsUrl ?? "https://docs.thecontext.company";
       p.log.warn(
         `Couldn't fetch the instrumentation prompt for ${fwDisplayName}.\n` +
-          pc.dim(`Follow the docs manually: ${fallbackUrl}`),
+          pc.dim(`Follow the docs manually: ${fallbackUrl}`)
       );
       ctx.completedSteps.push("instrument");
       return {
@@ -80,8 +77,8 @@ export const instrumentStep: Step = {
       `We've got a tailored instrumentation prompt for ${pc.bold(response.frameworkName ?? fwDisplayName)}.\n` +
         pc.dim(
           "It tells your coding agent how to install the SDK, wire\n" +
-            "instrumentation, and attach metadata against this codebase.",
-        ),
+            "instrumentation, and attach metadata against this codebase."
+        )
     );
 
     const wantCopy = await p.confirm({
@@ -92,8 +89,8 @@ export const instrumentStep: Step = {
     if (p.isCancel(wantCopy) || !wantCopy) {
       p.log.info(
         pc.dim(
-          `Skipped. You can grab the prompt later from the docs: ${response.docsUrl ?? fw?.docsUrl ?? "https://docs.thecontext.company"}`,
-        ),
+          `Skipped. You can grab the prompt later from the docs: ${response.docsUrl ?? fw?.docsUrl ?? "https://docs.thecontext.company"}`
+        )
       );
       ctx.completedSteps.push("instrument");
       return { status: "skipped", message: "User declined prompt copy" };
@@ -104,19 +101,19 @@ export const instrumentStep: Step = {
       p.log.warn(
         "Clipboard copy failed. Grab the prompt from the docs instead:\n" +
           pc.underline(
-            response.docsUrl ??
-              fw?.docsUrl ??
-              "https://docs.thecontext.company",
-          ),
+            response.docsUrl ?? fw?.docsUrl ?? "https://docs.thecontext.company"
+          )
       );
       ctx.completedSteps.push("instrument");
+      ctx.promptCopied = false;
       return { status: "skipped", message: "Clipboard unavailable" };
     }
 
+    ctx.promptCopied = true;
     p.log.success("Prompt copied to your clipboard.");
     p.log.step(
       "Open a new tab in your AI coding agent (Claude Code, Cursor, Windsurf, …)\n" +
-        "and paste it. The agent will install the SDK and wire up instrumentation.",
+        "and paste it. The agent will install the SDK and wire up instrumentation."
     );
 
     // Note: the pipeline pushes step.name to completedSteps on the
@@ -133,9 +130,7 @@ export const instrumentStep: Step = {
  * null on timeout, network error, non-2xx, or malformed response —
  * the step falls back to showing a docs URL in any of those cases.
  */
-async function fetchPrompt(
-  ctx: WizardContext,
-): Promise<PromptResponse | null> {
+async function fetchPrompt(ctx: WizardContext): Promise<PromptResponse | null> {
   const params = new URLSearchParams({ framework: ctx.framework! });
   if (ctx.language === "python" || ctx.language === "typescript") {
     params.set("lang", ctx.language);
@@ -143,10 +138,7 @@ async function fetchPrompt(
   const url = `${getApiBase()}/cli/prompts?${params.toString()}`;
 
   const controller = new AbortController();
-  const timeout = setTimeout(
-    () => controller.abort(),
-    FETCH_TIMEOUT_MS,
-  );
+  const timeout = setTimeout(() => controller.abort(), FETCH_TIMEOUT_MS);
 
   const spinner = p.spinner();
   spinner.start("Fetching instrumentation prompt...");
@@ -207,4 +199,3 @@ function copyToClipboard(text: string): boolean {
     return false;
   }
 }
-

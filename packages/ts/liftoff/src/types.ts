@@ -165,4 +165,6 @@ export interface WizardContext {
   slackConnected?: boolean;
   /** Display names of MCP editors configured */
   editorsConfigured?: string[];
+  /** Whether the instrumentation prompt was successfully copied to clipboard */
+  promptCopied?: boolean;
 }
