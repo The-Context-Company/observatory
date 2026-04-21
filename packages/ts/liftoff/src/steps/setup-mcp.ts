@@ -135,7 +135,7 @@ export const setupMcpStep: Step = {
     }
 
     ctx.editorsConfigured = configuredEditors;
-    ctx.completedSteps.push("setup-mcp");
+    // Pipeline pushes step.name on "completed" — don't push again.
     return { status: "completed" };
   },
 };

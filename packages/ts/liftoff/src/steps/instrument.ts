@@ -119,7 +119,8 @@ export const instrumentStep: Step = {
         "and paste it. The agent will install the SDK and wire up instrumentation.",
     );
 
-    ctx.completedSteps.push("instrument");
+    // Note: the pipeline pushes step.name to completedSteps on the
+    // "completed" path — don't push again here or we'd duplicate.
     return {
       status: "completed",
       message: "Prompt handed off to user's coding agent",

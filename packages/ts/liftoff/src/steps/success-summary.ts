@@ -82,7 +82,7 @@ export const successSummaryStep: Step = {
         `  ${pc.underline(`${getDashboardUrl()}/prod/runs`)}`,
     );
 
-    ctx.completedSteps.push("success-summary");
+    // Pipeline pushes step.name on "completed" — don't push again.
     return { status: "completed" };
   },
 };

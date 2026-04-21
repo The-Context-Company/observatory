@@ -1,4 +1,4 @@
-import { execSync } from "node:child_process";
+import { execFileSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
@@ -96,9 +96,11 @@ export function detectEditors(projectDir: string): EditorId[] {
     const editorId = id as EditorId;
 
     if (editorId === "claude-code") {
-      // Claude Code is detected by checking if the `claude` binary is on PATH
+      // Claude Code is detected by checking if the `claude` binary is
+      // on PATH. `which` is Unix-only; Windows uses `where`.
+      const lookup = process.platform === "win32" ? "where" : "which";
       try {
-        execSync("which claude", {
+        execFileSync(lookup, ["claude"], {
           stdio: ["pipe", "pipe", "pipe"],
         });
         detected.push(editorId);
@@ -213,8 +215,21 @@ export function runClaudeMcpAdd(readonlyKey: string): {
   error?: string;
 } {
   try {
-    execSync(
-      `claude mcp add --transport http context-company ${getMcpServerUrl()} --header "Authorization: Bearer ${readonlyKey}"`,
+    // Use execFileSync + arg array so shell metacharacters in the
+    // MCP URL (from the user-controlled --api-base flag) or the
+    // readonly key can't break out of the command.
+    execFileSync(
+      "claude",
+      [
+        "mcp",
+        "add",
+        "--transport",
+        "http",
+        "context-company",
+        getMcpServerUrl(),
+        "--header",
+        `Authorization: Bearer ${readonlyKey}`,
+      ],
       {
         stdio: ["pipe", "pipe", "pipe"],
         timeout: 10_000,
