@@ -34,7 +34,7 @@ export const authStep: Step = {
       // 3. Tell the user what's about to happen, then wait for acknowledgement
       //    so they don't get surprised by a browser window appearing.
       p.note(
-        `We'll open your browser to sign in to The Context Company.\n${pc.dim(url)}`,
+        `${pc.bold("We'll open your browser to sign in to The Context Company.")}\n${pc.dim(url)}`,
         "Sign in",
       );
 
