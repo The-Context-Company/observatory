@@ -30,6 +30,8 @@ export const provisionKeysStep: Step = {
   name: "provision-keys",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
+    if (ctx.completedSteps.includes("provision-keys")) return false;
+    if (ctx.apiKey) return false;
     // Needs a valid access token from the auth step.
     return !!ctx.accessToken;
   },
@@ -61,7 +63,7 @@ export const provisionKeysStep: Step = {
         spinner.stop("Key provisioning failed");
         const detail = (errorBody as { error?: string }).error || "unknown";
         p.log.error(
-          `Status: ${response.status} | Error: ${detail} | OrgId sent: ${ctx.organizationId ?? "null"}`,
+          `Status: ${response.status} | Error: ${detail} | OrgId sent: ${ctx.organizationId ?? "null"}`
         );
         return { status: "failed", message: detail };
       }
@@ -105,19 +107,18 @@ export const provisionKeysStep: Step = {
             ? pc.dim(`Written to ${envFilename} and added to .gitignore.`)
             : writeStatus === "kept-existing"
               ? pc.yellow(
-                  `TCC_API_KEY already exists in ${envFilename} — kept the existing value. Update it manually if you want to use the new key above.`,
+                  `TCC_API_KEY already exists in ${envFilename} — kept the existing value. Update it manually if you want to use the new key above.`
                 )
               : pc.dim(
-                  `No project manifest detected (no package.json / pyproject.toml). Add the key above to your environment however you handle secrets.`,
+                  `No project manifest detected (no package.json / pyproject.toml). Add the key above to your environment however you handle secrets.`
                 )),
-        "API key",
+        "API key"
       );
 
       return { status: "completed" };
     } catch (error) {
       spinner.stop("Key provisioning failed");
-      const message =
-        error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
       p.log.error(`Key provisioning failed: ${message}`);
       return { status: "failed", message };
     }

@@ -2,35 +2,26 @@ import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, WizardContext } from "./types.js";
 
-/**
- * Cleanup functions registered by steps, called in reverse on exit.
- * Exported for testing; not part of public API.
- * @internal
- */
-export const cleanupStack: Array<() => Promise<void>> = [];
-
-let isCleaningUp = false;
-
-async function runCleanup(): Promise<void> {
-  if (isCleaningUp) return;
-  isCleaningUp = true;
-  for (const cleanup of [...cleanupStack].reverse()) {
-    try {
-      await cleanup();
-    } catch {
-      // Best-effort cleanup -- don't let one failure block others
-    }
-  }
-  cleanupStack.length = 0;
-}
-
-function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
+function setupSignalHandlers(
+  ctx: WizardContext,
+  steps: Step[],
+  getCurrentStep: () => Step | null
+): void {
   const handler = async () => {
     p.cancel("Setup cancelled.");
-    // Run step-specific cleanups for steps that have run
+    // Clean up the currently running step first (if any)
+    const currentStep = getCurrentStep();
+    if (currentStep?.cleanup) {
+      try {
+        await currentStep.cleanup(ctx);
+      } catch {
+        // Best-effort
+      }
+    }
+    // Run step-specific cleanups for steps that have completed
     for (const stepName of [...ctx.completedSteps].reverse()) {
       const step = steps.find((s) => s.name === stepName);
-      if (step?.cleanup) {
+      if (step?.cleanup && step !== currentStep) {
         try {
           await step.cleanup(ctx);
         } catch {
@@ -38,7 +29,6 @@ function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
         }
       }
     }
-    await runCleanup();
     process.exit(0);
   };
 
@@ -53,9 +43,10 @@ function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
  */
 export async function runPipeline(
   steps: Step[],
-  ctx: WizardContext,
+  ctx: WizardContext
 ): Promise<boolean> {
-  setupSignalHandlers(ctx, steps);
+  let currentStep: Step | null = null;
+  setupSignalHandlers(ctx, steps, () => currentStep);
 
   for (const step of steps) {
     const shouldRun = await step.shouldRun(ctx);
@@ -64,22 +55,21 @@ export async function runPipeline(
       continue;
     }
 
+    currentStep = step;
     const result = await step.run(ctx);
+    currentStep = null;
 
     switch (result.status) {
       case "completed":
         ctx.completedSteps.push(step.name);
         break;
       case "skipped":
-        p.log.info(
-          pc.dim(`${step.name}: ${result.message ?? "skipped"}`),
-        );
+        p.log.info(pc.dim(`${step.name}: ${result.message ?? "skipped"}`));
         break;
       case "failed":
         p.log.error(
-          `${step.name} failed${result.message ? `: ${result.message}` : ""}`,
+          `${step.name} failed${result.message ? `: ${result.message}` : ""}`
         );
-        await runCleanup();
         return false;
     }
   }
