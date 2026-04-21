@@ -119,6 +119,11 @@ export const instrumentStep: Step = {
         "and paste it. The agent will install the SDK and wire up instrumentation.",
     );
 
+    // Success-summary reads this to show accurate status + "Next"
+    // wording (avoids lying about clipboard state when the copy was
+    // declined, failed, or the prompt fetch didn't even return one).
+    ctx.promptCopied = true;
+
     // Note: the pipeline pushes step.name to completedSteps on the
     // "completed" path — don't push again here or we'd duplicate.
     return {
