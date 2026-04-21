@@ -14,7 +14,7 @@ let isCleaningUp = false;
 async function runCleanup(): Promise<void> {
   if (isCleaningUp) return;
   isCleaningUp = true;
-  for (const cleanup of cleanupStack.reverse()) {
+  for (const cleanup of [...cleanupStack].reverse()) {
     try {
       await cleanup();
     } catch {
@@ -53,7 +53,7 @@ function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
  */
 export async function runPipeline(
   steps: Step[],
-  ctx: WizardContext,
+  ctx: WizardContext
 ): Promise<boolean> {
   setupSignalHandlers(ctx, steps);
 
@@ -71,13 +71,11 @@ export async function runPipeline(
         ctx.completedSteps.push(step.name);
         break;
       case "skipped":
-        p.log.info(
-          pc.dim(`${step.name}: ${result.message ?? "skipped"}`),
-        );
+        p.log.info(pc.dim(`${step.name}: ${result.message ?? "skipped"}`));
         break;
       case "failed":
         p.log.error(
-          `${step.name} failed${result.message ? `: ${result.message}` : ""}`,
+          `${step.name} failed${result.message ? `: ${result.message}` : ""}`
         );
         await runCleanup();
         return false;

@@ -28,7 +28,10 @@ const PYTHON_LOCKFILES: LockfileEntry[] = [
 /**
  * Check current directory for a lockfile.
  */
-function findLockfileInDir(dir: string, lockfiles: LockfileEntry[]): PackageManager | null {
+function findLockfileInDir(
+  dir: string,
+  lockfiles: LockfileEntry[]
+): PackageManager | null {
   for (const { file, pm } of lockfiles) {
     if (fs.existsSync(path.join(dir, file))) {
       return pm;
@@ -41,7 +44,10 @@ function findLockfileInDir(dir: string, lockfiles: LockfileEntry[]): PackageMana
  * Walk up directories until git root, checking for lockfiles or packageManager field.
  * Stops at .git boundary to avoid escaping the project.
  */
-function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): PackageManager | null {
+function detectFromAncestors(
+  startDir: string,
+  lockfiles: LockfileEntry[]
+): PackageManager | null {
   let dir = path.resolve(startDir);
   const root = path.parse(dir).root;
 
@@ -65,7 +71,12 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
         };
         if (typeof pkg.packageManager === "string") {
           const name = pkg.packageManager.split("@")[0];
-          if (name === "pnpm" || name === "yarn" || name === "bun" || name === "npm") {
+          if (
+            name === "pnpm" ||
+            name === "yarn" ||
+            name === "bun" ||
+            name === "npm"
+          ) {
             return name;
           }
         }
@@ -82,11 +93,16 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
   return null;
 }
 
-export function detectPackageManager(installDir: string, language: "typescript" | "python" | "unknown" = "unknown"): PackageManager | null {
+export function detectPackageManager(
+  installDir: string,
+  language: "typescript" | "python" | "unknown" = "unknown"
+): PackageManager | null {
   if (language === "python") {
-    return findLockfileInDir(installDir, PYTHON_LOCKFILES)
-      ?? detectFromAncestors(installDir, PYTHON_LOCKFILES)
-      ?? "pip";
+    return (
+      findLockfileInDir(installDir, PYTHON_LOCKFILES) ??
+      detectFromAncestors(installDir, PYTHON_LOCKFILES) ??
+      "pip"
+    );
   }
 
   // 1. Check current directory for lockfile
@@ -99,55 +115,6 @@ export function detectPackageManager(installDir: string, language: "typescript" 
 
   // 3. Return null — caller should ask the user
   return null;
-}
-
-/**
- * Get the install command for a given package manager and list of packages.
- */
-export function getInstallCommand(
-  pm: PackageManager,
-  packages: string[],
-): string {
-  const pkgs = packages.join(" ");
-  switch (pm) {
-    case "bun":
-      return `bun add ${pkgs}`;
-    case "pnpm":
-      return `pnpm add ${pkgs}`;
-    case "yarn":
-      return `yarn add ${pkgs}`;
-    case "npm":
-      return `npm install ${pkgs}`;
-    case "pip":
-      return `pip install ${pkgs}`;
-    case "poetry":
-      return `poetry add ${pkgs}`;
-    case "uv":
-      return `uv add ${pkgs}`;
-  }
-}
-
-/**
- * Check if a package is already installed in the project's node_modules.
- */
-export function isPackageInstalled(
-  installDir: string,
-  packageName: string,
-): boolean {
-  try {
-    const pkgPath = path.join(installDir, "package.json");
-    if (!fs.existsSync(pkgPath)) return false;
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
-      dependencies?: Record<string, string>;
-      devDependencies?: Record<string, string>;
-    };
-    return !!(
-      pkg.dependencies?.[packageName] ||
-      pkg.devDependencies?.[packageName]
-    );
-  } catch {
-    return false;
-  }
 }
 
 /**
