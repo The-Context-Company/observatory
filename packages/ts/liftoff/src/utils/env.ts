@@ -54,8 +54,9 @@ export function setEnvVariable(
   const regex = new RegExp(`^${escapeRegex(key)}=.*$`, "m");
 
   if (regex.test(content)) {
-    // Update existing
-    content = content.replace(regex, `${key}=${value}`);
+    // Use a replacer function so `$&`, `$'`, etc. inside `value`
+    // aren't interpreted as special patterns by String.replace.
+    content = content.replace(regex, () => `${key}=${value}`);
   } else {
     // Append new variable
     if (content.length > 0 && !content.endsWith("\n")) {

@@ -43,7 +43,10 @@ function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
         // Best-effort — don't let one cleanup failure block the rest.
       }
     }
-    process.exit(0);
+    // Unix convention for SIGINT termination is 128 + signal number.
+    // Exiting 0 would let CI treat a Ctrl+C cancel as success; that's
+    // also inconsistent with the pipeline-failure path which exits 1.
+    process.exit(130);
   };
 
   process.on("SIGINT", handler);
