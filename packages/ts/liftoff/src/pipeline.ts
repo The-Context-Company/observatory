@@ -43,7 +43,7 @@ function setupSignalHandlers(ctx: WizardContext, steps: Step[]): void {
         // Best-effort — don't let one cleanup failure block the rest.
       }
     }
-    process.exit(0);
+    process.exit(130);
   };
 
   process.on("SIGINT", handler);

@@ -55,7 +55,7 @@ export function setEnvVariable(
 
   if (regex.test(content)) {
     // Update existing
-    content = content.replace(regex, `${key}=${value}`);
+    content = content.replace(regex, () => `${key}=${value}`);
   } else {
     // Append new variable
     if (content.length > 0 && !content.endsWith("\n")) {
