@@ -93,20 +93,21 @@ export const setupSlackStep: Step = {
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
-    // Prompt user (SLK-01)
+    p.log.info(
+      "Daily/weekly/monthly summaries of what's working and what's breaking\n" +
+        "across your runs. Catches regressions and patterns you'd miss otherwise.",
+    );
+
     const wantsSlack = await p.confirm({
-      message: "Would you like to set up Slack alerts?",
+      message: "Set up Slack alerts?",
+      initialValue: true,
     });
 
     if (p.isCancel(wantsSlack) || !wantsSlack) {
       return { status: "skipped", message: "Slack setup skipped" };
     }
 
-    // Show explanation
-    p.log.info(
-      "Slack alerts notify your team when agent failures are detected.\n" +
-        "We'll open your browser to connect a Slack workspace.",
-    );
+    p.log.info(pc.dim("We'll open your browser to connect a Slack workspace."));
 
     // Fetch Slack client ID from server
     const clientId = await fetchSlackClientId(ctx.accessToken!);

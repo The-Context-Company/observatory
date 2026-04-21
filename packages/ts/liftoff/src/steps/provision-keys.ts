@@ -1,12 +1,13 @@
+import fs from "node:fs";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
 import {
   ensureEnvFile,
+  ensureGitignore,
+  getEnvFilename,
   hasEnvVariable,
   setEnvVariable,
-  getEnvFilename,
-  ensureGitignore,
 } from "../utils/env.js";
 import { readPackageJson } from "../utils/file-utils.js";
 
@@ -20,12 +21,10 @@ const API_BASE = "https://api.thecontext.company";
 function isNextJsProject(installDir: string): boolean {
   const pkg = readPackageJson(installDir);
   if (!pkg) return false;
-
   const deps = {
     ...((pkg.dependencies as Record<string, string>) ?? {}),
     ...((pkg.devDependencies as Record<string, string>) ?? {}),
   };
-
   return "next" in deps;
 }
 
@@ -41,15 +40,20 @@ export const provisionKeysStep: Step = {
     const spinner = p.spinner();
 
     try {
-      spinner.start("Provisioning API keys...");
+      spinner.start("Provisioning API key...");
 
+      // Ask for a prod key only. The readonly key is provisioned
+      // lazily inside setup-mcp, and only if the user opts into MCP.
       const response = await fetch(`${API_BASE}/cli/keys`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${ctx.accessToken}`,
         },
-        body: JSON.stringify({ organizationId: ctx.organizationId }),
+        body: JSON.stringify({
+          organizationId: ctx.organizationId,
+          type: "prod",
+        }),
       });
 
       if (!response.ok) {
@@ -58,75 +62,58 @@ export const provisionKeysStep: Step = {
           .catch(() => ({}) as Record<string, unknown>);
         spinner.stop("Key provisioning failed");
         const detail = (errorBody as { error?: string }).error || "unknown";
-        p.log.error(`Status: ${response.status} | Error: ${detail} | OrgId sent: ${ctx.organizationId ?? "null"}`);
-        return {
-          status: "failed",
-          message: detail,
-        };
+        p.log.error(
+          `Status: ${response.status} | Error: ${detail} | OrgId sent: ${ctx.organizationId ?? "null"}`,
+        );
+        return { status: "failed", message: detail };
       }
 
       const data = (await response.json()) as {
         prodKey: { key: string; keyId: string };
-        readonlyKey: { key: string; keyId: string };
       };
 
-      // Determine env file based on framework
+      ctx.apiKey = data.prodKey.key;
+      spinner.stop("API key provisioned");
+
+      // Write to .env[.local] if we can figure out the convention;
+      // regardless, print the key to the terminal so the user can
+      // grab it if they use a different secret-management setup.
       const isNextJs = isNextJsProject(ctx.installDir);
-      const envPath = ensureEnvFile(ctx.installDir, isNextJs);
       const envFilename = getEnvFilename(isNextJs);
+      const hasManifest =
+        fs.existsSync(`${ctx.installDir}/package.json`) ||
+        fs.existsSync(`${ctx.installDir}/pyproject.toml`) ||
+        fs.existsSync(`${ctx.installDir}/requirements.txt`);
 
-      const written: string[] = [];
-      const skipped: string[] = [];
-
-      // Write TCC_API_KEY (KEY-01, KEY-04: never overwrite)
-      if (hasEnvVariable(envPath, "TCC_API_KEY")) {
-        skipped.push("TCC_API_KEY");
-        p.log.warn(
-          "TCC_API_KEY already exists in " +
-            envFilename +
-            " \u2014 keeping existing value",
-        );
+      let writeStatus: "written" | "kept-existing" | "no-manifest";
+      if (!hasManifest) {
+        writeStatus = "no-manifest";
       } else {
-        setEnvVariable(envPath, "TCC_API_KEY", data.prodKey.key);
-        written.push("TCC_API_KEY");
-        ctx.apiKey = data.prodKey.key;
+        const envPath = ensureEnvFile(ctx.installDir, isNextJs);
+        if (hasEnvVariable(envPath, "TCC_API_KEY")) {
+          writeStatus = "kept-existing";
+        } else {
+          setEnvVariable(envPath, "TCC_API_KEY", data.prodKey.key);
+          ensureGitignore(ctx.installDir, envFilename);
+          writeStatus = "written";
+        }
       }
 
-      // Write TCC_READONLY_KEY (KEY-02, KEY-04: never overwrite)
-      if (hasEnvVariable(envPath, "TCC_READONLY_KEY")) {
-        skipped.push("TCC_READONLY_KEY");
-        p.log.warn(
-          "TCC_READONLY_KEY already exists in " +
-            envFilename +
-            " \u2014 keeping existing value",
-        );
-      } else {
-        setEnvVariable(
-          envPath,
-          "TCC_READONLY_KEY",
-          data.readonlyKey.key,
-        );
-        written.push("TCC_READONLY_KEY");
-        ctx.readonlyKey = data.readonlyKey.key;
-      }
-
-      // Always ensure .gitignore includes the env file (KEY-05)
-      ensureGitignore(ctx.installDir, envFilename);
-
-      spinner.stop("API keys provisioned");
-
-      if (written.length > 0) {
-        p.log.success(
-          `Written to ${envFilename}: ${written.join(", ")}`,
-        );
-      }
-      if (skipped.length > 0) {
-        p.log.info(
-          pc.dim(
-            `Skipped (already exist): ${skipped.join(", ")}`,
-          ),
-        );
-      }
+      // Always show the key so the user can see what was provisioned
+      // and copy it into a different env-handling flow if they want.
+      p.note(
+        `${pc.bold("TCC_API_KEY")}   ${data.prodKey.key}\n\n` +
+          (writeStatus === "written"
+            ? pc.dim(`Written to ${envFilename} and added to .gitignore.`)
+            : writeStatus === "kept-existing"
+              ? pc.yellow(
+                  `TCC_API_KEY already exists in ${envFilename} — kept the existing value. Update it manually if you want to use the new key above.`,
+                )
+              : pc.dim(
+                  `No project manifest detected (no package.json / pyproject.toml). Add the key above to your environment however you handle secrets.`,
+                )),
+        "API key",
+      );
 
       return { status: "completed" };
     } catch (error) {

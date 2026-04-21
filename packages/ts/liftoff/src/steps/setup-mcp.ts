@@ -9,37 +9,72 @@ import {
   writeMcpConfig,
 } from "../utils/mcp-config.js";
 
+const API_BASE = "https://api.thecontext.company";
+
+/**
+ * Provision a readonly MCP key on demand. Called only after the user
+ * opts into MCP setup — we don't mint readonly keys the user never
+ * asked for.
+ */
+async function provisionReadonlyKey(
+  ctx: WizardContext,
+): Promise<string | null> {
+  try {
+    const response = await fetch(`${API_BASE}/cli/keys`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${ctx.accessToken}`,
+      },
+      body: JSON.stringify({
+        organizationId: ctx.organizationId,
+        type: "readonly",
+      }),
+    });
+    if (!response.ok) return null;
+    const data = (await response.json()) as {
+      readonlyKey: { key: string; keyId: string };
+    };
+    return data.readonlyKey?.key ?? null;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Pipeline step: configure MCP for the user's AI coding editors.
  *
- * Detects installed MCP-capable editors, shows a multiselect with detected
- * editors pre-checked, and writes/merges MCP config files (or runs
- * `claude mcp add` for Claude Code) using the readonly key as Bearer token.
- * Runs before the instrument step so the user's agent has TCC MCP tools
- * available as soon as they paste the handoff prompt.
+ * Asks the user if they want MCP wired up. If yes, provisions a
+ * readonly key on demand (we don't create a key the user didn't ask
+ * for), then writes/merges MCP config files for each selected editor.
  */
 export const setupMcpStep: Step = {
   name: "setup-mcp",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
     if (ctx.completedSteps.includes("setup-mcp")) return false;
-    // Needs the readonly key provisioned by the prior step.
-    return !!ctx.readonlyKey;
+    // Needs an access token so we can mint a readonly key.
+    return !!ctx.accessToken;
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
-    // Show benefits explanation (MCP-07)
     p.log.info(
-      pc.cyan(
-        "MCP connects your AI coding tools to production observability.\n",
-      ) +
-        "Your editor can now query prod runs, find failures, and search insights.",
+      "Give your coding agents context about what's happening in dev and\n" +
+        "production so they can find and fix issues directly from the editor.",
     );
 
-    // Detect installed editors
-    const detectedEditors = detectEditors(ctx.installDir);
+    const wantsMcp = await p.confirm({
+      message: "Wire the TCC MCP server into your editors?",
+      initialValue: true,
+    });
 
-    // Build options for all editors
+    if (p.isCancel(wantsMcp) || !wantsMcp) {
+      return { status: "skipped", message: "MCP setup skipped" };
+    }
+
+    // Detect editors and ask which to configure BEFORE minting the
+    // key — if the user has no editors to configure, we skip minting.
+    const detectedEditors = detectEditors(ctx.installDir);
     const options = (
       Object.entries(EDITOR_CONFIGS) as [
         EditorId,
@@ -48,52 +83,55 @@ export const setupMcpStep: Step = {
     ).map(([id, config]) => ({
       value: id,
       label: config.name,
-      hint: detectedEditors.includes(id)
-        ? "detected"
-        : undefined,
+      hint: detectedEditors.includes(id) ? "detected" : undefined,
     }));
 
-    // Show multiselect with detected editors pre-checked (MCP-02)
     const selected = await p.multiselect({
-      message: "Which editors should we configure for MCP?",
+      message: "Which editors should we configure?",
       options,
       initialValues: detectedEditors,
       required: false,
     });
 
-    // Handle cancel or empty selection
     if (p.isCancel(selected) || selected.length === 0) {
-      return { status: "skipped", message: "MCP setup skipped" };
+      return { status: "skipped", message: "MCP setup skipped (no editors)" };
     }
 
-    // Configure each selected editor
-    const configuredEditors: string[] = [];
+    // Mint the readonly key now, after we know the user actually wants MCP.
+    const spinner = p.spinner();
+    spinner.start("Provisioning readonly MCP key...");
+    const readonlyKey = await provisionReadonlyKey(ctx);
+    if (!readonlyKey) {
+      spinner.stop("Readonly key provisioning failed");
+      return {
+        status: "skipped",
+        message: "Could not provision readonly key for MCP",
+      };
+    }
+    ctx.readonlyKey = readonlyKey;
+    spinner.stop("Readonly MCP key provisioned");
 
+    const configuredEditors: string[] = [];
     for (const editorId of selected) {
       const config = EDITOR_CONFIGS[editorId];
-
-      if (config.configType === "cli") {
-        // Claude Code: use `claude mcp add`
-        const result = runClaudeMcpAdd(ctx.readonlyKey!);
-        if (result.success) {
-          p.log.success(`Configured ${config.name}`);
-          configuredEditors.push(config.name);
+      try {
+        if (config.configType === "cli") {
+          const result = runClaudeMcpAdd(readonlyKey);
+          if (!result.success) {
+            p.log.warn(
+              `Could not configure ${config.name}: ${result.error}`,
+            );
+            continue;
+          }
         } else {
-          p.log.warn(
-            `Could not configure ${config.name}: ${result.error}`,
-          );
+          writeMcpConfig(editorId, ctx.installDir, readonlyKey);
         }
-      } else {
-        // File-based editors: write/merge MCP config
-        try {
-          writeMcpConfig(editorId, ctx.installDir, ctx.readonlyKey!);
-          p.log.success(`Configured ${config.name}`);
-          configuredEditors.push(config.name);
-        } catch (err) {
-          p.log.warn(
-            `Could not configure ${config.name}: ${err instanceof Error ? err.message : String(err)}`,
-          );
-        }
+        p.log.success(`Configured ${config.name}`);
+        configuredEditors.push(config.name);
+      } catch (err) {
+        p.log.warn(
+          `Could not configure ${config.name}: ${err instanceof Error ? err.message : String(err)}`,
+        );
       }
     }
 
