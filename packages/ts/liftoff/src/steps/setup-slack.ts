@@ -24,9 +24,7 @@ let closeServer: (() => void) | null = null;
  * Fetch the Slack client ID from the context repo API.
  * Returns null on failure (caller should skip gracefully).
  */
-async function fetchSlackClientId(
-  accessToken: string,
-): Promise<string | null> {
+async function fetchSlackClientId(accessToken: string): Promise<string | null> {
   try {
     const res = await fetch(`${getApiBase()}/cli/slack-client-id`, {
       headers: { Authorization: `Bearer ${accessToken}` },
@@ -45,7 +43,7 @@ async function fetchSlackClientId(
 async function exchangeSlackCode(
   accessToken: string,
   code: string,
-  redirectUri: string,
+  redirectUri: string
 ): Promise<{ ok: true; teamName: string } | { ok: false; error: string }> {
   try {
     const res = await fetch(`${getApiBase()}/cli/slack-callback`, {
@@ -93,7 +91,7 @@ export const setupSlackStep: Step = {
   async run(ctx: WizardContext): Promise<StepResult> {
     p.log.info(
       "You'll get configurable Slack reports and alerts — notified about\n" +
-        "regressions and patterns you'd miss otherwise.",
+        "regressions and patterns you'd miss otherwise."
     );
 
     const wantsSlack = await p.confirm({
@@ -111,7 +109,7 @@ export const setupSlackStep: Step = {
     const clientId = await fetchSlackClientId(ctx.accessToken!);
     if (!clientId) {
       p.log.warn(
-        "Could not retrieve Slack configuration. Skipping Slack setup.",
+        "Could not retrieve Slack configuration. Skipping Slack setup."
       );
       return {
         status: "skipped",
@@ -121,8 +119,10 @@ export const setupSlackStep: Step = {
 
     // Start OAuth flow (SLK-02)
     const state = crypto.randomBytes(16).toString("hex");
-    const { port, waitForCallback, close } =
-      await startCallbackServer(state, 300_000); // 5 min — covers first-time Slack install + workspace pick
+    const { port, waitForCallback, close } = await startCallbackServer(
+      state,
+      300_000
+    ); // 5 min — covers first-time Slack install + workspace pick
     closeServer = close;
 
     const redirectUri = `http://127.0.0.1:${port}/callback`;
@@ -146,9 +146,7 @@ export const setupSlackStep: Step = {
     if (!result) {
       close();
       closeServer = null;
-      p.log.warn(
-        "Slack authorization timed out or was cancelled.",
-      );
+      p.log.warn("Slack authorization timed out or was cancelled.");
       return {
         status: "skipped",
         message: "Slack auth timed out",
@@ -159,15 +157,13 @@ export const setupSlackStep: Step = {
     const exchange = await exchangeSlackCode(
       ctx.accessToken!,
       result.code,
-      redirectUri,
+      redirectUri
     );
     close();
     closeServer = null;
 
     if (!exchange.ok) {
-      p.log.warn(
-        `Could not complete Slack setup: ${exchange.error}`,
-      );
+      p.log.warn(`Could not complete Slack setup: ${exchange.error}`);
       return {
         status: "skipped",
         message: "Slack token exchange failed",
@@ -175,19 +171,16 @@ export const setupSlackStep: Step = {
     }
 
     // Success
-    p.log.success(
-      `Connected to Slack workspace: ${exchange.teamName}`,
-    );
+    p.log.success(`Connected to Slack workspace: ${exchange.teamName}`);
     ctx.slackConnected = true;
 
     // Post-connect guidance (SLK-03)
     p.log.info(
       pc.cyan("Next steps for Slack alerts:\n") +
         "1. Add the Context Company bot to a channel\n" +
-        "2. Type /subscribe in that channel to start receiving alerts",
+        "2. Type /subscribe in that channel to start receiving alerts"
     );
 
-    ctx.completedSteps.push("setup-slack");
     return { status: "completed" };
   },
 

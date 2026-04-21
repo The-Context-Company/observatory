@@ -1,6 +1,11 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
-import { FRAMEWORKS, type Step, type StepResult, type WizardContext } from "../types.js";
+import {
+  FRAMEWORKS,
+  type Step,
+  type StepResult,
+  type WizardContext,
+} from "../types.js";
 import { getDashboardUrl } from "../utils/config.js";
 import { getRunDevCommand } from "../utils/package-manager.js";
 
@@ -27,43 +32,30 @@ export const successSummaryStep: Step = {
     const lines: string[] = [];
 
     // Framework (SUM-01)
-    const frameworkInfo = FRAMEWORKS.find(
-      (f) => f.id === ctx.framework,
-    );
+    const frameworkInfo = FRAMEWORKS.find((f) => f.id === ctx.framework);
     const frameworkName = frameworkInfo?.name ?? ctx.framework ?? "Unknown";
-    lines.push(
-      `${pc.dim("Framework")}    ${frameworkName}`,
-    );
+    lines.push(`${pc.dim("Framework")}    ${frameworkName}`);
 
     // Instrumentation handoff status — liftoff now hands a prompt
     // to the user's coding agent rather than writing files itself.
     lines.push(
-      `${pc.dim("Instrument")}   ${pc.dim("Prompt copied — paste into your AI coding agent")}`,
+      `${pc.dim("Instrument")}   ${pc.dim("Prompt copied — paste into your AI coding agent")}`
     );
 
     // MCP editors (SUM-04)
-    if (
-      ctx.editorsConfigured &&
-      ctx.editorsConfigured.length > 0
-    ) {
+    if (ctx.editorsConfigured && ctx.editorsConfigured.length > 0) {
       lines.push(
-        `${pc.dim("MCP")}          ${ctx.editorsConfigured.join(", ")}`,
+        `${pc.dim("MCP")}          ${ctx.editorsConfigured.join(", ")}`
       );
     } else {
-      lines.push(
-        `${pc.dim("MCP")}          ${pc.dim("Not configured")}`,
-      );
+      lines.push(`${pc.dim("MCP")}          ${pc.dim("Not configured")}`);
     }
 
     // Slack status (SUM-05)
     if (ctx.slackConnected) {
-      lines.push(
-        `${pc.dim("Slack")}        ${pc.green("Connected")}`,
-      );
+      lines.push(`${pc.dim("Slack")}        ${pc.green("Connected")}`);
     } else {
-      lines.push(
-        `${pc.dim("Slack")}        ${pc.dim("Skipped")}`,
-      );
+      lines.push(`${pc.dim("Slack")}        ${pc.dim("Skipped")}`);
     }
 
     // Print the summary box
@@ -79,10 +71,9 @@ export const successSummaryStep: Step = {
         `When it finishes, run your app:\n\n` +
         `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
         `${pc.dim("Traces will start flowing to the dashboard:")}\n` +
-        `  ${pc.underline(`${getDashboardUrl()}/prod/runs`)}`,
+        `  ${pc.underline(`${getDashboardUrl()}/prod/runs`)}`
     );
 
-    ctx.completedSteps.push("success-summary");
     return { status: "completed" };
   },
 };
