@@ -30,6 +30,10 @@ export const provisionKeysStep: Step = {
   name: "provision-keys",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
+    if (ctx.completedSteps.includes("provision-keys")) return false;
+    // Already have a prod key — no need to mint another (guards
+    // against re-entering the pipeline with a populated context).
+    if (ctx.apiKey) return false;
     // Needs a valid access token from the auth step.
     return !!ctx.accessToken;
   },
