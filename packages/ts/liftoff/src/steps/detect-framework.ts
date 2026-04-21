@@ -24,41 +24,35 @@ export const detectFrameworkStep: Step = {
     const detected = detectFramework(ctx.installDir);
     const detectedLang = detectLanguage(ctx.installDir);
 
-    const tsFrameworks = FRAMEWORKS.filter((f) => f.language === "typescript");
-    const pyFrameworks = FRAMEWORKS.filter((f) => f.language === "python");
+    // Show all 12 frameworks in a single list regardless of what was
+    // detected. Detection can miss (polyglot repos, atypical manifests,
+    // monorepo with one-language root manifest but a differently-typed
+    // sub-app), so we always give the user an override. Language +
+    // "detected" status surface in the hint column.
+    const tsFirst = detectedLang !== "python";
+    const orderedFrameworks = tsFirst
+      ? [
+          ...FRAMEWORKS.filter((f) => f.language === "typescript"),
+          ...FRAMEWORKS.filter((f) => f.language === "python"),
+        ]
+      : [
+          ...FRAMEWORKS.filter((f) => f.language === "python"),
+          ...FRAMEWORKS.filter((f) => f.language === "typescript"),
+        ];
 
-    // If we couldn't infer the language from project files, ask which one.
-    // Otherwise, just show that language's frameworks — keeps the framework
-    // prompt focused and avoids non-selectable group headers in the list.
-    let language: "typescript" | "python";
-    if (detectedLang === "typescript" || detectedLang === "python") {
-      language = detectedLang;
-    } else {
-      const langChoice = await p.select({
-        message: "Which language is this project in?",
-        options: [
-          { value: "typescript", label: "TypeScript / JavaScript" },
-          { value: "python", label: "Python" },
-        ],
-      });
-      if (p.isCancel(langChoice)) {
-        return { status: "failed", message: "User cancelled" };
-      }
-      language = langChoice as "typescript" | "python";
-    }
-
-    const frameworksForLang =
-      language === "python" ? pyFrameworks : tsFrameworks;
-
-    const makeOption = (f: (typeof FRAMEWORKS)[number]) => ({
-      value: f.id as Framework,
-      label: f.name,
-      hint: f.id === detected ? "detected" : undefined,
-    });
+    const makeOption = (f: (typeof FRAMEWORKS)[number]) => {
+      const langLabel = f.language === "python" ? "python" : "typescript";
+      const isDetected = f.id === detected;
+      return {
+        value: f.id as Framework,
+        label: f.name,
+        hint: isDetected ? `${langLabel} · detected` : langLabel,
+      };
+    };
 
     const choice = await p.select({
-      message: `Which ${language === "python" ? "Python" : "TypeScript / JavaScript"} framework are you using?`,
-      options: frameworksForLang.map(makeOption),
+      message: "Which framework are you using?",
+      options: orderedFrameworks.map(makeOption),
       initialValue: detected ?? undefined,
     });
 
@@ -67,7 +61,11 @@ export const detectFrameworkStep: Step = {
     }
 
     ctx.framework = choice;
-    ctx.language = language;
+    // Resolve the language from the selection, not the filesystem —
+    // so if the user overrides detection (picked a Python framework
+    // in a repo that also had a package.json), we honor the override.
+    ctx.language =
+      FRAMEWORKS.find((f) => f.id === choice)?.language ?? "unknown";
 
     // Package manager: auto-detect from lockfile. Only prompt if the
     // detection is ambiguous — nobody needs to be asked what PM they
