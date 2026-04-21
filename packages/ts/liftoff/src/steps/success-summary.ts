@@ -75,8 +75,9 @@ export const successSummaryStep: Step = {
     const runCmd = getRunDevCommand(pm);
 
     p.log.step(
-      `${pc.bold("Next:")} paste the prompt (copied above) into your AI coding agent.\n` +
-        `Once it finishes wiring instrumentation, run your app:\n\n` +
+      `${pc.bold("Next:")} paste the prompt (already on your clipboard) into your AI coding agent.\n` +
+        `${pc.dim("The agent installs the SDK, writes instrumentation, and wires metadata against your codebase.")}\n\n` +
+        `When it finishes, run your app:\n\n` +
         `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
         `${pc.dim("Traces will start flowing to the dashboard:")}\n` +
         `  ${pc.underline(DASHBOARD_URL)}`,

@@ -81,20 +81,15 @@ async function exchangeSlackCode(
  * Prompts for confirmation, opens browser to Slack OAuth, receives the
  * callback on a localhost server, exchanges the code via the context repo
  * API, and shows post-connect guidance.
- *
- * Skips when:
- * - `--key` mode (no user identity)
- * - No accessToken (auth step didn't run or failed)
- * - Already completed in this session
  */
 export const setupSlackStep: Step = {
   name: "setup-slack",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
-    if (ctx.keyProvided) return false;
-    if (!ctx.accessToken) return false;
     if (ctx.completedSteps.includes("setup-slack")) return false;
-    return true;
+    // Needs a valid access token — the Slack exchange route is
+    // authenticated against the TCC user session.
+    return !!ctx.accessToken;
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {

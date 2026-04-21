@@ -4,7 +4,7 @@
   "description": "The Context Company CLI — zero-friction AI agent observability setup",
   "type": "module",
   "bin": {
-    "contextcompany-liftoff": "dist/index.js"
+    "liftoff": "dist/index.js"
   },
   "files": [
     "dist"

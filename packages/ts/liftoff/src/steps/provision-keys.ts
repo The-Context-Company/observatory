@@ -33,11 +33,8 @@ export const provisionKeysStep: Step = {
   name: "provision-keys",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
-    // --key flag means user provided their own key, no provisioning needed
-    if (ctx.keyProvided) return false;
-    // No access token means auth failed or was skipped
-    if (!ctx.accessToken) return false;
-    return true;
+    // Needs a valid access token from the auth step.
+    return !!ctx.accessToken;
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {

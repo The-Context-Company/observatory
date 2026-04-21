@@ -12,52 +12,11 @@ const AUTH_TIMEOUT_MS = 30_000;
 /** Active server reference for cleanup on Ctrl+C */
 let activeServer: { close: () => void } | null = null;
 
-async function handleAuthTimeout(
-  ctx: WizardContext,
-): Promise<StepResult> {
-  p.log.warn("Authentication timed out after 30 seconds.");
-  p.log.info(
-    "You can get your API key from https://www.thecontext.company/prod/settings",
-  );
-
-  const key = await p.text({
-    message: "Paste your TCC API key (or press Enter to skip):",
-    placeholder: "tcc_prod_...",
-    validate(value) {
-      if (
-        value &&
-        !value.startsWith("tcc_prod_") &&
-        !value.startsWith("tcc_key_")
-      ) {
-        return "Key must start with tcc_prod_ or tcc_key_";
-      }
-    },
-  });
-
-  if (p.isCancel(key) || !key) {
-    return {
-      status: "failed",
-      message:
-        "Authentication required. Run again or use --key flag.",
-    };
-  }
-
-  ctx.apiKey = key;
-  ctx.keyProvided = true;
-  return {
-    status: "completed",
-    message:
-      "Using manually provided key (MCP and Slack setup will be skipped)",
-  };
-}
-
 export const authStep: Step = {
   name: "authenticate",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
-    // --key flag skips auth entirely (AUTH-03)
-    if (ctx.keyProvided) return false;
-    // Already authenticated (idempotency)
+    // Idempotency — don't re-auth if we already hold a valid token.
     if (ctx.accessToken) return false;
     return true;
   },
@@ -103,7 +62,10 @@ export const authStep: Step = {
 
       // 5. Handle timeout or state mismatch
       if (!result) {
-        return handleAuthTimeout(ctx);
+        return {
+          status: "failed",
+          message: "Authentication timed out — re-run liftoff to try again.",
+        };
       }
 
       // 6. Exchange code for tokens
@@ -154,7 +116,7 @@ export const authStep: Step = {
       const message =
         error instanceof Error ? error.message : String(error);
       p.log.error(`Authentication failed: ${message}`);
-      return handleAuthTimeout(ctx);
+      return { status: "failed", message };
     }
   },
 

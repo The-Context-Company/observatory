@@ -1,7 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { FRAMEWORKS, type Framework, type PackageManager, type Step, type StepResult, type WizardContext } from "../types.js";
-import { detectFramework, detectLanguage, detectTypeScript, detectSrcDir, detectAppRouter } from "../utils/framework-detection.js";
+import { detectFramework, detectLanguage } from "../utils/framework-detection.js";
 import { detectPackageManager } from "../utils/package-manager.js";
 
 /**
@@ -67,52 +67,46 @@ export const detectFrameworkStep: Step = {
     }
 
     ctx.framework = choice;
+    ctx.language = language;
 
-    // Detect project characteristics (D-04, D-05)
-    ctx.language = detectLanguage(ctx.installDir);
-    ctx.typescript = detectTypeScript(ctx.installDir);
-    ctx.srcDir = detectSrcDir(ctx.installDir);
-    ctx.appDir = detectAppRouter(ctx.installDir);
+    // Package manager: auto-detect from lockfile. Only prompt if the
+    // detection is ambiguous — nobody needs to be asked what PM they
+    // use when there's a pnpm-lock.yaml sitting right there.
+    const detectedPm = detectPackageManager(ctx.installDir, language);
 
-    // Detect package manager, then confirm with user
-    const detectedPm = detectPackageManager(ctx.installDir, ctx.language);
-
-    const tsOptions = [
-      { value: "npm", label: "npm" },
-      { value: "pnpm", label: "pnpm" },
-      { value: "yarn", label: "yarn" },
-      { value: "bun", label: "bun" },
-    ].map((opt) => ({
-      ...opt,
-      hint: opt.value === detectedPm ? "detected" : undefined,
-    }));
-
-    const pyOptions = [
-      { value: "pip", label: "pip" },
-      { value: "uv", label: "uv" },
-      { value: "poetry", label: "poetry" },
-    ].map((opt) => ({
-      ...opt,
-      hint: opt.value === detectedPm ? "detected" : undefined,
-    }));
-
-    const pmOptions = ctx.language === "python" ? pyOptions : tsOptions;
-
-    const pmChoice = await p.select({
-      message: "Which package manager do you use?",
-      options: pmOptions,
-      initialValue: detectedPm ?? undefined,
-    });
-    if (p.isCancel(pmChoice)) {
-      return { status: "failed", message: "Setup cancelled" };
+    if (detectedPm) {
+      ctx.packageManager = detectedPm as PackageManager;
+    } else {
+      const pmOptions =
+        language === "python"
+          ? [
+              { value: "pip", label: "pip" },
+              { value: "uv", label: "uv" },
+              { value: "poetry", label: "poetry" },
+            ]
+          : [
+              { value: "npm", label: "npm" },
+              { value: "pnpm", label: "pnpm" },
+              { value: "yarn", label: "yarn" },
+              { value: "bun", label: "bun" },
+            ];
+      const pmChoice = await p.select({
+        message: "Which package manager do you use?",
+        options: pmOptions,
+      });
+      if (p.isCancel(pmChoice)) {
+        return { status: "failed", message: "Setup cancelled" };
+      }
+      ctx.packageManager = pmChoice as PackageManager;
     }
-    ctx.packageManager = pmChoice as PackageManager;
 
     const frameworkName =
       FRAMEWORKS.find((f) => f.id === ctx.framework)?.name ?? ctx.framework;
 
     p.log.success(
-      `Framework: ${pc.bold(frameworkName)}, Package manager: ${pc.bold(ctx.packageManager)}`,
+      `Framework: ${pc.bold(frameworkName)}${
+        detectedPm ? pc.dim(` (${ctx.packageManager})`) : ""
+      }`,
     );
 
     return { status: "completed" };
