@@ -6,7 +6,7 @@ import type { Step, StepResult, WizardContext } from "../types.js";
 import { getApiBase } from "../utils/config.js";
 import { startCallbackServer } from "../utils/localhost-server.js";
 
-const AUTH_TIMEOUT_MS = 30_000;
+const AUTH_TIMEOUT_MS = 300_000; // 5 min — covers first-time signup + 2FA
 
 /** Active server reference for cleanup on Ctrl+C */
 let activeServer: { close: () => void } | null = null;
@@ -54,7 +54,7 @@ export const authStep: Step = {
 
       // 4. Wait for callback
       p.log.info(
-        pc.dim("Waiting for authentication... (30s timeout)"),
+        pc.dim("Waiting for authentication... (5 min timeout — Ctrl+C to cancel)"),
       );
       const result = await server.waitForCallback();
       activeServer = null;

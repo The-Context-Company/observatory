@@ -122,7 +122,7 @@ export const setupSlackStep: Step = {
     // Start OAuth flow (SLK-02)
     const state = crypto.randomBytes(16).toString("hex");
     const { port, waitForCallback, close } =
-      await startCallbackServer(state, 60_000);
+      await startCallbackServer(state, 300_000); // 5 min — covers first-time Slack install + workspace pick
     closeServer = close;
 
     const redirectUri = `http://127.0.0.1:${port}/callback`;
