@@ -187,7 +187,7 @@ export const setupSlackStep: Step = {
         "2. Type /subscribe in that channel to start receiving alerts",
     );
 
-    ctx.completedSteps.push("setup-slack");
+    // Pipeline pushes step.name on "completed" — don't push again.
     return { status: "completed" };
   },
 
