@@ -38,10 +38,21 @@ function findLockfileInDir(dir: string, lockfiles: LockfileEntry[]): PackageMana
 }
 
 /**
- * Walk up directories until git root, checking for lockfiles or packageManager field.
- * Stops at .git boundary to avoid escaping the project.
+ * Walk up directories until git root, checking for lockfiles (and,
+ * for JS/TS projects, the `packageManager` field in ancestor
+ * package.json files). Stops at .git boundary to avoid escaping the
+ * project.
+ *
+ * `checkPackageManagerField` must be false for Python projects —
+ * otherwise a Python app nested inside a JS monorepo would inherit
+ * the monorepo's pnpm/yarn/npm/bun declaration and the success
+ * summary would print `pnpm dev` for a Python agent.
  */
-function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): PackageManager | null {
+function detectFromAncestors(
+  startDir: string,
+  lockfiles: LockfileEntry[],
+  checkPackageManagerField: boolean,
+): PackageManager | null {
   let dir = path.resolve(startDir);
   const root = path.parse(dir).root;
 
@@ -56,21 +67,23 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
       }
     }
 
-    // Check package.json packageManager field
-    const pkgPath = path.join(dir, "package.json");
-    if (fs.existsSync(pkgPath)) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
-          packageManager?: string;
-        };
-        if (typeof pkg.packageManager === "string") {
-          const name = pkg.packageManager.split("@")[0];
-          if (name === "pnpm" || name === "yarn" || name === "bun" || name === "npm") {
-            return name;
+    // Check package.json packageManager field — JS/TS only.
+    if (checkPackageManagerField) {
+      const pkgPath = path.join(dir, "package.json");
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
+            packageManager?: string;
+          };
+          if (typeof pkg.packageManager === "string") {
+            const name = pkg.packageManager.split("@")[0];
+            if (name === "pnpm" || name === "yarn" || name === "bun" || name === "npm") {
+              return name;
+            }
           }
+        } catch {
+          // ignore parse errors
         }
-      } catch {
-        // ignore parse errors
       }
     }
 
@@ -91,7 +104,7 @@ export function detectPackageManager(installDir: string, language: "typescript" 
     // chance to correct it.
     return (
       findLockfileInDir(installDir, PYTHON_LOCKFILES) ??
-      detectFromAncestors(installDir, PYTHON_LOCKFILES) ??
+      detectFromAncestors(installDir, PYTHON_LOCKFILES, false) ??
       null
     );
   }
@@ -101,7 +114,7 @@ export function detectPackageManager(installDir: string, language: "typescript" 
   if (fromLockfile) return fromLockfile;
 
   // 2. Walk up to git root, checking lockfiles and packageManager field
-  const fromAncestor = detectFromAncestors(installDir, TS_LOCKFILES);
+  const fromAncestor = detectFromAncestors(installDir, TS_LOCKFILES, true);
   if (fromAncestor) return fromAncestor;
 
   // 3. Return null — caller should ask the user
