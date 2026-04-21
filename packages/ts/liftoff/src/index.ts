@@ -15,14 +15,49 @@ const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
 
 /**
+ * Truecolor (24-bit) ANSI wrapper. Lets us emit the exact brand hex
+ * for each chevron instead of the terminal-theme-dependent
+ * picocolors ANSI-8 variant. Every modern terminal (iTerm2, Warp,
+ * Terminal.app, VS Code, Alacritty, Kitty, Ghostty, WezTerm) renders
+ * these faithfully.
+ */
+function rgb(r: number, g: number, b: number, text: string): string {
+  return `\x1b[38;2;${r};${g};${b}m${text}\x1b[39m`;
+}
+
+// TCC brand chevron hexes, tuned against the logo PNG.
+const CHEV_BLUE = (t: string) => rgb(30, 143, 230, t); //  #1E8FE6
+const CHEV_YELLOW = (t: string) => rgb(255, 197, 39, t); // #FFC527
+const CHEV_RED = (t: string) => rgb(241, 57, 92, t); //   #F1395C
+
+/**
  * Print the liftoff banner: the three Context Company chevrons
- * (blue / yellow-split / red) next to TCC in ANSI-shadow block letters,
- * with the company name as a subtitle. Rendered before the wizard so
- * the terminal has a distinct brand frame on launch.
+ * (blue / yellow-split / red) next to TCC in ANSI-shadow block
+ * letters, with the company name as a subtitle. Rendered before the
+ * wizard so the terminal has a distinct brand frame on launch.
  */
 function printBanner(): void {
-  const solid = ["██    ", "  ██  ", "    ██", "  ██  ", "██    ", "      "];
-  const split = ["██    ", "  ██  ", "      ", "  ██  ", "██    ", "      "];
+  // Each chevron is 5 rows of 4-wide block pixels (up from 2-wide
+  // before — gives the diagonals more visual weight without looking
+  // cartoonish). Trailing empty row aligns the chevron baseline with
+  // the 6-row TCC block. Middle chevron has a hollow apex — mirrors
+  // the split/dashed middle chevron in the actual logo.
+  const solid = [
+    "████    ",
+    "  ████  ",
+    "    ████",
+    "  ████  ",
+    "████    ",
+    "        ",
+  ];
+  const split = [
+    "████    ",
+    "  ████  ",
+    "        ",
+    "  ████  ",
+    "████    ",
+    "        ",
+  ];
   const gap = "  ";
 
   const tcc = [
@@ -37,7 +72,11 @@ function printBanner(): void {
   console.log();
   for (let i = 0; i < tcc.length; i++) {
     const chev =
-      pc.blue(solid[i]) + gap + pc.yellow(split[i]) + gap + pc.red(solid[i]);
+      CHEV_BLUE(solid[i]) +
+      gap +
+      CHEV_YELLOW(split[i]) +
+      gap +
+      CHEV_RED(solid[i]);
     console.log("  " + chev + "   " + pc.bold(tcc[i]));
   }
   console.log();
