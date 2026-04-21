@@ -84,9 +84,16 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
 
 export function detectPackageManager(installDir: string, language: "typescript" | "python" | "unknown" = "unknown"): PackageManager | null {
   if (language === "python") {
-    return findLockfileInDir(installDir, PYTHON_LOCKFILES)
-      ?? detectFromAncestors(installDir, PYTHON_LOCKFILES)
-      ?? "pip";
+    // Return null when no lockfile is found so the caller prompts the
+    // user, same contract as the TypeScript path. Silently defaulting
+    // to "pip" meant poetry/uv users without a committed lockfile saw
+    // the wrong `run dev` command in the success summary with no
+    // chance to correct it.
+    return (
+      findLockfileInDir(installDir, PYTHON_LOCKFILES) ??
+      detectFromAncestors(installDir, PYTHON_LOCKFILES) ??
+      null
+    );
   }
 
   // 1. Check current directory for lockfile

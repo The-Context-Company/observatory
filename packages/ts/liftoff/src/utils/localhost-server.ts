@@ -12,6 +12,8 @@ const DEFAULT_TIMEOUT_MS = 30_000;
 
 const SUCCESS_HTML = `<html><body><h1>Authentication successful!</h1><p>You can close this tab and return to your terminal.</p></body></html>`;
 
+const FAILURE_HTML = `<html><body><h1>Authentication failed</h1><p>The callback was missing a code or the state didn't match. Return to your terminal and try again.</p></body></html>`;
+
 /**
  * Start a temporary localhost HTTP server to receive an OAuth callback.
  *
@@ -58,19 +60,17 @@ export function startCallbackServer(
 
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
+      const ok = !!code && state === expectedState;
 
-      // Always serve the success page so the user sees feedback
-      res.writeHead(200, { "Content-Type": "text/html" });
-      res.end(SUCCESS_HTML);
+      // Show the user a page that matches what actually happened —
+      // serving "Authentication successful!" when we're about to
+      // resolve null left the browser and terminal disagreeing, which
+      // was painful to debug.
+      res.writeHead(ok ? 200 : 400, { "Content-Type": "text/html" });
+      res.end(ok ? SUCCESS_HTML : FAILURE_HTML);
 
       clearTimeout(timeoutHandle);
-
-      if (code && state === expectedState) {
-        callbackResolve({ code, state });
-      } else {
-        callbackResolve(null);
-      }
-
+      callbackResolve(ok ? { code: code!, state: state! } : null);
       closeServer();
     });
 
