@@ -28,7 +28,10 @@ const PYTHON_LOCKFILES: LockfileEntry[] = [
 /**
  * Check current directory for a lockfile.
  */
-function findLockfileInDir(dir: string, lockfiles: LockfileEntry[]): PackageManager | null {
+function findLockfileInDir(
+  dir: string,
+  lockfiles: LockfileEntry[]
+): PackageManager | null {
   for (const { file, pm } of lockfiles) {
     if (fs.existsSync(path.join(dir, file))) {
       return pm;
@@ -41,7 +44,10 @@ function findLockfileInDir(dir: string, lockfiles: LockfileEntry[]): PackageMana
  * Walk up directories until git root, checking for lockfiles or packageManager field.
  * Stops at .git boundary to avoid escaping the project.
  */
-function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): PackageManager | null {
+function detectFromAncestors(
+  startDir: string,
+  lockfiles: LockfileEntry[]
+): PackageManager | null {
   let dir = path.resolve(startDir);
   const root = path.parse(dir).root;
 
@@ -65,7 +71,12 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
         };
         if (typeof pkg.packageManager === "string") {
           const name = pkg.packageManager.split("@")[0];
-          if (name === "pnpm" || name === "yarn" || name === "bun" || name === "npm") {
+          if (
+            name === "pnpm" ||
+            name === "yarn" ||
+            name === "bun" ||
+            name === "npm"
+          ) {
             return name;
           }
         }
@@ -82,11 +93,16 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
   return null;
 }
 
-export function detectPackageManager(installDir: string, language: "typescript" | "python" | "unknown" = "unknown"): PackageManager | null {
+export function detectPackageManager(
+  installDir: string,
+  language: "typescript" | "python" | "unknown" = "unknown"
+): PackageManager | null {
   if (language === "python") {
-    return findLockfileInDir(installDir, PYTHON_LOCKFILES)
-      ?? detectFromAncestors(installDir, PYTHON_LOCKFILES)
-      ?? "pip";
+    return (
+      findLockfileInDir(installDir, PYTHON_LOCKFILES) ??
+      detectFromAncestors(installDir, PYTHON_LOCKFILES) ??
+      null
+    );
   }
 
   // 1. Check current directory for lockfile

@@ -11,6 +11,7 @@ export interface CallbackResult {
 const DEFAULT_TIMEOUT_MS = 30_000;
 
 const SUCCESS_HTML = `<html><body><h1>Authentication successful!</h1><p>You can close this tab and return to your terminal.</p></body></html>`;
+const ERROR_HTML = `<html><body><h1>Authentication failed</h1><p>Please return to your terminal and try again.</p></body></html>`;
 
 /**
  * Start a temporary localhost HTTP server to receive an OAuth callback.
@@ -26,7 +27,7 @@ const SUCCESS_HTML = `<html><body><h1>Authentication successful!</h1><p>You can 
  */
 export function startCallbackServer(
   expectedState: string,
-  timeoutMs: number = DEFAULT_TIMEOUT_MS,
+  timeoutMs: number = DEFAULT_TIMEOUT_MS
 ): Promise<{
   port: number;
   waitForCallback: () => Promise<CallbackResult | null>;
@@ -59,15 +60,15 @@ export function startCallbackServer(
       const code = url.searchParams.get("code");
       const state = url.searchParams.get("state");
 
-      // Always serve the success page so the user sees feedback
-      res.writeHead(200, { "Content-Type": "text/html" });
-      res.end(SUCCESS_HTML);
-
       clearTimeout(timeoutHandle);
 
       if (code && state === expectedState) {
+        res.writeHead(200, { "Content-Type": "text/html" });
+        res.end(SUCCESS_HTML);
         callbackResolve({ code, state });
       } else {
+        res.writeHead(400, { "Content-Type": "text/html" });
+        res.end(ERROR_HTML);
         callbackResolve(null);
       }
 
@@ -88,8 +89,7 @@ export function startCallbackServer(
 
     server.listen(0, "127.0.0.1", () => {
       const addr = server.address();
-      const port =
-        typeof addr === "object" && addr !== null ? addr.port : 0;
+      const port = typeof addr === "object" && addr !== null ? addr.port : 0;
 
       resolveStart({
         port,
