@@ -6,4 +6,4 @@ dist
 **/*.tgz
 packages/widget/src/styles.css
 .claude/
-__pycache__/
+__pycache__/.planning/
