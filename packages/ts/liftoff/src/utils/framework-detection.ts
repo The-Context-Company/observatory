@@ -146,8 +146,11 @@ export function detectFramework(
       return "langchain-ts";
     }
 
-    // Has package.json but no recognized framework
-    return null;
+    // Has package.json but no recognized TS framework — fall through
+    // to the Python checks below. Polyglot repos (common in AI/ML:
+    // a package.json for frontend tooling alongside a pyproject.toml
+    // for the actual agent) would otherwise miss Python framework
+    // detection entirely.
   }
 
   // Check pyproject.toml/requirements.txt for Python frameworks

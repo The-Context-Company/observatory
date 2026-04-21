@@ -7,11 +7,17 @@ import path from "node:path";
  * version specifiers.
  */
 function normalizePyPkg(raw: string): string {
+  // Strip version specifiers first, then drop any extras bracket
+  // ("langchain[all]>=0.2" → "langchain"). Without the bracket strip,
+  // dependencies like crewai[tools], langchain[openai], or
+  // langchain[all] never matched hasPythonDep(…, "langchain"),
+  // silently breaking framework auto-detection.
   return raw
     .trim()
     .toLowerCase()
     .replace(/_/g, "-")
     .split(/[>=<!~;]/)[0]
+    .split("[")[0]
     .trim();
 }
 
