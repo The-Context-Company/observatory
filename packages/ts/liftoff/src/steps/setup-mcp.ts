@@ -58,8 +58,9 @@ export const setupMcpStep: Step = {
 
   async run(ctx: WizardContext): Promise<StepResult> {
     p.log.info(
-      "Give your coding agents context about what's happening in dev and\n" +
-        "production so they can find and fix issues directly from the editor.",
+      "The TCC MCP server gives your coding agents context about what's\n" +
+        "happening in dev and production, so they can find and fix issues\n" +
+        "directly from the editor.",
     );
 
     const wantsMcp = await p.confirm({

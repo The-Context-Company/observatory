@@ -102,7 +102,7 @@ export const detectFrameworkStep: Step = {
       message: "Which framework are you using?",
       options: ordered.map((e) => {
         const langHint =
-          e.lang === "both" ? "typescript + python" : e.lang;
+          e.lang === "both" ? "typescript & python" : e.lang;
         const isDetected = e.value === initialValue;
         return {
           value: e.value,
