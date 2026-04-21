@@ -16,9 +16,7 @@ interface PackageJson {
  * or devDependencies.
  */
 function hasDep(pkg: PackageJson, name: string): boolean {
-  return !!(
-    pkg.dependencies?.[name] || pkg.devDependencies?.[name]
-  );
+  return !!(pkg.dependencies?.[name] || pkg.devDependencies?.[name]);
 }
 
 /**
@@ -30,9 +28,7 @@ function hasDepPrefix(pkg: PackageJson, prefix: string): boolean {
     ...pkg.dependencies,
     ...pkg.devDependencies,
   };
-  return Object.keys(allDeps).some((dep) =>
-    dep.startsWith(prefix),
-  );
+  return Object.keys(allDeps).some((dep) => dep.startsWith(prefix));
 }
 
 /**
@@ -42,7 +38,7 @@ function hasDepPrefix(pkg: PackageJson, prefix: string): boolean {
 function hasPythonDep(deps: string[], name: string): boolean {
   const normalized = name.toLowerCase().replace(/_/g, "-");
   return deps.some(
-    (dep) => dep.toLowerCase().replace(/_/g, "-") === normalized,
+    (dep) => dep.toLowerCase().replace(/_/g, "-") === normalized
   );
 }
 
@@ -53,9 +49,7 @@ function hasPythonDep(deps: string[], name: string): boolean {
  *   pyproject.toml or requirements.txt exists, otherwise
  *   "unknown".
  */
-export function detectLanguage(
-  installDir: string,
-): ProjectLanguage {
+export function detectLanguage(installDir: string): ProjectLanguage {
   if (fs.existsSync(path.join(installDir, "package.json"))) {
     return "typescript";
   }
@@ -91,18 +85,14 @@ export function detectLanguage(
  *
  * @returns Detected framework or null if no match found.
  */
-export function detectFramework(
-  installDir: string,
-): Framework | null {
+export function detectFramework(installDir: string): Framework | null {
   const pkgPath = path.join(installDir, "package.json");
 
   // Check package.json for TS frameworks
   if (fs.existsSync(pkgPath)) {
     let pkg: PackageJson;
     try {
-      pkg = JSON.parse(
-        fs.readFileSync(pkgPath, "utf-8"),
-      ) as PackageJson;
+      pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as PackageJson;
     } catch {
       return null;
     }
@@ -139,23 +129,18 @@ export function detectFramework(
     }
 
     // 6. LangChain TS
-    if (
-      hasDep(pkg, "@langchain/core") ||
-      hasDep(pkg, "langchain")
-    ) {
+    if (hasDep(pkg, "@langchain/core") || hasDep(pkg, "langchain")) {
       return "langchain-ts";
     }
 
-    // Has package.json but no recognized framework
-    return null;
+    // Has package.json but no recognized TS framework
+    // Fall through to check Python dependencies for polyglot projects
   }
 
   // Check pyproject.toml/requirements.txt for Python frameworks
-  const hasPyproject = fs.existsSync(
-    path.join(installDir, "pyproject.toml"),
-  );
+  const hasPyproject = fs.existsSync(path.join(installDir, "pyproject.toml"));
   const hasRequirements = fs.existsSync(
-    path.join(installDir, "requirements.txt"),
+    path.join(installDir, "requirements.txt")
   );
 
   if (hasPyproject || hasRequirements) {
@@ -194,4 +179,3 @@ export function detectFramework(
   // No manifest files found
   return null;
 }
-

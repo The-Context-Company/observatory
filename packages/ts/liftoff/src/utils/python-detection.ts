@@ -4,13 +4,14 @@ import path from "node:path";
 /**
  * Normalize a Python package name for comparison.
  * Lowercases, replaces underscores with hyphens, strips
- * version specifiers.
+ * version specifiers and extras brackets.
  */
 function normalizePyPkg(raw: string): string {
   return raw
     .trim()
     .toLowerCase()
     .replace(/_/g, "-")
+    .replace(/\[.*?\]/, "")
     .split(/[>=<!~;]/)[0]
     .trim();
 }
@@ -46,12 +47,10 @@ export function parsePyprojectDeps(installDir: string): string[] {
   // section-body isolation, a [project] without dependencies followed
   // by e.g. [tool.poetry.dev-dependencies] would match the latter's
   // dependencies by mistake.
-  const projSection = content.match(
-    /\[project\]\s*\n([\s\S]*?)(?=\n\[|$)/,
-  );
+  const projSection = content.match(/\[project\]\s*\n([\s\S]*?)(?=\n\[|$)/);
   if (projSection) {
     const projMatch = projSection[1].match(
-      /(?:^|\n)dependencies\s*=\s*\[([\s\S]*?)\]/,
+      /(?:^|\n)dependencies\s*=\s*\[([\s\S]*?)\]/
     );
     if (projMatch) {
       const items = projMatch[1].match(/"([^"]+)"|'([^']+)'/g);
@@ -69,7 +68,7 @@ export function parsePyprojectDeps(installDir: string): string[] {
 
   // Match optional-dependencies sections
   const optMatch = content.matchAll(
-    /\[project\.optional-dependencies\.\w+\]\s*\n([\s\S]*?)(?=\n\[|\n*$)/g,
+    /\[project\.optional-dependencies\.\w+\]\s*\n([\s\S]*?)(?=\n\[|\n*$)/g
   );
   for (const m of optMatch) {
     const items = m[1].match(/"([^"]+)"|'([^']+)'/g);
@@ -88,12 +87,10 @@ export function parsePyprojectDeps(installDir: string): string[] {
   // [project.optional-dependencies]
   // extra = ["pkg1", "pkg2"]
   const inlineOptMatch = content.match(
-    /\[project\.optional-dependencies\]\s*\n([\s\S]*?)(?=\n\[|$)/,
+    /\[project\.optional-dependencies\]\s*\n([\s\S]*?)(?=\n\[|$)/
   );
   if (inlineOptMatch) {
-    const arrays = inlineOptMatch[1].matchAll(
-      /\w+\s*=\s*\[([\s\S]*?)\]/g,
-    );
+    const arrays = inlineOptMatch[1].matchAll(/\w+\s*=\s*\[([\s\S]*?)\]/g);
     for (const arr of arrays) {
       const items = arr[1].match(/"([^"]+)"|'([^']+)'/g);
       if (items) {
@@ -120,9 +117,7 @@ export function parsePyprojectDeps(installDir: string): string[] {
  * @returns Normalized lowercase package names, or empty array
  *   if file not found.
  */
-export function parseRequirementsTxt(
-  installDir: string,
-): string[] {
+export function parseRequirementsTxt(installDir: string): string[] {
   const filePath = path.join(installDir, "requirements.txt");
 
   if (!fs.existsSync(filePath)) {
