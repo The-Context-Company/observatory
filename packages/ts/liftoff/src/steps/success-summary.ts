@@ -35,10 +35,16 @@ export const successSummaryStep: Step = {
       `${pc.dim("Framework")}    ${frameworkName}`,
     );
 
-    // Instrumentation handoff status — liftoff now hands a prompt
-    // to the user's coding agent rather than writing files itself.
+    // Instrumentation handoff status — liftoff hands a prompt to the
+    // user's coding agent rather than writing files itself. Branch on
+    // whether the instrument step actually copied the prompt (it can
+    // be skipped: fetch fail, user decline, clipboard unavailable).
     lines.push(
-      `${pc.dim("Instrument")}   ${pc.dim("Prompt copied — paste into your AI coding agent")}`,
+      `${pc.dim("Instrument")}   ${
+        ctx.promptCopied
+          ? pc.dim("Prompt copied — paste into your AI coding agent")
+          : pc.dim("Not copied — see docs URL above for manual setup")
+      }`,
     );
 
     // MCP editors (SUM-04)
@@ -73,8 +79,12 @@ export const successSummaryStep: Step = {
     const pm = ctx.packageManager ?? "npm";
     const runCmd = getRunDevCommand(pm);
 
+    const nextLine = ctx.promptCopied
+      ? `${pc.bold("Next:")} paste the prompt (already on your clipboard) into your AI coding agent.`
+      : `${pc.bold("Next:")} grab the instrumentation prompt from the docs and paste it into your AI coding agent.`;
+
     p.log.step(
-      `${pc.bold("Next:")} paste the prompt (already on your clipboard) into your AI coding agent.\n` +
+      `${nextLine}\n` +
         `${pc.dim("The agent installs the SDK, writes instrumentation, and wires metadata against your codebase.")}\n\n` +
         `When it finishes, run your app:\n\n` +
         `  ${pc.cyan(pc.bold(runCmd))}\n\n` +

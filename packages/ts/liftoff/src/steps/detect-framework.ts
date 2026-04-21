@@ -70,13 +70,13 @@ export const detectFrameworkStep: Step = {
     // Package manager: auto-detect from lockfile. Only prompt if the
     // detection is ambiguous — nobody needs to be asked what PM they
     // use when there's a pnpm-lock.yaml sitting right there.
-    const detectedPm = detectPackageManager(ctx.installDir, language);
+    const detectedPm = detectPackageManager(ctx.installDir, ctx.language);
 
     if (detectedPm) {
       ctx.packageManager = detectedPm as PackageManager;
     } else {
       const pmOptions =
-        language === "python"
+        ctx.language === "python"
           ? [
               { value: "pip", label: "pip" },
               { value: "uv", label: "uv" },
