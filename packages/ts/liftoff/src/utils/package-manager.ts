@@ -28,7 +28,10 @@ const PYTHON_LOCKFILES: LockfileEntry[] = [
 /**
  * Check current directory for a lockfile.
  */
-function findLockfileInDir(dir: string, lockfiles: LockfileEntry[]): PackageManager | null {
+function findLockfileInDir(
+  dir: string,
+  lockfiles: LockfileEntry[]
+): PackageManager | null {
   for (const { file, pm } of lockfiles) {
     if (fs.existsSync(path.join(dir, file))) {
       return pm;
@@ -41,9 +44,17 @@ function findLockfileInDir(dir: string, lockfiles: LockfileEntry[]): PackageMana
  * Walk up directories until git root, checking for lockfiles or packageManager field.
  * Stops at .git boundary to avoid escaping the project.
  */
-function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): PackageManager | null {
+function detectFromAncestors(
+  startDir: string,
+  lockfiles: LockfileEntry[]
+): PackageManager | null {
   let dir = path.resolve(startDir);
   const root = path.parse(dir).root;
+
+  // Determine if we're looking for Python or TypeScript managers
+  const isPythonLockfiles = lockfiles.some(
+    ({ pm }) => pm === "uv" || pm === "poetry" || pm === "pip"
+  );
 
   // Skip the starting dir (already checked)
   dir = path.dirname(dir);
@@ -56,21 +67,28 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
       }
     }
 
-    // Check package.json packageManager field
-    const pkgPath = path.join(dir, "package.json");
-    if (fs.existsSync(pkgPath)) {
-      try {
-        const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
-          packageManager?: string;
-        };
-        if (typeof pkg.packageManager === "string") {
-          const name = pkg.packageManager.split("@")[0];
-          if (name === "pnpm" || name === "yarn" || name === "bun" || name === "npm") {
-            return name;
+    // Check package.json packageManager field (only for TypeScript projects)
+    if (!isPythonLockfiles) {
+      const pkgPath = path.join(dir, "package.json");
+      if (fs.existsSync(pkgPath)) {
+        try {
+          const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
+            packageManager?: string;
+          };
+          if (typeof pkg.packageManager === "string") {
+            const name = pkg.packageManager.split("@")[0];
+            if (
+              name === "pnpm" ||
+              name === "yarn" ||
+              name === "bun" ||
+              name === "npm"
+            ) {
+              return name;
+            }
           }
+        } catch {
+          // ignore parse errors
         }
-      } catch {
-        // ignore parse errors
       }
     }
 
@@ -82,7 +100,10 @@ function detectFromAncestors(startDir: string, lockfiles: LockfileEntry[]): Pack
   return null;
 }
 
-export function detectPackageManager(installDir: string, language: "typescript" | "python" | "unknown" = "unknown"): PackageManager | null {
+export function detectPackageManager(
+  installDir: string,
+  language: "typescript" | "python" | "unknown" = "unknown"
+): PackageManager | null {
   if (language === "python") {
     // Return null when no lockfile is found so the caller prompts the
     // user, same contract as the TypeScript path. Silently defaulting
