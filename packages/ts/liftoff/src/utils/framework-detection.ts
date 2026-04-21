@@ -195,31 +195,3 @@ export function detectFramework(
   return null;
 }
 
-/**
- * Detect whether the project uses TypeScript (has
- * tsconfig.json).
- */
-export function detectTypeScript(installDir: string): boolean {
-  return fs.existsSync(path.join(installDir, "tsconfig.json"));
-}
-
-/**
- * Detect whether the project has a src/ directory.
- */
-export function detectSrcDir(installDir: string): boolean {
-  return (
-    fs.existsSync(path.join(installDir, "src")) &&
-    fs.statSync(path.join(installDir, "src")).isDirectory()
-  );
-}
-
-/**
- * Detect whether a Next.js project uses the App Router.
- * Checks for `app/` or `src/app/` directories.
- */
-export function detectAppRouter(installDir: string): boolean {
-  return (
-    fs.existsSync(path.join(installDir, "app")) ||
-    fs.existsSync(path.join(installDir, "src", "app"))
-  );
-}

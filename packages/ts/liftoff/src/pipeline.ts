@@ -14,7 +14,7 @@ let isCleaningUp = false;
 async function runCleanup(): Promise<void> {
   if (isCleaningUp) return;
   isCleaningUp = true;
-  for (const cleanup of cleanupStack.reverse()) {
+  for (const cleanup of [...cleanupStack].reverse()) {
     try {
       await cleanup();
     } catch {

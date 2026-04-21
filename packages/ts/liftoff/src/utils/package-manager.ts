@@ -102,55 +102,6 @@ export function detectPackageManager(installDir: string, language: "typescript" 
 }
 
 /**
- * Get the install command for a given package manager and list of packages.
- */
-export function getInstallCommand(
-  pm: PackageManager,
-  packages: string[],
-): string {
-  const pkgs = packages.join(" ");
-  switch (pm) {
-    case "bun":
-      return `bun add ${pkgs}`;
-    case "pnpm":
-      return `pnpm add ${pkgs}`;
-    case "yarn":
-      return `yarn add ${pkgs}`;
-    case "npm":
-      return `npm install ${pkgs}`;
-    case "pip":
-      return `pip install ${pkgs}`;
-    case "poetry":
-      return `poetry add ${pkgs}`;
-    case "uv":
-      return `uv add ${pkgs}`;
-  }
-}
-
-/**
- * Check if a package is already installed in the project's node_modules.
- */
-export function isPackageInstalled(
-  installDir: string,
-  packageName: string,
-): boolean {
-  try {
-    const pkgPath = path.join(installDir, "package.json");
-    if (!fs.existsSync(pkgPath)) return false;
-    const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as {
-      dependencies?: Record<string, string>;
-      devDependencies?: Record<string, string>;
-    };
-    return !!(
-      pkg.dependencies?.[packageName] ||
-      pkg.devDependencies?.[packageName]
-    );
-  } catch {
-    return false;
-  }
-}
-
-/**
  * Get the dev run command for a given package manager.
  */
 export function getRunDevCommand(pm: PackageManager): string {

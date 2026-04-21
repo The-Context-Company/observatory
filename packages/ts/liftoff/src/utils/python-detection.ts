@@ -41,18 +41,27 @@ export function parsePyprojectDeps(installDir: string): string[] {
 
   const deps: string[] = [];
 
-  // Match dependencies array in [project] section
-  const projMatch = content.match(
-    /\[project\][\s\S]*?dependencies\s*=\s*\[([\s\S]*?)\]/,
+  // Match the [project] section body only (stop at next [section]),
+  // then find `dependencies = [...]` strictly inside it. Without the
+  // section-body isolation, a [project] without dependencies followed
+  // by e.g. [tool.poetry.dev-dependencies] would match the latter's
+  // dependencies by mistake.
+  const projSection = content.match(
+    /\[project\]\s*\n([\s\S]*?)(?=\n\[|$)/,
   );
-  if (projMatch) {
-    const items = projMatch[1].match(/"([^"]+)"|'([^']+)'/g);
-    if (items) {
-      for (const item of items) {
-        const cleaned = item.replace(/["']/g, "");
-        const name = normalizePyPkg(cleaned);
-        if (name) {
-          deps.push(name);
+  if (projSection) {
+    const projMatch = projSection[1].match(
+      /(?:^|\n)dependencies\s*=\s*\[([\s\S]*?)\]/,
+    );
+    if (projMatch) {
+      const items = projMatch[1].match(/"([^"]+)"|'([^']+)'/g);
+      if (items) {
+        for (const item of items) {
+          const cleaned = item.replace(/["']/g, "");
+          const name = normalizePyPkg(cleaned);
+          if (name) {
+            deps.push(name);
+          }
         }
       }
     }
