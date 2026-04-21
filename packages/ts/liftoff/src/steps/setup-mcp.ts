@@ -1,6 +1,7 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
+import { getApiBase } from "../utils/config.js";
 import {
   type EditorId,
   EDITOR_CONFIGS,
@@ -8,8 +9,6 @@ import {
   runClaudeMcpAdd,
   writeMcpConfig,
 } from "../utils/mcp-config.js";
-
-const API_BASE = "https://api.thecontext.company";
 
 /**
  * Provision a readonly MCP key on demand. Called only after the user
@@ -20,7 +19,7 @@ async function provisionReadonlyKey(
   ctx: WizardContext,
 ): Promise<string | null> {
   try {
-    const response = await fetch(`${API_BASE}/cli/keys`, {
+    const response = await fetch(`${getApiBase()}/cli/keys`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -10,6 +10,7 @@ import { setupMcpStep } from "./steps/setup-mcp.js";
 import { setupSlackStep } from "./steps/setup-slack.js";
 import { successSummaryStep } from "./steps/success-summary.js";
 import type { Step, WizardContext } from "./types.js";
+import { setApiBase } from "./utils/config.js";
 
 const require = createRequire(import.meta.url);
 const pkg = require("../package.json") as { version: string };
@@ -54,11 +55,12 @@ async function main(): Promise<void> {
 ${pc.bold("@contextcompany/liftoff")} — Monitoring for AI Agents
 
 ${pc.dim("Usage:")}
-  npx @contextcompany/liftoff
+  npx @contextcompany/liftoff [options]
 
 ${pc.dim("Options:")}
-  --help, -h    Show this help message
-  --version     Show version number
+  --api-base <url>  TCC API base URL (default: https://api.thecontext.company)
+  --help, -h        Show this help message
+  --version         Show version number
 `);
     process.exit(0);
   }
@@ -68,11 +70,21 @@ ${pc.dim("Options:")}
     process.exit(0);
   }
 
+  // Parse --api-base (both `--api-base <url>` and `--api-base=<url>` forms).
+  // One flag drives every TCC endpoint the wizard touches, plus the MCP URL
+  // baked into editor configs. See src/utils/config.ts for the resolver.
+  const apiBaseIdx = args.indexOf("--api-base");
+  const apiBaseFromEqual = args
+    .find((a) => a.startsWith("--api-base="))
+    ?.slice("--api-base=".length);
+  const apiBaseArg =
+    apiBaseFromEqual ?? (apiBaseIdx !== -1 ? args[apiBaseIdx + 1] : undefined);
+  setApiBase(apiBaseArg);
+
   printBanner();
 
   const ctx: WizardContext = {
     installDir: process.cwd(),
-    mode: "cloud",
     completedSteps: [],
   };
 

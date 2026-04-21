@@ -1,9 +1,8 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import { FRAMEWORKS, type Step, type StepResult, type WizardContext } from "../types.js";
+import { getDashboardUrl } from "../utils/config.js";
 import { getRunDevCommand } from "../utils/package-manager.js";
-
-const DASHBOARD_URL = "https://www.thecontext.company/prod/runs";
 
 /**
  * Pipeline step: display a success summary and next steps.
@@ -80,7 +79,7 @@ export const successSummaryStep: Step = {
         `When it finishes, run your app:\n\n` +
         `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
         `${pc.dim("Traces will start flowing to the dashboard:")}\n` +
-        `  ${pc.underline(DASHBOARD_URL)}`,
+        `  ${pc.underline(`${getDashboardUrl()}/prod/runs`)}`,
     );
 
     ctx.completedSteps.push("success-summary");

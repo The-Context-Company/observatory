@@ -3,10 +3,9 @@ import open from "open";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
+import { getApiBase } from "../utils/config.js";
 import { startCallbackServer } from "../utils/localhost-server.js";
 
-/** Public API base URL (hosts /cli/* routes) */
-const API_BASE = "https://api.thecontext.company";
 const AUTH_TIMEOUT_MS = 30_000;
 
 /** Active server reference for cleanup on Ctrl+C */
@@ -30,7 +29,7 @@ export const authStep: Step = {
       const server = await startCallbackServer(state, AUTH_TIMEOUT_MS);
       activeServer = server;
 
-      const url = `${API_BASE}/cli/auth/start?port=${server.port}&state=${state}`;
+      const url = `${getApiBase()}/cli/auth/start?port=${server.port}&state=${state}`;
 
       // 3. Tell the user what's about to happen, then wait for acknowledgement
       //    so they don't get surprised by a browser window appearing.
@@ -69,7 +68,7 @@ export const authStep: Step = {
       }
 
       // 6. Exchange code for tokens
-      const response = await fetch(`${API_BASE}/cli/auth`, {
+      const response = await fetch(`${getApiBase()}/cli/auth`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ code: result.code }),

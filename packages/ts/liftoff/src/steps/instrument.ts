@@ -7,11 +7,8 @@ import {
   type StepResult,
   type WizardContext,
 } from "../types.js";
+import { getApiBase } from "../utils/config.js";
 
-/** Public API base URL (hosts /cli/* routes, including /cli/prompts). */
-const API_BASE = "https://api.thecontext.company";
-/** Dev API base URL — used when the active API key has a dev_ prefix. */
-const DEV_API_BASE = "https://dev-api.thecontext.company";
 /** Timeout for the prompt fetch (ms). */
 const FETCH_TIMEOUT_MS = 10_000;
 
@@ -138,15 +135,11 @@ export const instrumentStep: Step = {
 async function fetchPrompt(
   ctx: WizardContext,
 ): Promise<PromptResponse | null> {
-  const baseUrl = ctx.apiKey?.startsWith("dev_")
-    ? DEV_API_BASE
-    : API_BASE;
-
   const params = new URLSearchParams({ framework: ctx.framework! });
   if (ctx.language === "python" || ctx.language === "typescript") {
     params.set("lang", ctx.language);
   }
-  const url = `${baseUrl}/cli/prompts?${params.toString()}`;
+  const url = `${getApiBase()}/cli/prompts?${params.toString()}`;
 
   const controller = new AbortController();
   const timeout = setTimeout(

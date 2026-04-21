@@ -2,6 +2,7 @@ import fs from "node:fs";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
+import { getApiBase } from "../utils/config.js";
 import {
   ensureEnvFile,
   ensureGitignore,
@@ -10,9 +11,6 @@ import {
   setEnvVariable,
 } from "../utils/env.js";
 import { readPackageJson } from "../utils/file-utils.js";
-
-/** Public API base URL (hosts /cli/* routes) */
-const API_BASE = "https://api.thecontext.company";
 
 /**
  * Lightweight Next.js detection via package.json dependencies.
@@ -44,7 +42,7 @@ export const provisionKeysStep: Step = {
 
       // Ask for a prod key only. The readonly key is provisioned
       // lazily inside setup-mcp, and only if the user opts into MCP.
-      const response = await fetch(`${API_BASE}/cli/keys`, {
+      const response = await fetch(`${getApiBase()}/cli/keys`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

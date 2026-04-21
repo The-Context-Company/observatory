@@ -2,10 +2,8 @@ import crypto from "node:crypto";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
+import { getApiBase } from "../utils/config.js";
 import { startCallbackServer } from "../utils/localhost-server.js";
-
-/** Public API base URL (hosts /cli/* routes) */
-const API_BASE = "https://api.thecontext.company";
 
 const SLACK_SCOPES = [
   "channels:history",
@@ -30,7 +28,7 @@ async function fetchSlackClientId(
   accessToken: string,
 ): Promise<string | null> {
   try {
-    const res = await fetch(`${API_BASE}/cli/slack-client-id`, {
+    const res = await fetch(`${getApiBase()}/cli/slack-client-id`, {
       headers: { Authorization: `Bearer ${accessToken}` },
     });
     if (!res.ok) return null;
@@ -50,7 +48,7 @@ async function exchangeSlackCode(
   redirectUri: string,
 ): Promise<{ ok: true; teamName: string } | { ok: false; error: string }> {
   try {
-    const res = await fetch(`${API_BASE}/cli/slack-callback`, {
+    const res = await fetch(`${getApiBase()}/cli/slack-callback`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,

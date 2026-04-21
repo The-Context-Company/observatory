@@ -2,6 +2,7 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
+import { getMcpServerUrl } from "./config.js";
 
 /**
  * Supported MCP-capable editor identifiers.
@@ -129,7 +130,7 @@ export function buildMcpServerEntry(readonlyKey: string): {
 } {
   return {
     type: "http",
-    url: "https://api.thecontext.company/mcp",
+    url: getMcpServerUrl(),
     headers: {
       Authorization: `Bearer ${readonlyKey}`,
     },
@@ -213,7 +214,7 @@ export function runClaudeMcpAdd(readonlyKey: string): {
 } {
   try {
     execSync(
-      `claude mcp add --transport http context-company https://api.thecontext.company/mcp --header "Authorization: Bearer ${readonlyKey}"`,
+      `claude mcp add --transport http context-company ${getMcpServerUrl()} --header "Authorization: Bearer ${readonlyKey}"`,
       {
         stdio: ["pipe", "pipe", "pipe"],
         timeout: 10_000,
