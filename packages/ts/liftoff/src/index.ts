@@ -76,16 +76,15 @@ ${pc.dim("Options:")}
     completedSteps: [],
   };
 
-  // Pipeline: sign in → provision keys → pick framework → wire editor →
-  // hand agent prompt → Slack → summary. MCP comes before instrument so
-  // the user's coding agent already has TCC MCP tools available when it
-  // starts working from the pasted prompt.
+  // Pipeline: sign in → provision prod key → pick framework → hand off
+  // the agent prompt → optionally wire MCP (mints readonly key only if
+  // the user opts in) → optionally wire Slack → summary.
   const steps: Step[] = [
     authStep,
     provisionKeysStep,
     detectFrameworkStep,
-    setupMcpStep,
     instrumentStep,
+    setupMcpStep,
     setupSlackStep,
     successSummaryStep,
   ];

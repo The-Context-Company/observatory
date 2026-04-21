@@ -76,31 +76,50 @@ export const instrumentStep: Step = {
       };
     }
 
-    // Show the full prompt in a bordered note so it's visually
-    // distinct from the rest of the wizard output.
-    p.note(
-      response.prompt,
-      `${pc.bold("Agent prompt")} ${pc.dim(`· ${response.frameworkName ?? fwDisplayName}`)}`,
+    // The prompt is long (~100 lines). Don't dump it into the
+    // terminal — just offer to copy it. The user pastes it into
+    // their coding agent and reads it there.
+    p.log.info(
+      `We've got a tailored instrumentation prompt for ${pc.bold(response.frameworkName ?? fwDisplayName)}.\n` +
+        pc.dim(
+          "It tells your coding agent how to install the SDK, wire\n" +
+            "instrumentation, and attach metadata against this codebase.",
+        ),
     );
 
-    const copied = copyToClipboard(response.prompt);
-    const agents = detectInstalledAgents();
-    const agentHint =
-      agents.length > 0
-        ? `Detected: ${agents.map((a) => pc.bold(a)).join(", ")}`
-        : "Open your AI coding agent (Claude Code, Cursor, Windsurf, …)";
+    const wantCopy = await p.confirm({
+      message: "Copy the prompt to your clipboard?",
+      initialValue: true,
+    });
 
-    p.log.step(
-      (copied
-        ? pc.green("✓ Prompt copied to clipboard.")
-        : pc.yellow("Prompt ready (clipboard copy failed — scroll up to select it).")) +
-        "\n" +
+    if (p.isCancel(wantCopy) || !wantCopy) {
+      p.log.info(
         pc.dim(
-          `Paste it into your AI coding agent to complete instrumentation.\n${agentHint}`,
-        ) +
-        (response.docsUrl
-          ? `\n${pc.dim("Docs: " + pc.underline(response.docsUrl))}`
-          : ""),
+          `Skipped. You can grab the prompt later from the docs: ${response.docsUrl ?? fw?.docsUrl ?? "https://docs.thecontext.company"}`,
+        ),
+      );
+      ctx.completedSteps.push("instrument");
+      return { status: "skipped", message: "User declined prompt copy" };
+    }
+
+    const copied = copyToClipboard(response.prompt);
+    if (!copied) {
+      p.log.warn(
+        "Clipboard copy failed. Grab the prompt from the docs instead:\n" +
+          pc.underline(
+            response.docsUrl ??
+              fw?.docsUrl ??
+              "https://docs.thecontext.company",
+          ),
+      );
+      ctx.completedSteps.push("instrument");
+      return { status: "skipped", message: "Clipboard unavailable" };
+    }
+
+    p.log.success("Prompt copied to your clipboard.");
+    p.log.step(
+      "Open a new tab in your AI coding agent (Claude Code, Cursor, Windsurf, …)\n" +
+        "and paste it. The agent will install the SDK and wire up instrumentation.",
     );
 
     ctx.completedSteps.push("instrument");
@@ -195,22 +214,3 @@ function copyToClipboard(text: string): boolean {
   }
 }
 
-/**
- * Probe the user's PATH for common AI coding agent CLIs so we can
- * surface them in the handoff message. Returns an empty array if
- * none are found.
- */
-function detectInstalledAgents(): string[] {
-  const candidates = ["claude", "cursor", "windsurf", "aider"];
-  const which = process.platform === "win32" ? "where" : "command -v";
-  const found: string[] = [];
-  for (const bin of candidates) {
-    try {
-      execSync(`${which} ${bin}`, { stdio: "ignore" });
-      found.push(bin);
-    } catch {
-      // Not installed — skip.
-    }
-  }
-  return found;
-}
