@@ -92,8 +92,9 @@ export const setupSlackStep: Step = {
 
   async run(ctx: WizardContext): Promise<StepResult> {
     p.log.info(
-      "You'll get configurable Slack reports and alerts — notified about\n" +
-        "regressions and patterns you'd miss otherwise.",
+      "The TCC Slack bot delivers configurable reports and alerts to your\n" +
+        "workspace — notifying you about regressions and patterns you'd miss\n" +
+        "otherwise.",
     );
 
     const wantsSlack = await p.confirm({
