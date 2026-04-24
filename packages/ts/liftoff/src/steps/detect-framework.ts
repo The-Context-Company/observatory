@@ -33,7 +33,6 @@ const DISPLAY_ENTRIES: DisplayEntry[] = [
   { value: "__custom__", name: "Custom", lang: "both" },
   { value: "crewai", name: "CrewAI", lang: "python" },
   { value: "agno", name: "Agno", lang: "python" },
-  { value: "litellm", name: "LiteLLM", lang: "python" },
 ];
 
 /**
