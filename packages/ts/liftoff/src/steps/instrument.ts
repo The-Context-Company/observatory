@@ -113,7 +113,7 @@ export const instrumentStep: Step = {
 
     p.log.success("Prompt copied to your clipboard.");
     p.log.info(
-      "Paste it into your AI coding agent (Claude Code, Cursor, Windsurf, …).",
+      "Paste it into your AI coding agent (Claude Code, Cursor, Windsurf, …) and come back here.",
     );
 
     // Gate on explicit acknowledgement before moving to MCP setup —
