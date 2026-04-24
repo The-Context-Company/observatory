@@ -176,7 +176,9 @@ function registerHooks(
         });
 
         activeSessions.delete(key);
-        releaseTurnRunId(key, session.runId);
+        if (session.turnCacheRunId) {
+          releaseTurnRunId(key, session.turnCacheRunId);
+        }
       }
     }
   }, 5 * 60 * 1000);
@@ -217,11 +219,13 @@ function registerHooks(
 
     // Legacy top-level runId wins once; otherwise share via turnRunIdCache.
     let runId: string;
+    let turnCacheRunId: string | undefined;
     if (legacyNextRunId) {
       runId = legacyNextRunId;
       legacyNextRunId = null;
     } else {
       runId = acquireTurnRunId(sessionKey);
+      turnCacheRunId = runId;
     }
 
     // sessionId resolution order:
@@ -239,6 +243,7 @@ function registerHooks(
       runId,
       sessionId: defaultSessionId ?? ctx.sessionKey,
       metadata: defaultMetadata,
+      turnCacheRunId,
     };
     activeSessions.set(sessionKey, session);
 
@@ -357,7 +362,9 @@ function registerHooks(
       // awaiting onRunEnd, ensureSession must create a fresh session
       // rather than appending to this already-flushed one.
       activeSessions.delete(sessionKey);
-      releaseTurnRunId(sessionKey, session.runId);
+      if (session.turnCacheRunId) {
+        releaseTurnRunId(sessionKey, session.turnCacheRunId);
+      }
 
       if (debug)
         log.info(
