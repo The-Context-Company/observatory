@@ -75,25 +75,210 @@ class TCCConfig:
 # ---------------------------------------------------------------------------
 
 
-def _message_to_dict(message: Any) -> Dict[str, Any]:
-    """Convert a Claude SDK message to a JSON-serialisable dict.
+def _normalize_content_block(block: Any) -> Any:
+    """Convert an SDK ContentBlock dataclass back to the CLI wire shape.
 
-    The SDK message types are dataclasses, so ``dataclasses.asdict()`` is the
-    primary strategy.  Falls back to ``__dict__`` scraping and finally
-    ``str()`` for totally opaque objects.
+    The Python SDK's ``message_parser`` maps CLI JSON into typed dataclasses
+    that drop the ``type`` discriminator.  This inverts that mapping so the
+    telemetry payload matches what the TS wrapper (and the ``/v1/claude``
+    ingest parser) expect.  Type strings mirror
+    ``claude_agent_sdk/_internal/message_parser.py``.
     """
+    from claude_agent_sdk import (
+        TextBlock,
+        ThinkingBlock,
+        ToolUseBlock,
+        ToolResultBlock,
+        ServerToolUseBlock,
+        ServerToolResultBlock,
+    )
+
+    if isinstance(block, TextBlock):
+        return {"type": "text", "text": block.text}
+    if isinstance(block, ThinkingBlock):
+        return {
+            "type": "thinking",
+            "thinking": block.thinking,
+            "signature": block.signature,
+        }
+    if isinstance(block, ToolUseBlock):
+        return {
+            "type": "tool_use",
+            "id": block.id,
+            "name": block.name,
+            "input": block.input,
+        }
+    if isinstance(block, ToolResultBlock):
+        out: Dict[str, Any] = {
+            "type": "tool_result",
+            "tool_use_id": block.tool_use_id,
+        }
+        if block.content is not None:
+            out["content"] = block.content
+        if block.is_error is not None:
+            out["is_error"] = block.is_error
+        return out
+    if isinstance(block, ServerToolUseBlock):
+        return {
+            "type": "server_tool_use",
+            "id": block.id,
+            "name": block.name,
+            "input": block.input,
+        }
+    if isinstance(block, ServerToolResultBlock):
+        # Parser discriminator for this class is "advisor_tool_result"
+        return {
+            "type": "advisor_tool_result",
+            "tool_use_id": block.tool_use_id,
+            "content": block.content,
+        }
+
+    # Unknown block shape — best effort so telemetry stays useful
+    if dataclasses.is_dataclass(block) and not isinstance(block, type):
+        try:
+            return dataclasses.asdict(block)
+        except (TypeError, ValueError):
+            pass
+    return {"raw": str(block)}
+
+
+def _message_to_dict(message: Any) -> Dict[str, Any]:
+    """Convert an SDK message dataclass to the CLI wire-format dict expected
+    by the TCC ``/v1/claude`` ingest parser.
+
+    The Python SDK parses CLI JSON into typed dataclasses that drop both the
+    top-level ``type`` discriminator and (for assistant/user) the ``message``
+    wrapper.  The TS SDK passes the CLI JSON through unchanged, which is why
+    the TS wire format is the canonical ingest shape.  This function inverts
+    the Python parser so both languages produce identical payloads.
+    """
+    from claude_agent_sdk import (
+        AssistantMessage,
+        RateLimitEvent,
+        ResultMessage,
+        StreamEvent,
+        SystemMessage,
+        UserMessage,
+    )
+
+    if isinstance(message, AssistantMessage):
+        inner: Dict[str, Any] = {
+            "content": [_normalize_content_block(b) for b in message.content],
+            "model": message.model,
+        }
+        if message.message_id is not None:
+            inner["id"] = message.message_id
+        if message.usage is not None:
+            inner["usage"] = message.usage
+        if message.stop_reason is not None:
+            inner["stop_reason"] = message.stop_reason
+
+        out: Dict[str, Any] = {"type": "assistant", "message": inner}
+        if message.parent_tool_use_id is not None:
+            out["parent_tool_use_id"] = message.parent_tool_use_id
+        if message.error is not None:
+            out["error"] = message.error
+        if message.session_id is not None:
+            out["session_id"] = message.session_id
+        if message.uuid is not None:
+            out["uuid"] = message.uuid
+        return out
+
+    if isinstance(message, UserMessage):
+        if isinstance(message.content, list):
+            content: Any = [_normalize_content_block(b) for b in message.content]
+        else:
+            content = message.content
+        out = {"type": "user", "message": {"content": content}}
+        if message.parent_tool_use_id is not None:
+            out["parent_tool_use_id"] = message.parent_tool_use_id
+        if message.tool_use_result is not None:
+            out["tool_use_result"] = message.tool_use_result
+        if message.uuid is not None:
+            out["uuid"] = message.uuid
+        return out
+
+    if isinstance(message, SystemMessage):
+        # SystemMessage.data is the full CLI dict — already contains
+        # ``type: "system"`` and ``subtype`` at top level plus every
+        # payload field (model, cwd, session_id, tools, ...).
+        # Shallow copy so downstream callers can mutate freely.
+        return dict(message.data)
+
+    if isinstance(message, ResultMessage):
+        out = {
+            "type": "result",
+            "subtype": message.subtype,
+            "duration_ms": message.duration_ms,
+            "duration_api_ms": message.duration_api_ms,
+            "is_error": message.is_error,
+            "num_turns": message.num_turns,
+            "session_id": message.session_id,
+        }
+        if message.stop_reason is not None:
+            out["stop_reason"] = message.stop_reason
+        if message.total_cost_usd is not None:
+            out["total_cost_usd"] = message.total_cost_usd
+        if message.usage is not None:
+            out["usage"] = message.usage
+        if message.result is not None:
+            out["result"] = message.result
+        if message.structured_output is not None:
+            out["structured_output"] = message.structured_output
+        # Wire key is camelCase "modelUsage"; Python renames to snake on parse.
+        if message.model_usage is not None:
+            out["modelUsage"] = message.model_usage
+        if message.permission_denials is not None:
+            out["permission_denials"] = message.permission_denials
+        if message.errors is not None:
+            out["errors"] = message.errors
+        if message.uuid is not None:
+            out["uuid"] = message.uuid
+        return out
+
+    if isinstance(message, StreamEvent):
+        out = {
+            "type": "stream_event",
+            "uuid": message.uuid,
+            "session_id": message.session_id,
+            "event": message.event,
+        }
+        if message.parent_tool_use_id is not None:
+            out["parent_tool_use_id"] = message.parent_tool_use_id
+        return out
+
+    if isinstance(message, RateLimitEvent):
+        info = message.rate_limit_info
+        info_dict: Dict[str, Any] = {"status": info.status}
+        if info.resets_at is not None:
+            info_dict["resetsAt"] = info.resets_at
+        if info.rate_limit_type is not None:
+            info_dict["rateLimitType"] = info.rate_limit_type
+        if info.utilization is not None:
+            info_dict["utilization"] = info.utilization
+        if info.overage_status is not None:
+            info_dict["overageStatus"] = info.overage_status
+        if info.overage_resets_at is not None:
+            info_dict["overageResetsAt"] = info.overage_resets_at
+        if info.overage_disabled_reason is not None:
+            info_dict["overageDisabledReason"] = info.overage_disabled_reason
+        return {
+            "type": "rate_limit_event",
+            "rate_limit_info": info_dict,
+            "uuid": message.uuid,
+            "session_id": message.session_id,
+        }
+
+    # Unknown message type — fall back generically so telemetry keeps flowing
     if dataclasses.is_dataclass(message) and not isinstance(message, type):
         try:
             return dataclasses.asdict(message)
         except (TypeError, ValueError):
-            # Some nested objects may not be serialisable via asdict
             pass
-
     if hasattr(message, "__dict__"):
         return {
             k: v for k, v in message.__dict__.items() if not k.startswith("_")
         }
-
     return {"raw": str(message)}
 
 
