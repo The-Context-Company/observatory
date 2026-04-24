@@ -34,7 +34,9 @@ Usage::
 """
 
 import asyncio
+import contextvars
 import dataclasses
+import json
 import os
 import time
 import uuid
@@ -43,8 +45,32 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 
 import requests
 
-from .._utils import _debug
 from ..config import get_api_key, get_url
+
+
+# Per-call debug scope.  Using a ContextVar (not ``os.environ``) so concurrent
+# ``query()`` calls can't corrupt each other's debug state — ContextVars are
+# copy-on-write per asyncio Task, and ``asyncio.to_thread`` propagates them
+# into the worker thread, so ``_debug`` calls from ``_send_to_tcc`` also see
+# the caller's value.
+_claude_debug: contextvars.ContextVar[bool] = contextvars.ContextVar(
+    "tcc_claude_debug", default=False
+)
+
+
+def _debug(*args: Any) -> None:
+    if not _claude_debug.get() and os.getenv("TCC_DEBUG", "").lower() not in (
+        "true",
+        "1",
+    ):
+        return
+    parts = []
+    for arg in args:
+        if isinstance(arg, dict):
+            parts.append(json.dumps(arg, indent=2))
+        else:
+            parts.append(str(arg))
+    print("[TCC Debug]", *parts)
 
 
 # ---------------------------------------------------------------------------
@@ -363,11 +389,7 @@ class InstrumentedClaudeAgent:
         session_id = config.session_id
         metadata = config.metadata or {}
 
-        # Scope debug to this call so the flag doesn't leak into other
-        # concurrent or later queries (nor inherited child processes).
-        prev_debug = os.environ.get("TCC_DEBUG")
-        if config.debug:
-            os.environ["TCC_DEBUG"] = "true"
+        debug_token = _claude_debug.set(config.debug)
 
         try:
             _debug("Claude query wrapper called")
@@ -436,11 +458,7 @@ class InstrumentedClaudeAgent:
                         pass
                 raise
         finally:
-            if config.debug:
-                if prev_debug is None:
-                    os.environ.pop("TCC_DEBUG", None)
-                else:
-                    os.environ["TCC_DEBUG"] = prev_debug
+            _claude_debug.reset(debug_token)
 
 
 # ---------------------------------------------------------------------------
