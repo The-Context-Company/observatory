@@ -73,19 +73,13 @@ export const instrumentStep: Step = {
       };
     }
 
-    // The prompt is long (~100 lines). Don't dump it into the
-    // terminal — just offer to copy it. The user pastes it into
-    // their coding agent and reads it there.
-    //
-    // Bold step-line heading acts as a chapter break, then info body
-    // renders at full brightness. p.note was the wrong tool here — it
-    // dims its body by design (suited to URLs/keys), so narrative copy
-    // inside a note becomes visual static people skip.
+    // Extra gap above each section heading creates breathing room and
+    // signals "new chapter". Inside the section we rely on clack's
+    // default spacing between log calls and confirms.
+    p.log.message("");
     p.log.step(pc.bold("Instrumentation"));
     p.log.info(
-      `Tailored instrumentation prompt for ${pc.bold(response.frameworkName ?? fwDisplayName)}.\n` +
-        "It tells your coding agent how to install the SDK, wire\n" +
-        "instrumentation, and attach metadata against this codebase.",
+      `Tailored prompt for ${pc.bold(response.frameworkName ?? fwDisplayName)} that tells your coding agent how to install and wire the SDK against this codebase.`,
     );
 
     const wantCopy = await p.confirm({
@@ -118,18 +112,15 @@ export const instrumentStep: Step = {
     }
 
     p.log.success("Prompt copied to your clipboard.");
-    p.log.step(
-      "Open a new tab in your AI coding agent (Claude Code, Cursor, Windsurf, …)\n" +
-        "and paste it. The agent will install the SDK and wire up instrumentation.",
+    p.log.info(
+      "Paste it into your AI coding agent (Claude Code, Cursor, Windsurf, …).",
     );
 
-    // Gate on explicit acknowledgement before moving to MCP setup.
-    // Without this, the wizard blows past the clipboard step and the
-    // user misses the handoff. The phrasing makes it clear they can
-    // keep onboarding here while their coding agent works in parallel.
+    // Gate on explicit acknowledgement before moving to MCP setup —
+    // without this, the wizard blows past the paste step and the user
+    // misses the handoff.
     const ready = await p.confirm({
-      message:
-        "Ready to continue? You can finish onboarding here in parallel while your agent works.",
+      message: "Ready to continue here while your agent works?",
       initialValue: true,
     });
 

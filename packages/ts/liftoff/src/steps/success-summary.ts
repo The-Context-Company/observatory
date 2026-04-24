@@ -75,22 +75,34 @@ export const successSummaryStep: Step = {
     // Print the summary box
     p.note(lines.join("\n"), "Setup Complete");
 
-    // Next steps (WIN-01, WIN-03, SUM-06)
+    // Next steps. If the prompt was copied, the user has already
+    // pasted it (we gated on that in the instrument step) — so we
+    // don't re-tell them to paste. We just tell them what happens
+    // next: agent instruments, they run the app, check the dashboard,
+    // and fall back to the TCC_API_KEY hint if runs don't appear.
     const pm = ctx.packageManager ?? "npm";
     const runCmd = getRunDevCommand(pm);
+    const dashUrl = `${getDashboardUrl()}/prod/runs`;
 
-    const nextLine = ctx.promptCopied
-      ? `${pc.bold("Next:")} paste the prompt (already on your clipboard) into your AI coding agent.`
-      : `${pc.bold("Next:")} grab the instrumentation prompt from the docs and paste it into your AI coding agent.`;
-
-    p.log.step(
-      `${nextLine}\n` +
-        `${pc.dim("The agent installs the SDK, writes instrumentation, and wires metadata against your codebase.")}\n\n` +
-        `When it finishes, run your app:\n\n` +
-        `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
-        `${pc.dim("Traces will start flowing to the dashboard:")}\n` +
-        `  ${pc.underline(`${getDashboardUrl()}/prod/runs`)}`,
-    );
+    if (ctx.promptCopied) {
+      p.log.step(
+        `${pc.bold("Your coding agent will now instrument your codebase.")} It may ask you a few questions along the way — answer them so it can wire things up correctly.\n\n` +
+          `When it's done, run your app:\n\n` +
+          `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
+          `Then check the dashboard to see your runs flowing in:\n` +
+          `  ${pc.underline(dashUrl)}\n\n` +
+          `${pc.dim("If nothing shows up, make sure TCC_API_KEY is set in your environment variables.")}`,
+      );
+    } else {
+      p.log.step(
+        `${pc.bold("Next:")} grab the instrumentation prompt from the docs and paste it into your AI coding agent.\n` +
+          `${pc.dim("The agent installs the SDK, writes instrumentation, and wires metadata against your codebase.")}\n\n` +
+          `When it finishes, run your app:\n\n` +
+          `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
+          `${pc.dim("Runs will start flowing to the dashboard:")}\n` +
+          `  ${pc.underline(dashUrl)}`,
+      );
+    }
 
     // Pipeline pushes step.name on "completed" — don't push again.
     return { status: "completed" };

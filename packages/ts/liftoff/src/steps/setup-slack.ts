@@ -91,13 +91,13 @@ export const setupSlackStep: Step = {
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
-    // Bold step-line heading acts as a chapter break, then info body
-    // renders at full brightness. p.note dims its body by design, so
-    // narrative copy inside a note becomes visual static people skip.
+    // Extra gap above the section heading creates breathing room and
+    // signals "new chapter". Inside the section we rely on clack's
+    // default spacing between log calls and confirms.
+    p.log.message("");
     p.log.step(pc.bold("Slack bot"));
     p.log.info(
-      "Delivers reports and alerts to your workspace. Get notified about\n" +
-        "regressions and patterns you'd miss otherwise.",
+      "Delivers reports and alerts to your workspace about regressions and patterns you'd miss.",
     );
 
     const wantsSlack = await p.confirm({
