@@ -348,6 +348,12 @@ def _send_to_tcc(
 # ---------------------------------------------------------------------------
 
 
+# asyncio only holds weak references to Tasks — fire-and-forget telemetry
+# would be GC'd mid-flight without a strong ref.  Tasks add themselves here
+# and remove themselves via a done callback.
+_pending_telemetry_tasks: set = set()
+
+
 class InstrumentedClaudeAgent:
     """Wrapped Claude Agent SDK with TCC telemetry collection.
 
@@ -400,6 +406,23 @@ class InstrumentedClaudeAgent:
             messages: List[Dict[str, Any]] = []
             user_prompt = prompt if isinstance(prompt, str) else None
 
+            def _fire_telemetry() -> None:
+                """Schedule a fire-and-forget telemetry POST (mirrors TS)."""
+                task = asyncio.create_task(
+                    asyncio.to_thread(
+                        _send_to_tcc,
+                        messages=messages,
+                        custom_metadata=metadata if metadata else None,
+                        run_id=run_id,
+                        session_id=session_id,
+                        user_prompt=user_prompt,
+                        api_key=self._api_key,
+                        tcc_url=self._tcc_url,
+                    )
+                )
+                _pending_telemetry_tasks.add(task)
+                task.add_done_callback(_pending_telemetry_tasks.discard)
+
             try:
                 _debug("Starting to collect messages")
 
@@ -427,35 +450,11 @@ class InstrumentedClaudeAgent:
                 if messages:
                     _debug(f"Stream completed with {len(messages)} messages")
                     _debug("Sending telemetry data...")
-
-                    # Offload the blocking HTTP POST so it doesn't stall the
-                    # event loop (the caller is always an async coroutine).
-                    await asyncio.to_thread(
-                        _send_to_tcc,
-                        messages=messages,
-                        custom_metadata=metadata if metadata else None,
-                        run_id=run_id,
-                        session_id=session_id,
-                        user_prompt=user_prompt,
-                        api_key=self._api_key,
-                        tcc_url=self._tcc_url,
-                    )
+                    _fire_telemetry()
 
             except Exception:
                 if messages:
-                    try:
-                        await asyncio.to_thread(
-                            _send_to_tcc,
-                            messages=messages,
-                            custom_metadata=metadata if metadata else None,
-                            run_id=run_id,
-                            session_id=session_id,
-                            user_prompt=user_prompt,
-                            api_key=self._api_key,
-                            tcc_url=self._tcc_url,
-                        )
-                    except Exception:
-                        pass
+                    _fire_telemetry()
                 raise
         finally:
             _claude_debug.reset(debug_token)
