@@ -46,8 +46,11 @@ function acquireTurnRunId(sessionKey: string): string {
   return runId;
 }
 
-function releaseTurnRunId(sessionKey: string): void {
-  turnRunIdCache.delete(sessionKey);
+function releaseTurnRunId(sessionKey: string, runId: string): void {
+  const existing = turnRunIdCache.get(sessionKey);
+  if (existing && existing.runId === runId) {
+    turnRunIdCache.delete(sessionKey);
+  }
 }
 
 function resolveDefaultSessionId(
@@ -173,7 +176,7 @@ function registerHooks(
         });
 
         activeSessions.delete(key);
-        releaseTurnRunId(key);
+        releaseTurnRunId(key, session.runId);
       }
     }
   }, 5 * 60 * 1000);
@@ -354,7 +357,7 @@ function registerHooks(
       // awaiting onRunEnd, ensureSession must create a fresh session
       // rather than appending to this already-flushed one.
       activeSessions.delete(sessionKey);
-      releaseTurnRunId(sessionKey);
+      releaseTurnRunId(sessionKey, session.runId);
 
       if (debug)
         log.info(
