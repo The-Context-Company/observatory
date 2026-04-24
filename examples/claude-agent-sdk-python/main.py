@@ -7,6 +7,7 @@ example in ``examples/claude-agent-sdk/``.
 
 Features:
     - Interactive conversation with Claude via the Agent SDK
+    - Custom MCP tool (get_user_info) served in-process via create_sdk_mcp_server
     - TCC instrumentation for telemetry collection
     - Session tracking across multiple queries
     - Feedback submission (thumbs up / thumbs down)
@@ -16,6 +17,7 @@ import asyncio
 import os
 import sys
 import uuid
+from typing import Any
 
 from dotenv import load_dotenv
 
@@ -25,8 +27,83 @@ load_dotenv()
 from contextcompany.claude import instrument_claude_agent, TCCConfig
 from contextcompany import submit_feedback
 
+# Claude Agent SDK: tool + MCP server factory for custom tools
+from claude_agent_sdk import tool, create_sdk_mcp_server
+
 # Create the instrumented agent — call once at startup
 agent = instrument_claude_agent()
+
+
+# ============================================================================
+# Custom MCP Tool: get_user_info
+# ============================================================================
+
+# Mock user database — mirrors the TypeScript example
+USERS: dict[str, dict[str, str]] = {
+    "user-001": {"name": "Alice Johnson", "email": "alice@example.com", "plan": "pro"},
+    "user-002": {"name": "Bob Smith", "email": "bob@example.com", "plan": "free"},
+    "user-003": {"name": "Carol White", "email": "carol@example.com", "plan": "enterprise"},
+}
+
+
+@tool(
+    "get_user_info",
+    "Get user information by user ID",
+    {"user_id": str},
+)
+async def get_user_info(args: dict[str, Any]) -> dict[str, Any]:
+    """Return user record as an MCP tool result."""
+    user = USERS.get(args["user_id"])
+
+    if not user:
+        return {
+            "content": [
+                {"type": "text", "text": f"User {args['user_id']} not found"}
+            ]
+        }
+
+    return {
+        "content": [
+            {
+                "type": "text",
+                "text": (
+                    f"User: {user['name']}\n"
+                    f"Email: {user['email']}\n"
+                    f"Plan: {user['plan']}"
+                ),
+            }
+        ]
+    }
+
+
+# In-process MCP server exposing the custom tool
+user_mcp_server = create_sdk_mcp_server(
+    name="user-agent",
+    version="1.0.0",
+    tools=[get_user_info],
+)
+
+
+SYSTEM_PROMPT = (
+    "You are a helpful assistant. Use the get_user_info tool to answer "
+    "questions about users. Available users are user-001, user-002, user-003."
+)
+
+
+# ============================================================================
+# Message printing helpers
+# ============================================================================
+
+
+def _print_assistant_blocks(message: Any) -> None:
+    """Print text blocks and surface tool-use blocks from an AssistantMessage."""
+    from claude_agent_sdk import TextBlock, ToolUseBlock
+
+    for block in message.content:
+        if isinstance(block, TextBlock):
+            print(block.text)
+        elif isinstance(block, ToolUseBlock):
+            print(f"  🔧 Tool call: {block.name}({block.input})")
 
 
 # ============================================================================
@@ -40,7 +117,6 @@ async def run_single_query(query: str) -> None:
         AssistantMessage,
         ClaudeAgentOptions,
         ResultMessage,
-        TextBlock,
     )
 
     print(f"\nRunning query: {query}\n")
@@ -49,11 +125,10 @@ async def run_single_query(query: str) -> None:
     print(f"[Run ID: {run_id}]")
 
     options = ClaudeAgentOptions(
-        system_prompt=(
-            "You are a helpful assistant. Answer the user's questions "
-            "clearly and concisely."
-        ),
-        max_turns=3,
+        system_prompt=SYSTEM_PROMPT,
+        mcp_servers={"users": user_mcp_server},
+        permission_mode="bypassPermissions",
+        max_turns=5,
     )
 
     try:
@@ -66,9 +141,7 @@ async def run_single_query(query: str) -> None:
             ),
         ):
             if isinstance(message, AssistantMessage):
-                for block in message.content:
-                    if isinstance(block, TextBlock):
-                        print(f"Claude: {block.text}")
+                _print_assistant_blocks(message)
             elif isinstance(message, ResultMessage):
                 if hasattr(message, "total_cost_usd") and message.total_cost_usd:
                     print(f"\n[Cost: ${message.total_cost_usd:.4f}]")
@@ -83,13 +156,12 @@ async def run_interactive() -> None:
         AssistantMessage,
         ClaudeAgentOptions,
         ResultMessage,
-        TextBlock,
     )
 
     print("\n" + "=" * 60)
     print("Claude Agent SDK Example with TCC Instrumentation")
     print("=" * 60)
-    print("\nAsk Claude anything!")
+    print("\nAsk Claude about users (user-001, user-002, user-003) or anything else.")
     print("\nCommands:")
     print("  Type your question naturally")
     print("  Type 'up' to give thumbs up feedback on the last response")
@@ -111,7 +183,7 @@ async def run_interactive() -> None:
                 continue
 
             if user_input.lower() in ("exit", "quit", "q"):
-                print("\n👋 Goodbye!\n")
+                print("\n Goodbye!\n")
                 break
 
             # Handle feedback commands
@@ -140,10 +212,9 @@ async def run_interactive() -> None:
             print("\nAssistant:")
 
             options = ClaudeAgentOptions(
-                system_prompt=(
-                    "You are a helpful assistant. Answer the user's "
-                    "questions clearly and concisely."
-                ),
+                system_prompt=SYSTEM_PROMPT,
+                mcp_servers={"users": user_mcp_server},
+                permission_mode="bypassPermissions",
                 max_turns=5,
             )
 
@@ -160,9 +231,7 @@ async def run_interactive() -> None:
                 ),
             ):
                 if isinstance(message, AssistantMessage):
-                    for block in message.content:
-                        if isinstance(block, TextBlock):
-                            print(block.text)
+                    _print_assistant_blocks(message)
                 elif isinstance(message, ResultMessage):
                     if (
                         hasattr(message, "total_cost_usd")
@@ -174,7 +243,7 @@ async def run_interactive() -> None:
             print()
 
         except KeyboardInterrupt:
-            print("\n\n👋 Goodbye!\n")
+            print("\n\n Goodbye!\n")
             break
         except Exception as e:
             print(f"\nError: {e}\n")

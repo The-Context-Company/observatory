@@ -5,6 +5,7 @@ A simple example demonstrating the Claude Agent SDK for Python with The Context 
 ## Features
 
 - **TCC instrumentation** for automatic telemetry collection
+- **Custom MCP tool** (`get_user_info`) served in-process via `create_sdk_mcp_server`
 - **Interactive conversation** with session tracking
 - **Feedback submission** with thumbs up/down
 - **Single query mode** for scripting
@@ -40,14 +41,18 @@ A simple example demonstrating the Claude Agent SDK for Python with The Context 
 
 ## Usage
 
-Ask questions naturally:
-- "What is the capital of France?"
-- "Explain quantum computing in simple terms"
-- "Write a haiku about programming"
+The example exposes a custom `get_user_info` tool over an in-process MCP server. Claude can call it to answer questions about the mock users (`user-001`, `user-002`, `user-003`).
+
+Try prompts like:
+- "Tell me about user-001"
+- "What plan is Bob on?"
+- "Compare user-002 and user-003"
+
+You can also ask plain questions. Claude will skip the tool when it isn't relevant.
 
 Give feedback on responses:
-- Type `up` for thumbs up 👍
-- Type `down` for thumbs down 👎
+- Type `up` for thumbs up
+- Type `down` for thumbs down
 - Type `exit` to quit
 
 ## TCC Instrumentation
