@@ -3,11 +3,11 @@ import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
 import { getApiBase } from "../utils/config.js";
 import {
-  type EditorId,
-  EDITOR_CONFIGS,
   detectEditors,
+  EDITOR_CONFIGS,
   runClaudeMcpAdd,
   writeMcpConfig,
+  type EditorId,
 } from "../utils/mcp-config.js";
 
 /**
@@ -16,7 +16,7 @@ import {
  * asked for.
  */
 async function provisionReadonlyKey(
-  ctx: WizardContext,
+  ctx: WizardContext
 ): Promise<string | null> {
   try {
     const response = await fetch(`${getApiBase()}/cli/keys`, {
@@ -63,7 +63,7 @@ export const setupMcpStep: Step = {
     p.log.message("");
     p.log.step(pc.bold("MCP server"));
     p.log.info(
-      "Gives your coding agents live dev/prod context so they can find and fix issues from the editor.",
+      "Gives your coding agents live dev/prod context so they can find and fix issues from the editor."
     );
 
     const wantsMcp = await p.confirm({
@@ -121,9 +121,7 @@ export const setupMcpStep: Step = {
         if (config.configType === "cli") {
           const result = runClaudeMcpAdd(readonlyKey);
           if (!result.success) {
-            p.log.warn(
-              `Could not configure ${config.name}: ${result.error}`,
-            );
+            p.log.warn(`Could not configure ${config.name}: ${result.error}`);
             continue;
           }
         } else {
@@ -133,12 +131,20 @@ export const setupMcpStep: Step = {
         configuredEditors.push(config.name);
       } catch (err) {
         p.log.warn(
-          `Could not configure ${config.name}: ${err instanceof Error ? err.message : String(err)}`,
+          `Could not configure ${config.name}: ${err instanceof Error ? err.message : String(err)}`
         );
       }
     }
 
     ctx.editorsConfigured = configuredEditors;
+
+    if (configuredEditors.length === 0) {
+      return {
+        status: "failed",
+        message: "All editor configurations failed",
+      };
+    }
+
     // Pipeline pushes step.name on "completed" — don't push again.
     return { status: "completed" };
   },

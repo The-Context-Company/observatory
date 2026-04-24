@@ -1,6 +1,6 @@
 import { randomBytes } from "node:crypto";
-import open from "open";
 import * as p from "@clack/prompts";
+import open from "open";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
 import { getApiBase } from "../utils/config.js";
@@ -35,7 +35,7 @@ export const authStep: Step = {
       //    so they don't get surprised by a browser window appearing.
       p.note(
         `${pc.bold("We'll open your browser to sign in to The Context Company.")}\n${pc.dim(url)}`,
-        "Sign in",
+        "Sign in"
       );
 
       const proceed = await p.confirm({
@@ -54,7 +54,9 @@ export const authStep: Step = {
 
       // 4. Wait for callback
       p.log.info(
-        pc.dim("Waiting for authentication... (5 min timeout — Ctrl+C to cancel)"),
+        pc.dim(
+          "Waiting for authentication... (5 min timeout — Ctrl+C to cancel)"
+        )
       );
       const result = await server.waitForCallback();
       activeServer = null;
@@ -78,7 +80,7 @@ export const authStep: Step = {
         const errorBody = await response.json().catch(() => ({}));
         throw new Error(
           (errorBody as { error?: string }).error ||
-            `Authentication failed (${response.status})`,
+            `Authentication failed (${response.status})`
         );
       }
 
@@ -89,16 +91,10 @@ export const authStep: Step = {
         organizationId: string | null;
       };
 
-      // 7. Store in context only (AUTH-05: never persist to disk)
-      ctx.accessToken = data.accessToken;
-      ctx.refreshToken = data.refreshToken;
-      ctx.user = data.user;
-      ctx.organizationId = data.organizationId ?? undefined;
-
-      // 8. Check for organization
+      // 7. Check for organization before storing in context
       if (!data.organizationId) {
         p.log.warn(
-          "No organization found. You may need to join or create an organization at https://www.thecontext.company",
+          "No organization found. You may need to join or create an organization at https://www.thecontext.company"
         );
         return {
           status: "failed",
@@ -106,14 +102,19 @@ export const authStep: Step = {
         };
       }
 
+      // 8. Store in context only after all validation passes (AUTH-05: never persist to disk)
+      ctx.accessToken = data.accessToken;
+      ctx.refreshToken = data.refreshToken;
+      ctx.user = data.user;
+      ctx.organizationId = data.organizationId ?? undefined;
+
       p.log.success(`Authenticated as ${data.user.email}`);
       return { status: "completed" };
     } catch (error) {
       activeServer?.close();
       activeServer = null;
 
-      const message =
-        error instanceof Error ? error.message : String(error);
+      const message = error instanceof Error ? error.message : String(error);
       p.log.error(`Authentication failed: ${message}`);
       return { status: "failed", message };
     }
