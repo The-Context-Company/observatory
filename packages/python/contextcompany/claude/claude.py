@@ -446,16 +446,14 @@ class InstrumentedClaudeAgent:
                     )
 
                     yield message
-
+            finally:
+                # Covers normal completion, Exception, GeneratorExit (consumer
+                # break / aclose), and CancelledError. GeneratorExit is a
+                # BaseException so an `except Exception` clause would miss it,
+                # dropping every collected message.
                 if messages:
-                    _debug(f"Stream completed with {len(messages)} messages")
-                    _debug("Sending telemetry data...")
+                    _debug(f"Firing telemetry with {len(messages)} messages")
                     _fire_telemetry()
-
-            except Exception:
-                if messages:
-                    _fire_telemetry()
-                raise
         finally:
             _claude_debug.reset(debug_token)
 
