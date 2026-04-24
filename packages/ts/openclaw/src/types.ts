@@ -23,6 +23,7 @@ export type ActiveSession = {
   runId: string;
   sessionId?: string;
   metadata: Record<string, string>;
+  turnCacheRunId?: string;
 };
 
 /** Mutation API passed into onRunStart. Changes apply to this run only. */

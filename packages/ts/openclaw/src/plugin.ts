@@ -30,6 +30,29 @@ export type {
 } from "./types.js";
 import { safeClone, sendToTcc } from "./transport.js";
 
+// Module-level so multiple registrations in the same process converge on
+// one runId per turn, instead of each minting its own.
+const turnRunIdCache = new Map<string, { runId: string; createdAt: number }>();
+const TURN_RUN_ID_MAX_AGE_MS = 30 * 60 * 1000;
+
+function acquireTurnRunId(sessionKey: string): string {
+  const now = Date.now();
+  const existing = turnRunIdCache.get(sessionKey);
+  if (existing && now - existing.createdAt < TURN_RUN_ID_MAX_AGE_MS) {
+    return existing.runId;
+  }
+  const runId = crypto.randomUUID();
+  turnRunIdCache.set(sessionKey, { runId, createdAt: now });
+  return runId;
+}
+
+function releaseTurnRunId(sessionKey: string, runId: string): void {
+  const existing = turnRunIdCache.get(sessionKey);
+  if (existing && existing.runId === runId) {
+    turnRunIdCache.delete(sessionKey);
+  }
+}
+
 function resolveDefaultSessionId(
   def: OpenClawDefaultSessionId | undefined,
   ctx: OpenClawRunContext,
@@ -153,6 +176,9 @@ function registerHooks(
         });
 
         activeSessions.delete(key);
+        if (session.turnCacheRunId) {
+          releaseTurnRunId(key, session.turnCacheRunId);
+        }
       }
     }
   }, 5 * 60 * 1000);
@@ -191,14 +217,15 @@ function registerHooks(
     let session = activeSessions.get(sessionKey);
     if (session) return session;
 
-    // Mint a fresh runId per turn. Legacy top-level runId (if present) wins
-    // ONLY the first time — same as before, preserved for backwards compat.
+    // Legacy top-level runId wins once; otherwise share via turnRunIdCache.
     let runId: string;
+    let turnCacheRunId: string | undefined;
     if (legacyNextRunId) {
       runId = legacyNextRunId;
       legacyNextRunId = null;
     } else {
-      runId = crypto.randomUUID();
+      runId = acquireTurnRunId(sessionKey);
+      turnCacheRunId = runId;
     }
 
     // sessionId resolution order:
@@ -216,6 +243,7 @@ function registerHooks(
       runId,
       sessionId: defaultSessionId ?? ctx.sessionKey,
       metadata: defaultMetadata,
+      turnCacheRunId,
     };
     activeSessions.set(sessionKey, session);
 
@@ -334,6 +362,9 @@ function registerHooks(
       // awaiting onRunEnd, ensureSession must create a fresh session
       // rather than appending to this already-flushed one.
       activeSessions.delete(sessionKey);
+      if (session.turnCacheRunId) {
+        releaseTurnRunId(sessionKey, session.turnCacheRunId);
+      }
 
       if (debug)
         log.info(
