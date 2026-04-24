@@ -91,10 +91,13 @@ export const setupSlackStep: Step = {
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
+    // Bold step-line heading acts as a chapter break, then info body
+    // renders at full brightness. p.note dims its body by design, so
+    // narrative copy inside a note becomes visual static people skip.
+    p.log.step(pc.bold("Slack bot"));
     p.log.info(
-      "The TCC Slack bot delivers configurable reports and alerts to your\n" +
-        "workspace — notifying you about regressions and patterns you'd miss\n" +
-        "otherwise.",
+      "Delivers reports and alerts to your workspace. Get notified about\n" +
+        "regressions and patterns you'd miss otherwise.",
     );
 
     const wantsSlack = await p.confirm({

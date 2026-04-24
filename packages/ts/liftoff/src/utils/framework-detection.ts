@@ -87,7 +87,6 @@ export function detectLanguage(
  * 1. LangChain Python (langchain or langchain-core)
  * 2. CrewAI (crewai)
  * 3. Agno (agno)
- * 4. LiteLLM (litellm)
  *
  * @returns Detected framework or null if no match found.
  */
@@ -183,11 +182,6 @@ export function detectFramework(
     // 3. Agno
     if (hasPythonDep(deps, "agno")) {
       return "agno";
-    }
-
-    // 4. LiteLLM
-    if (hasPythonDep(deps, "litellm")) {
-      return "litellm";
     }
 
     // Has Python files but no recognized framework

@@ -57,10 +57,14 @@ export const setupMcpStep: Step = {
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
+    // Bold step-line heading acts as a chapter break, then info body
+    // renders at full brightness. p.note dims its body by design, so
+    // narrative copy inside a note becomes visual static people skip.
+    p.log.step(pc.bold("MCP server"));
     p.log.info(
-      "The TCC MCP server gives your coding agents context about what's\n" +
-        "happening in dev and production, so they can find and fix issues\n" +
-        "directly from the editor.",
+      "Connects your coding agents to live telemetry. They can see\n" +
+        "what's happening in dev and production and fix issues directly\n" +
+        "from the editor.",
     );
 
     const wantsMcp = await p.confirm({

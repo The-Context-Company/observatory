@@ -76,12 +76,16 @@ export const instrumentStep: Step = {
     // The prompt is long (~100 lines). Don't dump it into the
     // terminal — just offer to copy it. The user pastes it into
     // their coding agent and reads it there.
+    //
+    // Bold step-line heading acts as a chapter break, then info body
+    // renders at full brightness. p.note was the wrong tool here — it
+    // dims its body by design (suited to URLs/keys), so narrative copy
+    // inside a note becomes visual static people skip.
+    p.log.step(pc.bold("Instrumentation"));
     p.log.info(
-      `We've got a tailored instrumentation prompt for ${pc.bold(response.frameworkName ?? fwDisplayName)}.\n` +
-        pc.dim(
-          "It tells your coding agent how to install the SDK, wire\n" +
-            "instrumentation, and attach metadata against this codebase.",
-        ),
+      `Tailored instrumentation prompt for ${pc.bold(response.frameworkName ?? fwDisplayName)}.\n` +
+        "It tells your coding agent how to install the SDK, wire\n" +
+        "instrumentation, and attach metadata against this codebase.",
     );
 
     const wantCopy = await p.confirm({
@@ -118,6 +122,20 @@ export const instrumentStep: Step = {
       "Open a new tab in your AI coding agent (Claude Code, Cursor, Windsurf, …)\n" +
         "and paste it. The agent will install the SDK and wire up instrumentation.",
     );
+
+    // Gate on explicit acknowledgement before moving to MCP setup.
+    // Without this, the wizard blows past the clipboard step and the
+    // user misses the handoff. The phrasing makes it clear they can
+    // keep onboarding here while their coding agent works in parallel.
+    const ready = await p.confirm({
+      message:
+        "Ready to continue? You can finish onboarding here in parallel while your agent works.",
+      initialValue: true,
+    });
+
+    if (p.isCancel(ready) || !ready) {
+      return { status: "failed", message: "User cancelled" };
+    }
 
     // Success-summary reads this to show accurate status + "Next"
     // wording (avoids lying about clipboard state when the copy was

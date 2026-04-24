@@ -9,7 +9,6 @@ export type Framework =
   | "langchain-python"
   | "crewai"
   | "agno"
-  | "litellm"
   | "custom-python";
 
 export type PackageManager =
@@ -101,13 +100,6 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     name: "Agno",
     description: "Instrument Agno agents",
     docsUrl: "https://docs.thecontext.company/frameworks/agno",
-    language: "python",
-  },
-  {
-    id: "litellm",
-    name: "LiteLLM",
-    description: "Instrument LiteLLM proxy",
-    docsUrl: "https://docs.thecontext.company/frameworks/litellm",
     language: "python",
   },
   {
