@@ -33,6 +33,7 @@ Usage::
                     print(block.text)
 """
 
+import asyncio
 import dataclasses
 import os
 import time
@@ -76,14 +77,7 @@ class TCCConfig:
 
 
 def _normalize_content_block(block: Any) -> Any:
-    """Convert an SDK ContentBlock dataclass back to the CLI wire shape.
-
-    The Python SDK's ``message_parser`` maps CLI JSON into typed dataclasses
-    that drop the ``type`` discriminator.  This inverts that mapping so the
-    telemetry payload matches what the TS wrapper (and the ``/v1/claude``
-    ingest parser) expect.  Type strings mirror
-    ``claude_agent_sdk/_internal/message_parser.py``.
-    """
+    """Serialise an SDK ContentBlock to the CLI wire shape with a ``type`` discriminator."""
     from claude_agent_sdk import (
         TextBlock,
         ThinkingBlock,
@@ -133,7 +127,6 @@ def _normalize_content_block(block: Any) -> Any:
             "content": block.content,
         }
 
-    # Unknown block shape — best effort so telemetry stays useful
     if dataclasses.is_dataclass(block) and not isinstance(block, type):
         try:
             return dataclasses.asdict(block)
@@ -143,14 +136,10 @@ def _normalize_content_block(block: Any) -> Any:
 
 
 def _message_to_dict(message: Any) -> Dict[str, Any]:
-    """Convert an SDK message dataclass to the CLI wire-format dict expected
-    by the TCC ``/v1/claude`` ingest parser.
+    """Serialise an SDK message to the CLI wire-format dict expected by ``/v1/claude``.
 
-    The Python SDK parses CLI JSON into typed dataclasses that drop both the
-    top-level ``type`` discriminator and (for assistant/user) the ``message``
-    wrapper.  The TS SDK passes the CLI JSON through unchanged, which is why
-    the TS wire format is the canonical ingest shape.  This function inverts
-    the Python parser so both languages produce identical payloads.
+    Inverts ``claude_agent_sdk/_internal/message_parser.py``: restores the
+    top-level ``type`` discriminator and (for assistant/user) the ``message`` wrapper.
     """
     from claude_agent_sdk import (
         AssistantMessage,
@@ -199,10 +188,8 @@ def _message_to_dict(message: Any) -> Dict[str, Any]:
         return out
 
     if isinstance(message, SystemMessage):
-        # SystemMessage.data is the full CLI dict — already contains
-        # ``type: "system"`` and ``subtype`` at top level plus every
-        # payload field (model, cwd, session_id, tools, ...).
-        # Shallow copy so downstream callers can mutate freely.
+        # ``data`` is the original CLI dict (already shaped for the wire);
+        # copy so later mutations don't leak into the SDK's message state.
         return dict(message.data)
 
     if isinstance(message, ResultMessage):
@@ -269,16 +256,11 @@ def _message_to_dict(message: Any) -> Dict[str, Any]:
             "session_id": message.session_id,
         }
 
-    # Unknown message type — fall back generically so telemetry keeps flowing
     if dataclasses.is_dataclass(message) and not isinstance(message, type):
         try:
             return dataclasses.asdict(message)
         except (TypeError, ValueError):
             pass
-    if hasattr(message, "__dict__"):
-        return {
-            k: v for k, v in message.__dict__.items() if not k.startswith("_")
-        }
     return {"raw": str(message)}
 
 
@@ -296,14 +278,7 @@ def _send_to_tcc(
     api_key: Optional[str],
     tcc_url: Optional[str],
 ) -> None:
-    """POST collected messages to the TCC ``/v1/claude`` endpoint.
-
-    The payload shape matches the TypeScript implementation so the same
-    backend handler can process both.
-    """
-    resolved_key = get_api_key(api_key)
-    endpoint = tcc_url or get_url("/v1/claude", api_key=resolved_key)
-
+    """POST collected messages to the TCC ``/v1/claude`` endpoint. Never raises."""
     payload: Dict[str, Any] = {
         "messages": messages,
         "runId": run_id,
@@ -319,6 +294,8 @@ def _send_to_tcc(
     _debug("Payload:", payload)
 
     try:
+        resolved_key = get_api_key(api_key)
+        endpoint = tcc_url or get_url("/v1/claude", api_key=resolved_key)
         resp = requests.post(
             endpoint,
             json=payload,
@@ -386,64 +363,53 @@ class InstrumentedClaudeAgent:
         session_id = config.session_id
         metadata = config.metadata or {}
 
-        # Honour the debug flag for this call
+        # Scope debug to this call so the flag doesn't leak into other
+        # concurrent or later queries (nor inherited child processes).
+        prev_debug = os.environ.get("TCC_DEBUG")
         if config.debug:
             os.environ["TCC_DEBUG"] = "true"
 
-        _debug("Claude query wrapper called")
-        _debug("runId:", run_id)
-        _debug("sessionId:", session_id)
-        _debug("metadata:", metadata)
-
-        messages: List[Dict[str, Any]] = []
-        user_prompt = prompt if isinstance(prompt, str) else None
-
         try:
-            _debug("Starting to collect messages")
+            _debug("Claude query wrapper called")
+            _debug("runId:", run_id)
+            _debug("sessionId:", session_id)
+            _debug("metadata:", metadata)
 
-            async for message in claude_query(
-                prompt=prompt,
-                options=options,
-                **({"transport": transport} if transport is not None else {}),
-            ):
-                # Serialise and timestamp the message
-                msg_dict = _message_to_dict(message)
-                msg_dict["receivedAtMs"] = int(time.time() * 1000)
-                msg_dict["tccMetadata"] = {
-                    "runId": run_id,
-                    "sessionId": session_id,
-                }
-                messages.append(msg_dict)
+            messages: List[Dict[str, Any]] = []
+            user_prompt = prompt if isinstance(prompt, str) else None
 
-                _debug(
-                    f"Collected message type: "
-                    f"{msg_dict.get('type', 'unknown')}, "
-                    f"total: {len(messages)}"
-                )
+            try:
+                _debug("Starting to collect messages")
 
-                # Yield transparently — downstream code sees the original
-                yield message
+                async for message in claude_query(
+                    prompt=prompt,
+                    options=options,
+                    **({"transport": transport} if transport is not None else {}),
+                ):
+                    msg_dict = _message_to_dict(message)
+                    msg_dict["receivedAtMs"] = int(time.time() * 1000)
+                    msg_dict["tccMetadata"] = {
+                        "runId": run_id,
+                        "sessionId": session_id,
+                    }
+                    messages.append(msg_dict)
 
-            # ----- Stream completed successfully ----- #
-            if messages:
-                _debug(f"Stream completed with {len(messages)} messages")
-                _debug("Sending telemetry data...")
+                    _debug(
+                        f"Collected message type: "
+                        f"{msg_dict.get('type', 'unknown')}, "
+                        f"total: {len(messages)}"
+                    )
 
-                _send_to_tcc(
-                    messages=messages,
-                    custom_metadata=metadata if metadata else None,
-                    run_id=run_id,
-                    session_id=session_id,
-                    user_prompt=user_prompt,
-                    api_key=self._api_key,
-                    tcc_url=self._tcc_url,
-                )
+                    yield message
 
-        except Exception:
-            # On error, attempt to send whatever we collected so far
-            if messages:
-                try:
-                    _send_to_tcc(
+                if messages:
+                    _debug(f"Stream completed with {len(messages)} messages")
+                    _debug("Sending telemetry data...")
+
+                    # Offload the blocking HTTP POST so it doesn't stall the
+                    # event loop (the caller is always an async coroutine).
+                    await asyncio.to_thread(
+                        _send_to_tcc,
                         messages=messages,
                         custom_metadata=metadata if metadata else None,
                         run_id=run_id,
@@ -452,9 +418,29 @@ class InstrumentedClaudeAgent:
                         api_key=self._api_key,
                         tcc_url=self._tcc_url,
                     )
-                except Exception:
-                    pass
-            raise
+
+            except Exception:
+                if messages:
+                    try:
+                        await asyncio.to_thread(
+                            _send_to_tcc,
+                            messages=messages,
+                            custom_metadata=metadata if metadata else None,
+                            run_id=run_id,
+                            session_id=session_id,
+                            user_prompt=user_prompt,
+                            api_key=self._api_key,
+                            tcc_url=self._tcc_url,
+                        )
+                    except Exception:
+                        pass
+                raise
+        finally:
+            if config.debug:
+                if prev_debug is None:
+                    os.environ.pop("TCC_DEBUG", None)
+                else:
+                    os.environ["TCC_DEBUG"] = prev_debug
 
 
 # ---------------------------------------------------------------------------
