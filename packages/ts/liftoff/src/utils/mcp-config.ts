@@ -34,8 +34,7 @@ export const EDITOR_CONFIGS: Record<EditorId, EditorConfig> = {
   cursor: {
     name: "Cursor",
     configType: "file",
-    configPath: (projectDir) =>
-      path.join(projectDir, ".cursor", "mcp.json"),
+    configPath: (projectDir) => path.join(projectDir, ".cursor", "mcp.json"),
     detectPaths: (projectDir) => [
       path.join(projectDir, ".cursor"),
       path.join(os.homedir(), ".cursor"),
@@ -50,33 +49,20 @@ export const EDITOR_CONFIGS: Record<EditorId, EditorConfig> = {
     name: "Windsurf",
     configType: "file",
     configPath: () =>
-      path.join(
-        os.homedir(),
-        ".codeium",
-        "windsurf",
-        "mcp_config.json",
-      ),
-    detectPaths: () => [
-      path.join(os.homedir(), ".codeium", "windsurf"),
-    ],
+      path.join(os.homedir(), ".codeium", "windsurf", "mcp_config.json"),
+    detectPaths: () => [path.join(os.homedir(), ".codeium", "windsurf")],
   },
   vscode: {
     name: "VS Code",
     configType: "file",
-    configPath: (projectDir) =>
-      path.join(projectDir, ".vscode", "mcp.json"),
-    detectPaths: (projectDir) => [
-      path.join(projectDir, ".vscode"),
-    ],
+    configPath: (projectDir) => path.join(projectDir, ".vscode", "mcp.json"),
+    detectPaths: (projectDir) => [path.join(projectDir, ".vscode")],
   },
   opencode: {
     name: "OpenCode",
     configType: "file",
-    configPath: (projectDir) =>
-      path.join(projectDir, ".opencode", "mcp.json"),
-    detectPaths: (projectDir) => [
-      path.join(projectDir, ".opencode"),
-    ],
+    configPath: (projectDir) => path.join(projectDir, ".opencode", "mcp.json"),
+    detectPaths: (projectDir) => [path.join(projectDir, ".opencode")],
   },
 };
 
@@ -153,13 +139,11 @@ export function buildMcpServerEntry(readonlyKey: string): {
 export function writeMcpConfig(
   editorId: EditorId,
   projectDir: string,
-  readonlyKey: string,
+  readonlyKey: string
 ): void {
   const config = EDITOR_CONFIGS[editorId];
   if (config.configType !== "file" || !config.configPath) {
-    throw new Error(
-      `Editor ${editorId} does not use file-based config`,
-    );
+    throw new Error(`Editor ${editorId} does not use file-based config`);
   }
 
   const configPath = config.configPath(projectDir);
@@ -176,9 +160,7 @@ export function writeMcpConfig(
       parsed = JSON.parse(content) as Record<string, unknown>;
     } catch {
       // If file is corrupt, start fresh
-      console.error(
-        `[TCC] Could not parse ${configPath}, creating new config`,
-      );
+      console.error(`[TCC] Could not parse ${configPath}, creating new config`);
       parsed = {};
     }
   }
@@ -186,22 +168,18 @@ export function writeMcpConfig(
   // Ensure mcpServers key exists
   if (
     !parsed.mcpServers ||
-    typeof parsed.mcpServers !== "object"
+    typeof parsed.mcpServers !== "object" ||
+    Array.isArray(parsed.mcpServers)
   ) {
     parsed.mcpServers = {};
   }
 
   // Add/update only the context-company entry, preserving others
-  (parsed.mcpServers as Record<string, unknown>)[
-    "context-company"
-  ] = buildMcpServerEntry(readonlyKey);
+  (parsed.mcpServers as Record<string, unknown>)["context-company"] =
+    buildMcpServerEntry(readonlyKey);
 
   // Write back
-  fs.writeFileSync(
-    configPath,
-    JSON.stringify(parsed, null, 2) + "\n",
-    "utf-8",
-  );
+  fs.writeFileSync(configPath, JSON.stringify(parsed, null, 2) + "\n", "utf-8");
 }
 
 /**
@@ -233,12 +211,11 @@ export function runClaudeMcpAdd(readonlyKey: string): {
       {
         stdio: ["pipe", "pipe", "pipe"],
         timeout: 10_000,
-      },
+      }
     );
     return { success: true };
   } catch (err) {
-    const message =
-      err instanceof Error ? err.message : String(err);
+    const message = err instanceof Error ? err.message : String(err);
     return { success: false, error: message };
   }
 }

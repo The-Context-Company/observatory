@@ -16,9 +16,7 @@ interface PackageJson {
  * or devDependencies.
  */
 function hasDep(pkg: PackageJson, name: string): boolean {
-  return !!(
-    pkg.dependencies?.[name] || pkg.devDependencies?.[name]
-  );
+  return !!(pkg.dependencies?.[name] || pkg.devDependencies?.[name]);
 }
 
 /**
@@ -30,9 +28,7 @@ function hasDepPrefix(pkg: PackageJson, prefix: string): boolean {
     ...pkg.dependencies,
     ...pkg.devDependencies,
   };
-  return Object.keys(allDeps).some((dep) =>
-    dep.startsWith(prefix),
-  );
+  return Object.keys(allDeps).some((dep) => dep.startsWith(prefix));
 }
 
 /**
@@ -42,29 +38,60 @@ function hasDepPrefix(pkg: PackageJson, prefix: string): boolean {
 function hasPythonDep(deps: string[], name: string): boolean {
   const normalized = name.toLowerCase().replace(/_/g, "-");
   return deps.some(
-    (dep) => dep.toLowerCase().replace(/_/g, "-") === normalized,
+    (dep) => dep.toLowerCase().replace(/_/g, "-") === normalized
   );
 }
 
 /**
  * Detect the project language based on manifest files.
  *
- * @returns "typescript" if package.json exists, "python" if
- *   pyproject.toml or requirements.txt exists, otherwise
+ * Falls through from TypeScript to Python detection to handle polyglot
+ * repos (package.json for tooling + pyproject.toml for the agent).
+ *
+ * @returns "typescript" if package.json exists with TS framework deps,
+ *   "python" if pyproject.toml or requirements.txt exists, otherwise
  *   "unknown".
  */
-export function detectLanguage(
-  installDir: string,
-): ProjectLanguage {
-  if (fs.existsSync(path.join(installDir, "package.json"))) {
-    return "typescript";
+export function detectLanguage(installDir: string): ProjectLanguage {
+  const pkgPath = path.join(installDir, "package.json");
+
+  if (fs.existsSync(pkgPath)) {
+    let pkg: PackageJson;
+    try {
+      pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as PackageJson;
+    } catch {
+      return "unknown";
+    }
+
+    // Check for TypeScript framework dependencies
+    if (
+      hasDep(pkg, "next") ||
+      hasDep(pkg, "@mariozechner/pi-coding-agent") ||
+      hasDep(pkg, "openclaw") ||
+      hasDep(pkg, "@mastra/core") ||
+      hasDep(pkg, "@anthropic-ai/claude-agent-sdk") ||
+      hasDep(pkg, "@langchain/core") ||
+      hasDep(pkg, "langchain")
+    ) {
+      return "typescript";
+    }
+
+    // Has package.json but no recognized TS framework deps — fall
+    // through to Python checks for polyglot repos
   }
+
   if (
     fs.existsSync(path.join(installDir, "pyproject.toml")) ||
     fs.existsSync(path.join(installDir, "requirements.txt"))
   ) {
     return "python";
   }
+
+  // If package.json exists but no Python manifests, default to TypeScript
+  if (fs.existsSync(pkgPath)) {
+    return "typescript";
+  }
+
   return "unknown";
 }
 
@@ -90,18 +117,14 @@ export function detectLanguage(
  *
  * @returns Detected framework or null if no match found.
  */
-export function detectFramework(
-  installDir: string,
-): Framework | null {
+export function detectFramework(installDir: string): Framework | null {
   const pkgPath = path.join(installDir, "package.json");
 
   // Check package.json for TS frameworks
   if (fs.existsSync(pkgPath)) {
     let pkg: PackageJson;
     try {
-      pkg = JSON.parse(
-        fs.readFileSync(pkgPath, "utf-8"),
-      ) as PackageJson;
+      pkg = JSON.parse(fs.readFileSync(pkgPath, "utf-8")) as PackageJson;
     } catch {
       return null;
     }
@@ -138,10 +161,7 @@ export function detectFramework(
     }
 
     // 6. LangChain TS
-    if (
-      hasDep(pkg, "@langchain/core") ||
-      hasDep(pkg, "langchain")
-    ) {
+    if (hasDep(pkg, "@langchain/core") || hasDep(pkg, "langchain")) {
       return "langchain-ts";
     }
 
@@ -153,11 +173,9 @@ export function detectFramework(
   }
 
   // Check pyproject.toml/requirements.txt for Python frameworks
-  const hasPyproject = fs.existsSync(
-    path.join(installDir, "pyproject.toml"),
-  );
+  const hasPyproject = fs.existsSync(path.join(installDir, "pyproject.toml"));
   const hasRequirements = fs.existsSync(
-    path.join(installDir, "requirements.txt"),
+    path.join(installDir, "requirements.txt")
   );
 
   if (hasPyproject || hasRequirements) {
@@ -191,4 +209,3 @@ export function detectFramework(
   // No manifest files found
   return null;
 }
-
