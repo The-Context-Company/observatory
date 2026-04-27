@@ -17,6 +17,8 @@ let DEBUG_ENABLED = false;
 export type TCCConfig = {
   runId?: string;
   sessionId?: string;
+  /** Mark this run as user-initiated (so it's analyzed for user insights). */
+  conversational?: boolean;
   metadata?: Record<string, unknown>;
   debug?: boolean;
 };
@@ -62,8 +64,10 @@ function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
         (tccConfig?.metadata?.["tcc.sessionId"] as string | undefined) ??
         null;
 
-      // Build final metadata: user metadata only (no tcc.* fields)
-      const metadata: Record<string, unknown> = tccConfig?.metadata || {};
+      const metadata: Record<string, unknown> = { ...(tccConfig?.metadata || {}) };
+      if (tccConfig?.conversational !== undefined) {
+        metadata["tcc.conversational"] = tccConfig.conversational;
+      }
 
       if (DEBUG_ENABLED) {
         console.log("[TCC Debug] Query wrapper called");
