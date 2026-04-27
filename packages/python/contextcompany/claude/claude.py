@@ -83,16 +83,20 @@ class TCCConfig:
     """TCC configuration for a single ``query()`` call.
 
     Attributes:
-        run_id:     Unique identifier for the run.  Auto-generated if not set.
-        session_id: Optional session identifier to group related runs.
-        metadata:   Arbitrary key/value metadata attached to the telemetry
-                    payload (sent as ``customMetadata``).
-        debug:      If ``True``, enables verbose ``[TCC Debug]`` logging for
-                    this call (also honours the ``TCC_DEBUG`` env-var).
+        run_id:        Unique identifier for the run.  Auto-generated if not set.
+        session_id:    Optional session identifier to group related runs.
+        conversational: Mark this run as user-initiated (so it's analyzed for
+                       user insights). Forwarded as the reserved
+                       ``tcc.conversational`` metadata key on the wire.
+        metadata:      Arbitrary key/value metadata attached to the telemetry
+                       payload (sent as ``customMetadata``).
+        debug:         If ``True``, enables verbose ``[TCC Debug]`` logging for
+                       this call (also honours the ``TCC_DEBUG`` env-var).
     """
 
     run_id: Optional[str] = None
     session_id: Optional[str] = None
+    conversational: Optional[bool] = None
     metadata: Optional[Dict[str, Any]] = None
     debug: bool = False
 
@@ -393,7 +397,11 @@ class InstrumentedClaudeAgent:
 
         run_id = config.run_id or str(uuid.uuid4())
         session_id = config.session_id
-        metadata = config.metadata or {}
+        # Forward user metadata, and stamp the typed `conversational` flag as
+        # `tcc.conversational` so the ingest contract sees a single source of truth.
+        metadata = dict(config.metadata) if config.metadata else {}
+        if config.conversational is not None:
+            metadata["tcc.conversational"] = config.conversational
 
         debug_token = _claude_debug.set(config.debug)
 
