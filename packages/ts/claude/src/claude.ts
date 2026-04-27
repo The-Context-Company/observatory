@@ -64,9 +64,6 @@ function instrumentQuery(queryFn: QueryFn, target: unknown): QueryFn {
         (tccConfig?.metadata?.["tcc.sessionId"] as string | undefined) ??
         null;
 
-      // Build final metadata: forward user metadata, and stamp the typed
-      // `conversational` flag as `tcc.conversational` so the ingest contract
-      // sees a single source of truth.
       const metadata: Record<string, unknown> = { ...(tccConfig?.metadata || {}) };
       if (tccConfig?.conversational !== undefined) {
         metadata["tcc.conversational"] = tccConfig.conversational;

@@ -397,8 +397,6 @@ class InstrumentedClaudeAgent:
 
         run_id = config.run_id or str(uuid.uuid4())
         session_id = config.session_id
-        # Forward user metadata, and stamp the typed `conversational` flag as
-        # `tcc.conversational` so the ingest contract sees a single source of truth.
         metadata = dict(config.metadata) if config.metadata else {}
         if config.conversational is not None:
             metadata["tcc.conversational"] = config.conversational
