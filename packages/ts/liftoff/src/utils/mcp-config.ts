@@ -122,20 +122,17 @@ export function detectEditors(projectDir: string): EditorId[] {
 /**
  * Build the MCP server entry object for The Context Company.
  *
- * @param readonlyKey - The readonly API key (tcc_key_ prefix)
- * @returns MCP server configuration object
+ * The MCP server uses OAuth — clients negotiate auth on first connect
+ * via the standard MCP discovery flow, so we don't bake any API key
+ * into the editor config. Just the transport + URL.
  */
-export function buildMcpServerEntry(readonlyKey: string): {
+export function buildMcpServerEntry(): {
   type: string;
   url: string;
-  headers: { Authorization: string };
 } {
   return {
     type: "http",
     url: getMcpServerUrl(),
-    headers: {
-      Authorization: `Bearer ${readonlyKey}`,
-    },
   };
 }
 
@@ -148,12 +145,10 @@ export function buildMcpServerEntry(readonlyKey: string): {
  *
  * @param editorId - The editor to configure
  * @param projectDir - Root directory of the user's project
- * @param readonlyKey - The readonly API key (tcc_key_ prefix)
  */
 export function writeMcpConfig(
   editorId: EditorId,
   projectDir: string,
-  readonlyKey: string,
 ): void {
   const config = EDITOR_CONFIGS[editorId];
   if (config.configType !== "file" || !config.configPath) {
@@ -194,7 +189,7 @@ export function writeMcpConfig(
   // Add/update only the context-company entry, preserving others
   (parsed.mcpServers as Record<string, unknown>)[
     "context-company"
-  ] = buildMcpServerEntry(readonlyKey);
+  ] = buildMcpServerEntry();
 
   // Write back
   fs.writeFileSync(
@@ -207,17 +202,18 @@ export function writeMcpConfig(
 /**
  * Run `claude mcp add` to configure Claude Code for MCP.
  *
- * @param readonlyKey - The readonly API key (tcc_key_ prefix)
- * @returns Object indicating success or failure with optional error message
+ * Claude Code handles the OAuth handshake itself when the user first
+ * invokes a tool from the server — no Authorization header needed in
+ * the registration command.
  */
-export function runClaudeMcpAdd(readonlyKey: string): {
+export function runClaudeMcpAdd(): {
   success: boolean;
   error?: string;
 } {
   try {
     // Use execFileSync + arg array so shell metacharacters in the
-    // MCP URL (from the user-controlled --api-base flag) or the
-    // readonly key can't break out of the command.
+    // MCP URL (from the user-controlled --api-base flag) can't break
+    // out of the command.
     execFileSync(
       "claude",
       [
@@ -227,8 +223,6 @@ export function runClaudeMcpAdd(readonlyKey: string): {
         "http",
         "context-company",
         getMcpServerUrl(),
-        "--header",
-        `Authorization: Bearer ${readonlyKey}`,
       ],
       {
         stdio: ["pipe", "pipe", "pipe"],

@@ -126,9 +126,11 @@ ${pc.dim("Options:")}
     completedSteps: [],
   };
 
-  // Pipeline: sign in → provision prod key → pick framework → hand off
-  // the agent prompt → optionally wire MCP (mints readonly key only if
-  // the user opts in) → optionally wire Slack → summary.
+  // Pipeline: sign in (optional) → provision prod key if signed in →
+  // pick framework → hand off the agent prompt → optionally wire MCP
+  // (OAuth-based, runs even without sign-in) → optionally wire Slack
+  // → summary. If the user skips sign-in, success-summary points them
+  // at the dashboard to grab an API key manually.
   const steps: Step[] = [
     authStep,
     provisionKeysStep,

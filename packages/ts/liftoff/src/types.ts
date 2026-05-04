@@ -141,8 +141,6 @@ export interface WizardContext {
   language?: ProjectLanguage;
   /** TCC prod API key (provisioned by the keys step, written to .env[.local]) */
   apiKey?: string;
-  /** Readonly MCP key (tcc_key_ prefix, provisioned for MCP/editor integrations) */
-  readonlyKey?: string;
   /** Auth token from WorkOS OAuth (set by auth step) */
   accessToken?: string;
   /** Refresh token from WorkOS OAuth */

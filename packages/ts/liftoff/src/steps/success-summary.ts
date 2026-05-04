@@ -35,6 +35,16 @@ export const successSummaryStep: Step = {
       `${pc.dim("Framework")}    ${frameworkName}`,
     );
 
+    // API key state — three buckets:
+    // - apiKey present: provisioned by the keys step
+    // - accessToken but no apiKey: signed in but provisioning failed/declined
+    // - neither: user skipped sign-in, has to grab a key from the dashboard
+    if (ctx.apiKey) {
+      lines.push(`${pc.dim("API key")}      ${pc.green("Provisioned")}`);
+    } else {
+      lines.push(`${pc.dim("API key")}      ${pc.yellow("Generate at dashboard")}`);
+    }
+
     // Instrumentation handoff status — liftoff hands a prompt to the
     // user's coding agent rather than writing files itself. Branch on
     // whether the instrument step actually copied the prompt (it can
@@ -83,10 +93,18 @@ export const successSummaryStep: Step = {
     const pm = ctx.packageManager ?? "npm";
     const runCmd = getRunDevCommand(pm);
     const dashUrl = `${getDashboardUrl()}/prod/runs`;
+    const settingsUrl = `${getDashboardUrl()}/prod/settings`;
+
+    // Build the "what to do next" text. The opening line varies by
+    // whether we provisioned a key for them or not.
+    const apiKeyPreamble = ctx.apiKey
+      ? ""
+      : `${pc.bold("First, grab your API key.")} You skipped sign-in, so we couldn't provision one for you. Generate one in the dashboard and add it to your environment as ${pc.bold("TCC_API_KEY")}:\n  ${pc.underline(settingsUrl)}\n\n`;
 
     if (ctx.promptCopied) {
       p.log.step(
-        `${pc.bold("Your coding agent will now instrument your codebase.")} It may ask you a few questions along the way — answer them so it can wire things up correctly.\n\n` +
+        apiKeyPreamble +
+          `${pc.bold("Your coding agent will now instrument your codebase.")} It may ask you a few questions along the way — answer them so it can wire things up correctly.\n\n` +
           `When it's done, run your app:\n\n` +
           `  ${pc.cyan(pc.bold(runCmd))}\n\n` +
           `Then check the dashboard to see your runs flowing in:\n` +
@@ -95,7 +113,8 @@ export const successSummaryStep: Step = {
       );
     } else {
       p.log.step(
-        `${pc.bold("Next:")} grab the instrumentation prompt from the docs and paste it into your AI coding agent.\n` +
+        apiKeyPreamble +
+          `${pc.bold("Next:")} grab the instrumentation prompt from the docs and paste it into your AI coding agent.\n` +
           `${pc.dim("The agent installs the SDK, writes instrumentation, and wires metadata against your codebase.")}\n\n` +
           `When it finishes, run your app:\n\n` +
           `  ${pc.cyan(pc.bold(runCmd))}\n\n` +

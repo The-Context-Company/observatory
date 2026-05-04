@@ -46,24 +46,83 @@ export const authStep: Step = {
       if (p.isCancel(proceed) || !proceed) {
         server.close();
         activeServer = null;
-        return { status: "failed", message: "User cancelled" };
+        // Sign-in is optional — skipping just means we won't provision
+        // an API key or MCP OAuth here. The success summary points the
+        // user at the dashboard to grab a key manually.
+        p.log.info(
+          pc.dim(
+            "Continuing without sign-in. You'll grab your API key from the dashboard at the end.",
+          ),
+        );
+        return { status: "skipped", message: "User skipped sign-in" };
       }
 
       // 4. Open browser for authentication
       await open(url);
 
-      // 4. Wait for callback
+      // 4. Wait for callback. Swap out the pipeline's global SIGINT
+      //    handler (which exits the process) for a step-local one that
+      //    just closes the OAuth server and unblocks waitForCallback.
+      //    Ctrl+C should skip auth, not kill the wizard — and after
+      //    we're done waiting, the global handler is restored.
       p.log.info(
-        pc.dim("Waiting for authentication... (5 min timeout — Ctrl+C to cancel)"),
+        pc.dim("Waiting for authentication... (Ctrl+C to skip, 5 min timeout)"),
       );
-      const result = await server.waitForCallback();
+
+      const globalSigintHandlers = process.listeners(
+        "SIGINT",
+      ) as NodeJS.SignalsListener[];
+      const globalSigtermHandlers = process.listeners(
+        "SIGTERM",
+      ) as NodeJS.SignalsListener[];
+      process.removeAllListeners("SIGINT");
+      process.removeAllListeners("SIGTERM");
+
+      let userCancelledAuth = false;
+      const stepSignalHandler = (): void => {
+        userCancelledAuth = true;
+        server.close();
+      };
+      process.once("SIGINT", stepSignalHandler);
+      process.once("SIGTERM", stepSignalHandler);
+
+      let result: { code: string; state: string } | null;
+      try {
+        result = await server.waitForCallback();
+      } finally {
+        process.removeListener("SIGINT", stepSignalHandler);
+        process.removeListener("SIGTERM", stepSignalHandler);
+        for (const h of globalSigintHandlers) {
+          process.on("SIGINT", h);
+        }
+        for (const h of globalSigtermHandlers) {
+          process.on("SIGTERM", h);
+        }
+      }
       activeServer = null;
 
-      // 5. Handle timeout or state mismatch
-      if (!result) {
+      // 5. Handle Ctrl+C — non-fatal, wizard continues without auth.
+      if (userCancelledAuth) {
+        p.log.info(
+          pc.dim(
+            "Sign-in cancelled. Continuing without it — grab your API key from the dashboard at the end.",
+          ),
+        );
         return {
-          status: "failed",
-          message: "Authentication timed out — re-run liftoff to try again.",
+          status: "skipped",
+          message: "Sign-in cancelled by user",
+        };
+      }
+
+      // 6. Handle timeout or state mismatch — also non-fatal; pipeline
+      //    continues and the user finishes setup with a manual key.
+      if (!result) {
+        p.log.warn(
+          "Sign-in timed out. Continuing without it — grab your API key from the dashboard at the end.",
+        );
+        return {
+          status: "skipped",
+          message: "Authentication timed out",
         };
       }
 
@@ -98,10 +157,12 @@ export const authStep: Step = {
       // 8. Check for organization
       if (!data.organizationId) {
         p.log.warn(
-          "No organization found. You may need to join or create an organization at https://www.thecontext.company",
+          "Signed in, but no organization found. Create one in the dashboard, then re-run liftoff or grab a key manually.",
         );
+        // Non-fatal: pipeline continues, success-summary points the
+        // user at the dashboard for manual key generation.
         return {
-          status: "failed",
+          status: "skipped",
           message: "No organization found for key provisioning",
         };
       }
@@ -114,8 +175,10 @@ export const authStep: Step = {
 
       const message =
         error instanceof Error ? error.message : String(error);
-      p.log.error(`Authentication failed: ${message}`);
-      return { status: "failed", message };
+      p.log.warn(
+        `Sign-in error: ${message}. Continuing without it — grab your API key from the dashboard at the end.`,
+      );
+      return { status: "skipped", message };
     }
   },
 
