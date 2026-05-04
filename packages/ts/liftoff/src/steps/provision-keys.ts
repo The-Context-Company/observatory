@@ -34,8 +34,8 @@ export const provisionKeysStep: Step = {
     // Already have a prod key — no need to mint another (guards
     // against re-entering the pipeline with a populated context).
     if (ctx.apiKey) return false;
-    // Needs a valid access token from the auth step.
-    return !!ctx.accessToken;
+    // Needs a valid access token and organization from the auth step.
+    return !!ctx.accessToken && !!ctx.organizationId;
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
