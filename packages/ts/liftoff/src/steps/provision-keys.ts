@@ -2,7 +2,7 @@ import fs from "node:fs";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
-import { getApiBase } from "../utils/config.js";
+import { getApiBase, getDashboardUrl } from "../utils/config.js";
 import {
   ensureEnvFile,
   ensureGitignore,
@@ -60,10 +60,10 @@ export const provisionKeysStep: Step = {
           .catch(() => ({}) as Record<string, unknown>);
         spinner.stop("Key provisioning failed");
         const detail = (errorBody as { error?: string }).error || "unknown";
-        p.log.error(
-          `Status: ${response.status} | Error: ${detail} | OrgId sent: ${ctx.organizationId ?? "null"}`,
+        p.log.warn(
+          `Could not provision API key automatically. You can grab one from the dashboard:\n  ${pc.underline(`${getDashboardUrl()}/prod/settings`)}`,
         );
-        return { status: "failed", message: detail };
+        return { status: "skipped", message: detail };
       }
 
       const data = (await response.json()) as {
@@ -116,8 +116,10 @@ export const provisionKeysStep: Step = {
       spinner.stop("Key provisioning failed");
       const message =
         error instanceof Error ? error.message : String(error);
-      p.log.error(`Key provisioning failed: ${message}`);
-      return { status: "failed", message };
+      p.log.warn(
+        `Could not provision API key: ${message}. You can grab one from the dashboard:\n  ${pc.underline(`${getDashboardUrl()}/prod/settings`)}`,
+      );
+      return { status: "skipped", message };
     }
   },
 };

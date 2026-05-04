@@ -190,7 +190,7 @@ export const detectFrameworkStep: Step = {
 
     p.log.success(
       `Framework: ${pc.bold(frameworkName)}${
-        detectedPm ? pc.dim(` (${ctx.packageManager})`) : ""
+        ctx.packageManager && detectedPm ? pc.dim(` (${ctx.packageManager})`) : ""
       }`,
     );
 

@@ -29,27 +29,25 @@ const PYTHON_LOCKFILES: LockfileEntry[] = [
  * for lockfiles.
  *
  * For TypeScript projects, checks for bun.lockb, bun.lock,
- * pnpm-lock.yaml, yarn.lock, and package-lock.json. Falls
- * back to npm.
+ * pnpm-lock.yaml, yarn.lock, and package-lock.json.
  *
  * For Python projects, checks for uv.lock and poetry.lock.
- * Falls back to pip.
  *
  * @param installDir - Root directory of the project
  * @param language - Detected project language
- * @returns The detected package manager
+ * @returns The detected package manager, or null if no lockfile found
  */
 export function detectPackageManager(
   installDir: string,
   language: ProjectLanguage,
-): PackageManager {
+): PackageManager | null {
   if (language === "typescript") {
     for (const { file, pm } of TS_LOCKFILES) {
       if (fs.existsSync(path.join(installDir, file))) {
         return pm;
       }
     }
-    return "npm";
+    return null;
   }
 
   if (language === "python") {
@@ -58,7 +56,7 @@ export function detectPackageManager(
         return pm;
       }
     }
-    return "pip";
+    return null;
   }
 
   // Unknown language: try TS lockfiles first, then Python
@@ -72,7 +70,7 @@ export function detectPackageManager(
       return pm;
     }
   }
-  return "npm";
+  return null;
 }
 
 /**
