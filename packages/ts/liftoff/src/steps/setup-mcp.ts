@@ -1,7 +1,6 @@
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
-import { getApiBase } from "../utils/config.js";
 import {
   type EditorId,
   EDITOR_CONFIGS,
@@ -11,49 +10,19 @@ import {
 } from "../utils/mcp-config.js";
 
 /**
- * Provision a readonly MCP key on demand. Called only after the user
- * opts into MCP setup — we don't mint readonly keys the user never
- * asked for.
- */
-async function provisionReadonlyKey(
-  ctx: WizardContext,
-): Promise<string | null> {
-  try {
-    const response = await fetch(`${getApiBase()}/cli/keys`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${ctx.accessToken}`,
-      },
-      body: JSON.stringify({
-        organizationId: ctx.organizationId,
-        type: "readonly",
-      }),
-    });
-    if (!response.ok) return null;
-    const data = (await response.json()) as {
-      readonlyKey: { key: string; keyId: string };
-    };
-    return data.readonlyKey?.key ?? null;
-  } catch {
-    return null;
-  }
-}
-
-/**
  * Pipeline step: configure MCP for the user's AI coding editors.
  *
- * Asks the user if they want MCP wired up. If yes, provisions a
- * readonly key on demand (we don't create a key the user didn't ask
- * for), then writes/merges MCP config files for each selected editor.
+ * The MCP server uses OAuth — editors negotiate auth on first connect
+ * via the standard MCP discovery flow, so this step doesn't need an
+ * access token or readonly key. It runs even if the user skipped
+ * sign-in, since wiring the server URL into editor config is purely
+ * client-side.
  */
 export const setupMcpStep: Step = {
   name: "setup-mcp",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
-    if (ctx.completedSteps.includes("setup-mcp")) return false;
-    // Needs an access token so we can mint a readonly key.
-    return !!ctx.accessToken;
+    return !ctx.completedSteps.includes("setup-mcp");
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
@@ -75,8 +44,6 @@ export const setupMcpStep: Step = {
       return { status: "skipped", message: "MCP setup skipped" };
     }
 
-    // Detect editors and ask which to configure BEFORE minting the
-    // key — if the user has no editors to configure, we skip minting.
     const detectedEditors = detectEditors(ctx.installDir);
     const options = (
       Object.entries(EDITOR_CONFIGS) as [
@@ -100,26 +67,12 @@ export const setupMcpStep: Step = {
       return { status: "skipped", message: "MCP setup skipped (no editors)" };
     }
 
-    // Mint the readonly key now, after we know the user actually wants MCP.
-    const spinner = p.spinner();
-    spinner.start("Provisioning readonly MCP key...");
-    const readonlyKey = await provisionReadonlyKey(ctx);
-    if (!readonlyKey) {
-      spinner.stop("Readonly key provisioning failed");
-      return {
-        status: "skipped",
-        message: "Could not provision readonly key for MCP",
-      };
-    }
-    ctx.readonlyKey = readonlyKey;
-    spinner.stop("Readonly MCP key provisioned");
-
     const configuredEditors: string[] = [];
     for (const editorId of selected) {
       const config = EDITOR_CONFIGS[editorId];
       try {
         if (config.configType === "cli") {
-          const result = runClaudeMcpAdd(readonlyKey);
+          const result = runClaudeMcpAdd();
           if (!result.success) {
             p.log.warn(
               `Could not configure ${config.name}: ${result.error}`,
@@ -127,7 +80,7 @@ export const setupMcpStep: Step = {
             continue;
           }
         } else {
-          writeMcpConfig(editorId, ctx.installDir, readonlyKey);
+          writeMcpConfig(editorId, ctx.installDir);
         }
         p.log.success(`Configured ${config.name}`);
         configuredEditors.push(config.name);
@@ -139,6 +92,13 @@ export const setupMcpStep: Step = {
     }
 
     ctx.editorsConfigured = configuredEditors;
+    if (configuredEditors.length > 0) {
+      p.log.info(
+        pc.dim(
+          "Your editor will prompt you to sign in the first time you use a TCC tool.",
+        ),
+      );
+    }
     // Pipeline pushes step.name on "completed" — don't push again.
     return { status: "completed" };
   },

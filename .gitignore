@@ -10,3 +10,4 @@ __pycache__/
 .planning/
 package-lock.json
 CLAUDE.md
+.codex/

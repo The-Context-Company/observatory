@@ -67,7 +67,15 @@ export async function runPipeline(
   for (const step of steps) {
     const shouldRun = await step.shouldRun(ctx);
     if (!shouldRun) {
-      p.log.info(pc.dim(`Skipping ${step.name} (already done)`));
+      // Only surface the "already done" log for genuine re-entrancy
+      // (the step ran successfully in a prior pass). Steps that opt
+      // out for other reasons — e.g. auth was skipped so a downstream
+      // step has nothing to do — should stay silent or surface their
+      // own explanation from inside run(). The old hardcoded "already
+      // done" message was misleading in those cases.
+      if (ctx.completedSteps.includes(step.name)) {
+        p.log.info(pc.dim(`Skipping ${step.name} (already done)`));
+      }
       continue;
     }
 

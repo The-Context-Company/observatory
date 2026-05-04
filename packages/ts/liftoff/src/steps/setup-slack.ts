@@ -2,7 +2,7 @@ import crypto from "node:crypto";
 import * as p from "@clack/prompts";
 import pc from "picocolors";
 import type { Step, StepResult, WizardContext } from "../types.js";
-import { getApiBase } from "../utils/config.js";
+import { getApiBase, getDashboardUrl } from "../utils/config.js";
 import { startCallbackServer } from "../utils/localhost-server.js";
 
 const SLACK_SCOPES = [
@@ -84,10 +84,7 @@ export const setupSlackStep: Step = {
   name: "setup-slack",
 
   async shouldRun(ctx: WizardContext): Promise<boolean> {
-    if (ctx.completedSteps.includes("setup-slack")) return false;
-    // Needs a valid access token — the Slack exchange route is
-    // authenticated against the TCC user session.
-    return !!ctx.accessToken;
+    return !ctx.completedSteps.includes("setup-slack");
   },
 
   async run(ctx: WizardContext): Promise<StepResult> {
@@ -99,6 +96,21 @@ export const setupSlackStep: Step = {
     p.log.info(
       "Delivers reports and alerts to your workspace about regressions and patterns you'd miss.",
     );
+
+    // Slack OAuth exchange runs server-side and binds the workspace
+    // to the TCC org — that needs a signed-in user. If the wizard
+    // skipped sign-in, we can't run the flow here. Don't ask the
+    // question we can't fulfill; just point the user at the dashboard
+    // setting where they can hook Slack up later.
+    if (!ctx.accessToken) {
+      p.log.info(
+        `Sign in to set this up. You can also wire it up later from the dashboard:\n  ${pc.underline(`${getDashboardUrl()}/prod/settings`)}`,
+      );
+      return {
+        status: "skipped",
+        message: "Slack requires sign-in",
+      };
+    }
 
     const wantsSlack = await p.confirm({
       message: "Set up our Slack bot?",

@@ -112,6 +112,12 @@ export const instrumentStep: Step = {
     }
 
     p.log.success("Prompt copied to your clipboard.");
+
+    // Gap row separates the post-copy receipt from the next question.
+    // Without it, the paste instruction visually attaches to the copy
+    // result instead of pairing with the "Ready to continue?" confirm
+    // below it.
+    p.log.message("");
     p.log.info(
       "Paste it into your AI coding agent (Claude Code, Cursor, Windsurf, …) and come back here.",
     );

@@ -44,8 +44,8 @@ export const provisionKeysStep: Step = {
     try {
       spinner.start("Provisioning API key...");
 
-      // Ask for a prod key only. The readonly key is provisioned
-      // lazily inside setup-mcp, and only if the user opts into MCP.
+      // Ask for a prod key only. MCP no longer needs a readonly key
+      // (OAuth handles editor auth at first connect).
       const response = await fetch(`${getApiBase()}/cli/keys`, {
         method: "POST",
         headers: {
