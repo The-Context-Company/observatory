@@ -9,20 +9,26 @@ from .exporter import RunIdFixingExporter
 from .._utils import _debug
 
 
-def create_tracer_provider(resource_attributes: Optional[dict] = None) -> TracerProvider:
+def create_tracer_provider(
+    resource_attributes: Optional[dict] = None,
+) -> TracerProvider:
     resource = Resource(attributes=resource_attributes or {})
     return TracerProvider(resource=resource)
 
 
-def create_otlp_exporter(endpoint: str, api_key: str, headers: Optional[dict] = None) -> OTLPSpanExporter:
-    exporter_headers = {"Authorization": f"Bearer {api_key}"}
+def create_otlp_exporter(
+    endpoint: str, api_key: Optional[str] = None, headers: Optional[dict] = None
+) -> OTLPSpanExporter:
+    exporter_headers = {}
+    if api_key:
+        exporter_headers["Authorization"] = f"Bearer {api_key}"
     if headers:
         exporter_headers.update(headers)
     return OTLPSpanExporter(endpoint=endpoint, headers=exporter_headers)
 
 
 def setup_instrumentation(
-    api_key: str,
+    api_key: Optional[str],
     endpoint: str,
     resource_attributes: Optional[dict] = None,
 ) -> TracerProvider:
@@ -32,7 +38,9 @@ def setup_instrumentation(
 
     base_exporter = create_otlp_exporter(endpoint, api_key)
     fixing_exporter = RunIdFixingExporter(base_exporter)
-    batch_processor = TraceBatchSpanProcessor(exporter=fixing_exporter, timeout_seconds=600)
+    batch_processor = TraceBatchSpanProcessor(
+        exporter=fixing_exporter, timeout_seconds=600
+    )
 
     provider.add_span_processor(batch_processor)
     trace.set_tracer_provider(provider)
