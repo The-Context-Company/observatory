@@ -1,6 +1,6 @@
 {
   "name": "custom-ts-example",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Example TypeScript agent instrumented with @contextcompany/custom",
   "type": "module",
   "private": true,
