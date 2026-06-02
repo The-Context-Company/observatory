@@ -38,8 +38,9 @@ export class Run {
   private _startTime: string;
   private _endTime: string | null = null;
 
-  private _prompt: { user_prompt: string; system_prompt?: string } | undefined =
-    undefined;
+  private _prompt:
+    | { user_prompt: string; system_prompt?: string; full_input?: string }
+    | undefined = undefined;
   private _response: string | null = null;
 
   private _statusCode = 0;
@@ -85,23 +86,33 @@ export class Run {
    * Must be called before {@link Run.end | .end()}.
    *
    * Pass a string for user prompt only, or an object for user + optional
-   * system prompt.
+   * system prompt. Provide `full_input` to store the raw input (e.g. the
+   * complete provider request body or message history) verbatim while
+   * `user_prompt` drives the dashboard preview/search — prefer this over
+   * passing a JSON blob as `user_prompt`.
    *
    * @example
    * ```ts
    * r.prompt("What's the weather?");
    * r.prompt({ user_prompt: "Summarize this", system_prompt: "You are a helpful assistant." });
+   * r.prompt({ user_prompt: "Reset my password", full_input: JSON.stringify(requestBody) });
    * ```
    *
    * @returns `this` for chaining.
    */
   prompt(
-    input: string | { user_prompt: string; system_prompt?: string }
+    input:
+      | string
+      | { user_prompt: string; system_prompt?: string; full_input?: string }
   ): this {
     this._prompt =
       typeof input === "string"
         ? { user_prompt: input }
-        : { user_prompt: input.user_prompt, system_prompt: input.system_prompt };
+        : {
+            user_prompt: input.user_prompt,
+            system_prompt: input.system_prompt,
+            full_input: input.full_input,
+          };
     return this;
   }
 
