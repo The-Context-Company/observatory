@@ -134,8 +134,19 @@ export type RunInput = {
   sessionId?: string;
   /** Whether this run is part of a multi-turn conversation. */
   conversational?: boolean;
-  /** The user prompt / input that initiated the run. Optionally include a system prompt. */
-  prompt: { user_prompt: string; system_prompt?: string };
+  /**
+   * The user prompt / input that initiated the run.
+   *
+   * - `user_prompt` is the canonical user message. It drives the dashboard
+   *   preview, search, and session views, so keep it to the actual request
+   *   text — not a full request body or injected context.
+   * - `system_prompt` is the optional system instruction.
+   * - `full_input` is the optional raw input (e.g. the complete provider
+   *   request body or message history). When provided, it is stored verbatim
+   *   for replay/debugging while `user_prompt` is used for the preview. Prefer
+   *   this over stuffing a JSON blob into `user_prompt`.
+   */
+  prompt: { user_prompt: string; system_prompt?: string; full_input?: string };
   /** The agent's final response. */
   response?: string;
   /** When the run started (ISO-8601 string or `Date`). */

@@ -154,7 +154,7 @@ Create a new run builder.
 
 | Method                      | Description                                              |
 | --------------------------- | -------------------------------------------------------- |
-| `.prompt(text)`             | Set the user prompt (required before `.end()`). Pass a string or `{ user_prompt, system_prompt? }`. |
+| `.prompt(text)`             | Set the user prompt (required before `.end()`). Pass a string or `{ user_prompt, system_prompt?, full_input? }`. `user_prompt` drives the dashboard preview/search; pass `full_input` to store the raw request body/history verbatim instead of overloading `user_prompt`. |
 | `.response(text)`           | Set the agent response                                   |
 | `.metadata({ key: "val" })` | Attach metadata key-value pairs                          |
 | `.status(code, message?)`   | Set status (0 = success, 2 = error)                      |
