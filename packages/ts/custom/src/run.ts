@@ -139,6 +139,7 @@ export class Run {
   ): this {
     if (typeof input === "string") {
       this._response = input;
+      this._fullOutput = null;
     } else {
       this._response = input.response;
       this._fullOutput = input.full_output ?? null;
