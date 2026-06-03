@@ -147,8 +147,20 @@ export type RunInput = {
    *   this over stuffing a JSON blob into `user_prompt`.
    */
   prompt: { user_prompt: string; system_prompt?: string; full_input?: string };
-  /** The agent's final response. */
+  /**
+   * The agent's final response.
+   *
+   * - `response` is the human-visible reply. It drives the dashboard
+   *   preview/search, so keep it to the actual reply text — not a full
+   *   model output or tool-call envelope.
+   * - `full_output` is the optional raw/full model output (e.g. the final
+   *   assistant message including tool_use blocks, or a reply delivered via a
+   *   tool call). When provided, it is stored verbatim for replay/debugging
+   *   while `response` is used for the preview. Prefer this over stuffing a
+   *   JSON blob into `response`.
+   */
   response?: string;
+  full_output?: string;
   /** When the run started (ISO-8601 string or `Date`). */
   startTime: Date | string;
   /** When the run finished (ISO-8601 string or `Date`). */

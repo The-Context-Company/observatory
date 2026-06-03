@@ -36,6 +36,7 @@ function buildRunPayload(
   if (input.conversational !== undefined)
     payload.conversational = input.conversational;
   if (input.response !== undefined) payload.response = input.response;
+  if (input.full_output !== undefined) payload.full_output = input.full_output;
   if (input.statusMessage !== undefined)
     payload.status_message = input.statusMessage;
   if (input.metadata !== undefined) payload.metadata = input.metadata;
