@@ -42,6 +42,7 @@ export class Run {
     | { user_prompt: string; system_prompt?: string; full_input?: string }
     | undefined = undefined;
   private _response: string | null = null;
+  private _fullOutput: string | null = null;
 
   private _statusCode = 0;
   private _statusMessage: string | null = null;
@@ -119,10 +120,29 @@ export class Run {
   /**
    * Set the agent's final response to the user.
    *
+   * Pass a string for the visible reply, or an object to additionally provide
+   * `full_output` — the raw/full model output (e.g. the final assistant
+   * message including tool_use blocks, or a reply delivered via a tool call)
+   * stored verbatim for replay while `response` drives the dashboard
+   * preview/search. Prefer this over stuffing a JSON blob into `response`.
+   *
+   * @example
+   * ```ts
+   * r.response("72°F in San Francisco.");
+   * r.response({ response: "72°F in San Francisco.", full_output: JSON.stringify(assistantMessage) });
+   * ```
+   *
    * @returns `this` for chaining.
    */
-  response(text: string): this {
-    this._response = text;
+  response(
+    input: string | { response: string; full_output?: string }
+  ): this {
+    if (typeof input === "string") {
+      this._response = input;
+    } else {
+      this._response = input.response;
+      this._fullOutput = input.full_output ?? null;
+    }
     return this;
   }
 
@@ -314,6 +334,7 @@ export class Run {
     if (this._conversational !== null)
       payload.conversational = this._conversational;
     if (this._response !== null) payload.response = this._response;
+    if (this._fullOutput !== null) payload.full_output = this._fullOutput;
     if (this._statusMessage !== null)
       payload.status_message = this._statusMessage;
     if (this._metadata !== null) payload.metadata = this._metadata;
