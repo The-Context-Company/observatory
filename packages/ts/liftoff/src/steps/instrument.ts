@@ -104,7 +104,9 @@ export const instrumentStep: Step = {
     });
 
     if (p.isCancel(ready) || !ready) {
-      return { status: "failed", message: "User cancelled" };
+      ctx.promptCopied = true;
+      ctx.completedSteps.push("instrument");
+      return { status: "skipped", message: "User chose to wait for agent" };
     }
 
     ctx.promptCopied = true;

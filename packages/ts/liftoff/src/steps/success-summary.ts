@@ -70,7 +70,9 @@ export const successSummaryStep: Step = {
 
     const apiKeyPreamble = ctx.apiKey
       ? ""
-      : `${pc.bold("First, grab your API key.")} You skipped sign-in, so we couldn't provision one for you. Generate one in the dashboard and add it to your environment as ${pc.bold("TCC_API_KEY")}:\n  ${pc.underline(settingsUrl)}\n\n`;
+      : ctx.accessToken
+        ? `${pc.bold("First, grab your API key.")} We couldn't provision one automatically. Generate one in the dashboard and add it to your environment as ${pc.bold("TCC_API_KEY")}:\n  ${pc.underline(settingsUrl)}\n\n`
+        : `${pc.bold("First, grab your API key.")} You skipped sign-in, so we couldn't provision one for you. Generate one in the dashboard and add it to your environment as ${pc.bold("TCC_API_KEY")}:\n  ${pc.underline(settingsUrl)}\n\n`;
 
     if (ctx.promptCopied) {
       p.log.step(

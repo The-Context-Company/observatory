@@ -91,25 +91,24 @@ export const authStep: Step = {
       }
       activeServer = null;
 
-      if (userCancelledAuth) {
-        p.log.info(
-          pc.dim(
-            "Sign-in cancelled. Continuing without it — grab your API key from the dashboard at the end.",
-          ),
-        );
-        return {
-          status: "skipped",
-          message: "Sign-in cancelled by user",
-        };
-      }
-
       if (!result) {
+        if (userCancelledAuth) {
+          p.log.info(
+            pc.dim(
+              "Sign-in cancelled. Continuing without it — grab your API key from the dashboard at the end.",
+            ),
+          );
+          return {
+            status: "skipped",
+            message: "Sign-in cancelled by user",
+          };
+        }
         p.log.warn(
-          "Sign-in timed out. Continuing without it — grab your API key from the dashboard at the end.",
+          "Sign-in failed or timed out. Continuing without it — grab your API key from the dashboard at the end.",
         );
         return {
           status: "skipped",
-          message: "Authentication timed out",
+          message: "Authentication failed or timed out",
         };
       }
 
