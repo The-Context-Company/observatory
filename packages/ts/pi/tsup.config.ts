@@ -1,11 +1,15 @@
 import { defineConfig } from "tsup";
 
 export default defineConfig({
-  entry: { index: "src/index.ts" },
+  entry: { index: "src/index.ts", extension: "src/extension.ts" },
   format: ["esm", "cjs"],
-  dts: { entry: { index: "src/index.ts" } },
+  dts: { entry: { index: "src/index.ts", extension: "src/extension.ts" } },
   splitting: false,
   treeshake: true,
   clean: true,
-  external: ["@mariozechner/pi-coding-agent", "@mariozechner/pi-agent-core", "@mariozechner/pi-ai"],
+  external: [
+    "@mariozechner/pi-coding-agent",
+    "@mariozechner/pi-agent-core",
+    "@mariozechner/pi-ai",
+  ],
 });

@@ -15,7 +15,17 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js",
       "require": "./dist/index.cjs"
+    },
+    "./extension": {
+      "types": "./dist/extension.d.ts",
+      "import": "./dist/extension.js",
+      "require": "./dist/extension.cjs"
     }
+  },
+  "pi": {
+    "extensions": [
+      "./dist/extension.js"
+    ]
   },
   "scripts": {
     "build": "tsup",
@@ -29,7 +39,8 @@
     "observability",
     "tracing",
     "monitoring",
-    "context-company"
+    "context-company",
+    "pi-package"
   ],
   "repository": {
     "type": "git",
@@ -46,8 +57,10 @@
   "peerDependencies": {
     "@mariozechner/pi-coding-agent": ">=0.50.0"
   },
+  "dependencies": {
+    "@contextcompany/api": "workspace:*"
+  },
   "devDependencies": {
-    "@contextcompany/api": "workspace:*",
     "@types/node": "^20",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3"

@@ -35,18 +35,21 @@ export type PiInstrumentation = {
   unsubscribe: () => void;
   getLastRunId: () => string | null;
   setRunId: (id: string) => void;
+  flush: () => Promise<void>;
 };
 
 export type PiEventStreamInstrumentation = {
   getLastRunId: () => string | null;
+  flush: () => Promise<void>;
 };
 
-function createListener(config: TCCPiConfig) {
+export function createPiTelemetryListener(config: TCCPiConfig) {
   const send = createSender({
     apiKey: config.apiKey,
     endpoint: config.endpoint,
   });
 
+  const pendingSends = new Set<Promise<void>>();
   let runId: string | null = null;
   let lastRunId: string | null = null;
   let nextRunId: string | null = null;
@@ -126,9 +129,14 @@ function createListener(config: TCCPiConfig) {
           `Agent run ended: ${finalMessages.length} message(s), ${toolExecutions.length} tool execution(s)`
         );
 
-        send(payload).catch((err) =>
-          console.error("[TCC Pi] Error sending telemetry:", err)
-        );
+        const pendingSend = send(payload)
+          .catch((err) =>
+            console.error("[TCC Pi] Error sending telemetry:", err)
+          )
+          .finally(() => {
+            pendingSends.delete(pendingSend);
+          });
+        pendingSends.add(pendingSend);
 
         runId = null;
         startTimestamp = null;
@@ -155,6 +163,9 @@ function createListener(config: TCCPiConfig) {
     setRunId: (id: string) => {
       nextRunId = id;
     },
+    flush: async () => {
+      await Promise.allSettled([...pendingSends]);
+    },
   };
 }
 
@@ -164,7 +175,8 @@ export function instrumentPiSession(
 ): PiInstrumentation {
   if (config.debug) setDebug(true);
 
-  const { listener, getLastRunId, setRunId } = createListener(config);
+  const { listener, getLastRunId, setRunId, flush } =
+    createPiTelemetryListener(config);
 
   const unsubscribe = session.subscribe(listener as (event: unknown) => void);
   debug("Instrumentation active");
@@ -173,6 +185,7 @@ export function instrumentPiSession(
     unsubscribe,
     getLastRunId,
     setRunId,
+    flush,
   };
 }
 
@@ -182,7 +195,7 @@ export function instrumentPiEventStream<T extends { type: string }>(
 ): AsyncIterable<T> & PiEventStreamInstrumentation {
   if (config.debug) setDebug(true);
 
-  const { listener, getLastRunId } = createListener(config);
+  const { listener, getLastRunId, flush } = createPiTelemetryListener(config);
 
   async function* instrumented(): AsyncGenerator<T> {
     for await (const event of events) {
@@ -193,5 +206,5 @@ export function instrumentPiEventStream<T extends { type: string }>(
 
   const stream = instrumented();
 
-  return Object.assign(stream, { getLastRunId });
+  return Object.assign(stream, { getLastRunId, flush });
 }

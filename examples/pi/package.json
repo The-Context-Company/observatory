@@ -5,7 +5,9 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "dev": "tsx src/index.ts"
+    "sdk": "tsx src/sdk.ts",
+    "extension": "tsx src/extension.ts",
+    "extension:cli": "tsx src/extension-cli.ts"
   },
   "author": "The Context Company",
   "license": "MIT",

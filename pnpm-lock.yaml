@@ -436,13 +436,13 @@ importers:
 
   packages/ts/pi:
     dependencies:
+      '@contextcompany/api':
+        specifier: workspace:*
+        version: link:../api
       '@mariozechner/pi-coding-agent':
         specifier: '>=0.50.0'
         version: 0.62.0(ws@8.18.3)(zod@4.1.13)
     devDependencies:
-      '@contextcompany/api':
-        specifier: workspace:*
-        version: link:../api
       '@types/node':
         specifier: ^20
         version: 20.19.37
