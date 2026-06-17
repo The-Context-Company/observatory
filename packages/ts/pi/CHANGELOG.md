@@ -1,5 +1,11 @@
 # @contextcompany/pi
 
+## 1.2.0
+
+### Minor Changes
+
+- e21aedb: Add project and global metadata config files for the Pi CLI extension.
+
 ## 1.1.2
 
 ### Patch Changes
