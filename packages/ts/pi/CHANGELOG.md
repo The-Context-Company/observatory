@@ -1,5 +1,11 @@
 # @contextcompany/pi
 
+## 1.1.2
+
+### Patch Changes
+
+- 2fc3b1c: Add a Pi extension entrypoint so `@contextcompany/pi` can be installed with `pi install`, and add extension and SDK examples.
+
 ## 1.1.1
 
 ### Patch Changes

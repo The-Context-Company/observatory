@@ -1,5 +1,12 @@
 # pi-example
 
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [2fc3b1c]
+  - @contextcompany/pi@1.1.2
+
 ## 1.0.2
 
 ### Patch Changes
