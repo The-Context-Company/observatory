@@ -3,6 +3,15 @@ export async function submitFeedback(params: {
   score?: "thumbs_up" | "thumbs_down";
   text?: string;
 }): Promise<Response | undefined> {
+  if (
+    !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      params.runId
+    )
+  ) {
+    console.error("[TCC] Cannot submit feedback: runId must be a UUID");
+    return;
+  }
+
   if (!params.score && !params.text) {
     console.error(
       "[TCC] Cannot submit feedback: at least one of 'score' or 'text' must be provided"

@@ -3,6 +3,7 @@ import uuid
 from typing import Any, Dict, Literal, Optional
 
 from ._utils import _now_iso, _SENTINEL, _debug, _send_payload
+from .redaction import redact_status_message
 
 
 class Run:
@@ -72,7 +73,7 @@ class Run:
     def status(self, code: int, message: Optional[str] = None) -> "Run":
         self._status_code = code
         if message is not None:
-            self._status_message = message
+            self._status_message = redact_status_message(message)
         _debug("Run status set:", code, message)
         return self
 
@@ -105,7 +106,7 @@ class Run:
         _debug("Run error:", status_message)
         self._status_code = 2
         if status_message:
-            self._status_message = status_message
+            self._status_message = redact_status_message(status_message)
         self._ended = True
 
         payload = self._build_payload()

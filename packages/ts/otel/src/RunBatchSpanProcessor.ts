@@ -12,6 +12,13 @@ import type { OTLPHttpJsonTraceExporter } from "./exporters/json/OTLPHttpJsonTra
 type RunId = string;
 type Batch = ReadableSpan[];
 
+type RunBatchSpanProcessorOptions = {
+  maxActiveBatches?: number;
+  maxSpansPerBatch?: number;
+  maxQueuedSpans?: number;
+  batchTimeoutMs?: number;
+};
+
 export class RunBatchSpanProcessor implements SpanProcessor {
   private shutdownOnce = { isCalled: false };
 
@@ -19,11 +26,23 @@ export class RunBatchSpanProcessor implements SpanProcessor {
 
   private batches = new Map<RunId, Batch>();
   private batchTimeouts = new Map<RunId, NodeJS.Timeout>();
+  private queuedSpanCount = 0;
 
   private exporter: OTLPHttpJsonTraceExporter;
+  private readonly maxActiveBatches: number;
+  private readonly maxSpansPerBatch: number;
+  private readonly maxQueuedSpans: number;
+  private readonly batchTimeoutMs: number;
 
-  constructor(exporter: OTLPHttpJsonTraceExporter) {
+  constructor(
+    exporter: OTLPHttpJsonTraceExporter,
+    options: RunBatchSpanProcessorOptions = {}
+  ) {
     this.exporter = exporter;
+    this.maxActiveBatches = options.maxActiveBatches ?? 1000;
+    this.maxSpansPerBatch = options.maxSpansPerBatch ?? 1000;
+    this.maxQueuedSpans = options.maxQueuedSpans ?? 10000;
+    this.batchTimeoutMs = options.batchTimeoutMs ?? 600000;
   }
 
   onStart(span: Span, _parentContext: Context): void {
@@ -105,9 +124,24 @@ export class RunBatchSpanProcessor implements SpanProcessor {
   }
 
   private addToBatch(runId: string, span: ReadableSpan) {
-    const batch = this.batches.get(runId);
-    if (batch) batch.push(span);
-    else this.batches.set(runId, [span]);
+    let batch = this.batches.get(runId);
+    if (!batch) {
+      this.evictOldestBatchesIfNeeded();
+      batch = [];
+      this.batches.set(runId, batch);
+    }
+
+    if (batch.length >= this.maxSpansPerBatch) {
+      debug(`RunBatchSpanProcessor: Dropping span for oversized batch ${runId}`);
+      return;
+    }
+
+    if (this.queuedSpanCount >= this.maxQueuedSpans) {
+      this.evictOldestBatch();
+    }
+
+    batch.push(span);
+    this.queuedSpanCount++;
 
     // reset timeout for this batch
     const existingTimeout = this.batchTimeouts.get(runId);
@@ -115,8 +149,34 @@ export class RunBatchSpanProcessor implements SpanProcessor {
 
     const timeout = setTimeout(() => {
       this.exportBatch(runId);
-    }, 600000); // 10 minutes
+    }, this.batchTimeoutMs);
     this.batchTimeouts.set(runId, timeout);
+  }
+
+  private evictOldestBatchesIfNeeded() {
+    while (this.batches.size >= this.maxActiveBatches) {
+      this.evictOldestBatch();
+    }
+  }
+
+  private evictOldestBatch() {
+    const oldestRunId = this.batches.keys().next().value as string | undefined;
+    if (!oldestRunId) return;
+
+    const batch = this.batches.get(oldestRunId);
+    const timeout = this.batchTimeouts.get(oldestRunId);
+    if (timeout) clearTimeout(timeout);
+
+    if (batch) {
+      this.queuedSpanCount = Math.max(0, this.queuedSpanCount - batch.length);
+      for (const span of batch) {
+        this.spanIdToRunId.delete(span.spanContext().spanId);
+      }
+    }
+
+    this.batches.delete(oldestRunId);
+    this.batchTimeouts.delete(oldestRunId);
+    debug(`RunBatchSpanProcessor: Dropped oldest batch ${oldestRunId}`);
   }
 
   private exportBatch(runId: string) {
@@ -131,6 +191,7 @@ export class RunBatchSpanProcessor implements SpanProcessor {
 
     this.batches.delete(runId);
     this.batchTimeouts.delete(runId);
+    this.queuedSpanCount = Math.max(0, this.queuedSpanCount - batch.length);
 
     for (const span of batch) {
       const spanId = span.spanContext().spanId;

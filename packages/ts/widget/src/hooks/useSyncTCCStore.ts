@@ -36,7 +36,15 @@ const hasFailure = (items: NewItems) => {
 
 export const useSyncTCCStore = () =>
   useEffect(() => {
-    const ws = new WebSocket(`ws://localhost:${(window as any).TCC_WSS_PORT}`);
+    const token = (window as any).TCC_WSS_TOKEN;
+    if (!token) {
+      debug("Missing TCC WebSocket token");
+      return;
+    }
+
+    const ws = new WebSocket(
+      `ws://localhost:${(window as any).TCC_WSS_PORT}?token=${encodeURIComponent(token)}`
+    );
 
     ws.onopen = () => {
       debug("Connected to TCC WebSocket server");

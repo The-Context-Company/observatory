@@ -1,4 +1,5 @@
 import net from "net";
+import crypto from "crypto";
 import { WebSocketServer } from "ws";
 import { tccLocalExporter } from "./runtime";
 import { debug } from "../../internal/logger";
@@ -6,6 +7,51 @@ import { captureAnonymousEvent } from "../telemetry/posthog";
 
 // these are completely arbitrary ports
 const PREFERRED_PORTS = [8081, 3001, 3002, 3003, 3004, 3005, 8000, 8001, 8080];
+const LOCAL_WIDGET_TOKEN =
+  process.env.TCC_LOCAL_WIDGET_TOKEN ?? crypto.randomBytes(32).toString("hex");
+
+function isAllowedOrigin(origin: string | undefined): boolean {
+  if (!origin) return true;
+  try {
+    const parsed = new URL(origin);
+    return (
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" ||
+        parsed.hostname === "127.0.0.1" ||
+        parsed.hostname === "[::1]")
+    );
+  } catch {
+    return false;
+  }
+}
+
+function hasValidToken(url: string | undefined): boolean {
+  if (!url) return false;
+  try {
+    const parsed = new URL(url, "ws://127.0.0.1");
+    return parsed.searchParams.get("token") === LOCAL_WIDGET_TOKEN;
+  } catch {
+    return false;
+  }
+}
+
+function isPostHogEvent(value: unknown): value is {
+  event: string;
+  properties?: Record<string, unknown>;
+} {
+  if (!value || typeof value !== "object") return false;
+  const event = (value as { event?: unknown }).event;
+  const properties = (value as { properties?: unknown }).properties;
+  return (
+    typeof event === "string" &&
+    event.length > 0 &&
+    event.length <= 200 &&
+    (properties === undefined ||
+      (typeof properties === "object" &&
+        properties !== null &&
+        !Array.isArray(properties)))
+  );
+}
 
 async function isPortFree(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -13,7 +59,7 @@ async function isPortFree(port: number): Promise<boolean> {
       .createServer()
       .once("error", () => resolve(false))
       .once("listening", () => srv.close(() => resolve(true)))
-      .listen(port);
+      .listen(port, "127.0.0.1");
   });
 }
 
@@ -58,12 +104,19 @@ export const startWebSocketServer = async () => {
   }
 
   const port = await getFreePort();
-  const wss = new WebSocketServer({ port });
+  const wss = new WebSocketServer({ host: "127.0.0.1", port });
 
   process._tccWss = wss;
+  process._tccWssToken = LOCAL_WIDGET_TOKEN;
   debug(`Saved _tccWss to process`);
+  debug(`TCC local widget token: ${LOCAL_WIDGET_TOKEN}`);
 
-  wss.on("connection", (ws) => {
+  wss.on("connection", (ws, request) => {
+    if (!isAllowedOrigin(request.headers.origin) || !hasValidToken(request.url)) {
+      ws.close(1008, "Unauthorized");
+      return;
+    }
+
     debug("ws client connected");
 
     // send initial store
@@ -77,12 +130,19 @@ export const startWebSocketServer = async () => {
     ws.on("message", (data) => {
       try {
         const event = JSON.parse(data.toString());
+        if (!isPostHogEvent(event)) {
+          debug("Rejected invalid WebSocket telemetry event");
+          return;
+        }
         captureAnonymousEvent(event);
       } catch (error) {
         const errorMsg = error instanceof Error ? error.message : String(error);
         const dataStr = data.toString();
-        const truncatedData = dataStr.length > 200 ? dataStr.slice(0, 200) + "..." : dataStr;
-        debug(`Failed to parse WebSocket message: ${errorMsg}. Data: ${truncatedData}`);
+        const truncatedData =
+          dataStr.length > 200 ? dataStr.slice(0, 200) + "..." : dataStr;
+        debug(
+          `Failed to parse WebSocket message: ${errorMsg}. Data: ${truncatedData}`
+        );
       }
     });
 
@@ -104,5 +164,6 @@ export const startWebSocketServer = async () => {
   wss.on("close", () => {
     debug("wss closed");
     delete process._tccWss;
+    delete process._tccWssToken;
   });
 };

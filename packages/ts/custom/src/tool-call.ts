@@ -1,3 +1,4 @@
+import { redactStatusMessage } from "./redaction";
 import type { ToolCallOptions } from "./types";
 import { debug } from "./transport";
 
@@ -124,7 +125,7 @@ export class ToolCall {
    */
   status(code: number, message?: string): this {
     this._statusCode = code;
-    if (message !== undefined) this._statusMessage = message;
+    if (message !== undefined) this._statusMessage = redactStatusMessage(message);
     return this;
   }
 
@@ -137,7 +138,7 @@ export class ToolCall {
   error(message = ""): void {
     if (this._ended) throw new Error("[TCC] ToolCall already ended");
     this._statusCode = 2;
-    if (message) this._statusMessage = message;
+    if (message) this._statusMessage = redactStatusMessage(message);
     this._ended = true;
     this._endTime ??= new Date().toISOString();
     debug("ToolCall error", { toolCallId: this._toolCallId, message });

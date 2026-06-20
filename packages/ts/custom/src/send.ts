@@ -1,3 +1,4 @@
+import { redactStatusMessage } from "./redaction";
 import type { RunInput, StepInput, ToolCallInput, ModelConfig } from "./types";
 import { send, debug } from "./transport";
 
@@ -38,7 +39,7 @@ function buildRunPayload(
   if (input.response !== undefined) payload.response = input.response;
   if (input.full_output !== undefined) payload.full_output = input.full_output;
   if (input.statusMessage !== undefined)
-    payload.status_message = input.statusMessage;
+    payload.status_message = redactStatusMessage(input.statusMessage);
   if (input.metadata !== undefined) payload.metadata = input.metadata;
 
   return payload;
@@ -60,7 +61,7 @@ function buildStepPayload(
   };
 
   if (input.statusMessage !== undefined)
-    payload.status_message = input.statusMessage;
+    payload.status_message = redactStatusMessage(input.statusMessage);
 
   if (input.model !== undefined) {
     const { requested, used } = resolveModel(input.model);
@@ -98,7 +99,7 @@ function buildToolCallPayload(
   };
 
   if (input.statusMessage !== undefined)
-    payload.status_message = input.statusMessage;
+    payload.status_message = redactStatusMessage(input.statusMessage);
   if (input.args !== undefined) payload.args = stringify(input.args);
   if (input.result !== undefined) payload.result = stringify(input.result);
 

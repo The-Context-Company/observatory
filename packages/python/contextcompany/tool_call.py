@@ -3,6 +3,7 @@ import uuid
 from typing import Any, Dict, Optional, Union
 
 from ._utils import _now_iso, _debug, _send_payload
+from .redaction import redact_status_message
 
 
 class ToolCall:
@@ -54,7 +55,7 @@ class ToolCall:
     def status(self, code: int, message: Optional[str] = None) -> "ToolCall":
         self._status_code = code
         if message is not None:
-            self._status_message = message
+            self._status_message = redact_status_message(message)
         _debug("ToolCall status set:", code, message)
         return self
 
@@ -65,7 +66,7 @@ class ToolCall:
         _debug("ToolCall error:", status_message)
         self._status_code = 2
         if status_message:
-            self._status_message = status_message
+            self._status_message = redact_status_message(status_message)
         self._ended = True
 
         payload = self._build_payload()

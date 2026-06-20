@@ -1,4 +1,5 @@
 import { getConfig } from "./config";
+import { redactStatusMessage } from "./redaction";
 import { Step } from "./step";
 import { ToolCall } from "./tool-call";
 import { debug, send } from "./transport";
@@ -176,7 +177,7 @@ export class Run {
    */
   status(code: number, message?: string): this {
     this._statusCode = code;
-    if (message !== undefined) this._statusMessage = message;
+    if (message !== undefined) this._statusMessage = redactStatusMessage(message);
     return this;
   }
 
@@ -247,7 +248,7 @@ export class Run {
     if (this._ended) throw new Error("[TCC] Run already ended");
     this._clearTimeout();
     this._statusCode = 2;
-    if (message) this._statusMessage = message;
+    if (message) this._statusMessage = redactStatusMessage(message);
     this._ended = true;
     this._endTime ??= new Date().toISOString();
 
