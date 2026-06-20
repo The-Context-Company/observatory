@@ -22,7 +22,10 @@ export function normalizeTCCBaseUrl(url: string): string {
   }
 
   const base = parsed.origin + parsed.pathname.replace(/\/+$/, "");
-  if (ALLOWED_REMOTE_ORIGINS.has(base) || isLocalhostOrigin(parsed.origin)) {
+  if (
+    ALLOWED_REMOTE_ORIGINS.has(parsed.origin) ||
+    isLocalhostOrigin(parsed.origin)
+  ) {
     return base;
   }
 
@@ -80,7 +83,9 @@ export function getTCCFeedbackUrl(): string {
       : undefined;
   if (envUrl) {
     const url = new URL(envUrl);
-    const base = normalizeTCCBaseUrl(url.origin + url.pathname.replace(/\/v1\/feedback\/?$/, ""));
+    const base = normalizeTCCBaseUrl(
+      url.origin + url.pathname.replace(/\/v1\/feedback\/?$/, "")
+    );
     return `${base}/v1/feedback`;
   }
   return `${getTCCBaseUrl()}/v1/feedback`;

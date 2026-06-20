@@ -1,4 +1,4 @@
-import { describe, expect, it, afterEach } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { normalizeTCCBaseUrl } from "./config";
 
 const OLD_ENV = process.env.TCC_ALLOW_UNSAFE_BASE_URL;
@@ -12,6 +12,9 @@ describe("normalizeTCCBaseUrl", () => {
   it("allows official TCC origins", () => {
     expect(normalizeTCCBaseUrl("https://api.thecontext.company/")).toBe(
       "https://api.thecontext.company"
+    );
+    expect(normalizeTCCBaseUrl("https://api.thecontext.company/v1")).toBe(
+      "https://api.thecontext.company/v1"
     );
     expect(normalizeTCCBaseUrl("https://dev.thecontext.company")).toBe(
       "https://dev.thecontext.company"

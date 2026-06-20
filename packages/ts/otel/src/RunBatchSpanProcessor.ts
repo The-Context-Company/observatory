@@ -1,12 +1,12 @@
+import { Context } from "@opentelemetry/api";
 import {
   SpanProcessor,
   type ReadableSpan,
   type Span,
 } from "@opentelemetry/sdk-trace-base";
-import { getRunIdFromSpanMetadata, getSpanType } from "./utils";
-import { Context } from "@opentelemetry/api";
-import { debug } from "./internal/logger";
 import type { OTLPHttpJsonTraceExporter } from "./exporters/json/OTLPHttpJsonTraceExporter";
+import { debug } from "./internal/logger";
+import { getRunIdFromSpanMetadata, getSpanType } from "./utils";
 
 // we use the spanId of a "run" span type as the batchId
 type RunId = string;
@@ -131,13 +131,23 @@ export class RunBatchSpanProcessor implements SpanProcessor {
       this.batches.set(runId, batch);
     }
 
-    if (batch.length >= this.maxSpansPerBatch) {
-      debug(`RunBatchSpanProcessor: Dropping span for oversized batch ${runId}`);
+    const isRunSpan = getSpanType(span) === "run";
+    if (batch.length >= this.maxSpansPerBatch && !isRunSpan) {
+      debug(
+        `RunBatchSpanProcessor: Dropping span for oversized batch ${runId}`
+      );
       return;
     }
 
     if (this.queuedSpanCount >= this.maxQueuedSpans) {
       this.evictOldestBatch();
+      batch = this.batches.get(runId);
+      if (!batch) {
+        debug(
+          `RunBatchSpanProcessor: Batch ${runId} was evicted, dropping span`
+        );
+        return;
+      }
     }
 
     batch.push(span);
