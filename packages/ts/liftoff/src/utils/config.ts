@@ -26,7 +26,11 @@ function normalizeApiBase(url: string): string {
   const isLocalhost =
     /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(parsed.origin);
 
-  if (ALLOWED_REMOTE_BASES.has(base) || isLocalhost || unsafeApiBaseAllowed()) {
+  if (
+    ALLOWED_REMOTE_BASES.has(parsed.origin) ||
+    isLocalhost ||
+    unsafeApiBaseAllowed()
+  ) {
     return base;
   }
 
