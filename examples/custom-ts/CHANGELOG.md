@@ -1,5 +1,13 @@
 # custom-ts-example
 
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [5c0068f]
+- Updated dependencies [5c0068f]
+  - @contextcompany/custom@1.2.1
+
 ## 1.0.3
 
 ### Patch Changes

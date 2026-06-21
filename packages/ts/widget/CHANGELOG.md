@@ -1,5 +1,11 @@
 # @contextcompany/widget
 
+## 1.0.8
+
+### Patch Changes
+
+- 5c0068f: Secure the local development widget WebSocket by binding to localhost, requiring a per-process token, validating local origins, and ignoring malformed telemetry events.
+
 ## 1.0.7
 
 ### Patch Changes

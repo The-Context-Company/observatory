@@ -1,5 +1,12 @@
 # langchain-ts-example
 
+## 1.0.3
+
+### Patch Changes
+
+- Updated dependencies [5c0068f]
+  - @contextcompany/langchain@1.2.2
+
 ## 1.0.2
 
 ### Patch Changes

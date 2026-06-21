@@ -1,5 +1,12 @@
 # @contextcompany/custom
 
+## 1.2.1
+
+### Patch Changes
+
+- 5c0068f: Redact secrets from custom TypeScript status messages before sending runs, steps, tool calls, and direct event payloads.
+- 5c0068f: Harden feedback submission by validating run IDs before sending feedback and restricting configurable TCC API endpoints to official origins or localhost by default.
+
 ## 1.2.0
 
 ### Minor Changes

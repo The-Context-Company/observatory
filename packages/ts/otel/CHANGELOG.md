@@ -1,5 +1,13 @@
 # @contextcompany/otel
 
+## 1.0.17
+
+### Patch Changes
+
+- 5c0068f: Bound active run batches, queued spans, and timeout state in the run batch span processor to reduce local memory exhaustion risk.
+- 5c0068f: Harden feedback submission by validating run IDs before sending feedback and restricting configurable TCC API endpoints to official origins or localhost by default.
+- 5c0068f: Secure the local development widget WebSocket by binding to localhost, requiring a per-process token, validating local origins, and ignoring malformed telemetry events.
+
 ## 1.0.16
 
 ### Patch Changes

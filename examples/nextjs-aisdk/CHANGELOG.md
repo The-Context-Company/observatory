@@ -1,5 +1,14 @@
 # nextjs-aisdk
 
+## 0.1.3
+
+### Patch Changes
+
+- Updated dependencies [5c0068f]
+- Updated dependencies [5c0068f]
+- Updated dependencies [5c0068f]
+  - @contextcompany/otel@1.0.17
+
 ## 0.1.2
 
 ### Patch Changes
