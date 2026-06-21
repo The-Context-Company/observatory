@@ -1,5 +1,11 @@
 # @contextcompany/openclaw
 
+## 1.1.3
+
+### Patch Changes
+
+- 5c0068f: Harden feedback submission by validating run IDs before sending feedback and restricting configurable TCC API endpoints to official origins or localhost by default.
+
 ## 1.1.2
 
 ### Patch Changes

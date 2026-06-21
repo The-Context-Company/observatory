@@ -1,5 +1,11 @@
 # @contextcompany/liftoff
 
+## 0.1.1
+
+### Patch Changes
+
+- 5c0068f: Restrict Liftoff API base overrides to official TCC origins or localhost by default, with an explicit unsafe override for self-hosted testing.
+
 ## 0.1.0
 
 ### Minor Changes

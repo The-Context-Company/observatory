@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/widget",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "The Context Company integration for AI SDK local mode",
   "type": "module",
   "main": "./dist/index.cjs",

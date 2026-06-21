@@ -1,5 +1,13 @@
 # @contextcompany/pi
 
+## 1.2.1
+
+### Patch Changes
+
+- 5c0068f: Harden feedback submission by validating run IDs before sending feedback and restricting configurable TCC API endpoints to official origins or localhost by default.
+- Updated dependencies [5c0068f]
+  - @contextcompany/api@1.0.3
+
 ## 1.2.0
 
 ### Minor Changes
