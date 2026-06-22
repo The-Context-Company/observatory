@@ -3,6 +3,7 @@ from typing import Optional
 
 PROD_BASE = "https://api.thecontext.company"
 DEV_BASE = "https://dev.thecontext.company"
+DEFAULT_LOCAL_OTLP_ENDPOINT = "http://localhost:4318/v1/traces"
 
 
 def get_api_key(api_key: Optional[str] = None) -> str:
@@ -25,3 +26,7 @@ def get_base_url(api_key: Optional[str] = None) -> str:
 
 def get_url(path: str, api_key: Optional[str] = None) -> str:
     return f"{get_base_url(api_key)}{path}"
+
+
+def get_local_otlp_url(endpoint: Optional[str] = None) -> str:
+    return endpoint or os.getenv("TCC_LOCAL_OTLP_ENDPOINT", DEFAULT_LOCAL_OTLP_ENDPOINT)
