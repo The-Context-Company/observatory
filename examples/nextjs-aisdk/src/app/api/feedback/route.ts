@@ -1,7 +1,11 @@
-import { submitFeedback } from "@contextcompany/otel";
 import { NextRequest, NextResponse } from "next/server";
+import { submitFeedback } from "@contextcompany/otel";
+import { authorizeExampleRequest } from "../_example-auth";
 
 export async function POST(request: NextRequest) {
+  const unauthorized = authorizeExampleRequest(request);
+  if (unauthorized) return unauthorized;
+
   try {
     const body = await request.json();
     const { runId, score, comment } = body;

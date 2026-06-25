@@ -28,7 +28,11 @@ export default function RootLayout({
       <head>
         {/* add The Context Company widget when running locally */}
         {process.env.NODE_ENV === "development" && (
-          <Script src="https://unpkg.com/@contextcompany/widget/dist/auto.global.js" />
+          <Script
+            crossOrigin="anonymous"
+            integrity="sha384-ryHylpN8vggwpf+rjl5Z7CGgpVWrEAXn6WTY/Kv2RhlixzrdTMCP3/DPS3RMtNCg"
+            src="https://unpkg.com/@contextcompany/widget@1.0.8/dist/auto.global.js"
+          />
         )}
       </head>
       <body

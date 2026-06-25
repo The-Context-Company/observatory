@@ -1,11 +1,15 @@
-import { openai } from "@ai-sdk/openai";
-import { convertToModelMessages, streamText, stepCountIs } from "ai";
 import { randomUUID } from "crypto";
+import { openai } from "@ai-sdk/openai";
+import { convertToModelMessages, stepCountIs, streamText } from "ai";
+import { authorizeExampleRequest } from "../_example-auth";
 import { weatherTools } from "./agent";
 
 export const maxDuration = 60;
 
 export async function POST(req: Request) {
+  const unauthorized = authorizeExampleRequest(req);
+  if (unauthorized) return unauthorized;
+
   const body = await req.json();
   const { messages } = body;
 
