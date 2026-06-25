@@ -44,7 +44,10 @@ def normalize_base_url(url: str) -> str:
 
     hostname = parsed.hostname.lower()
     host = f"[{hostname}]" if ":" in hostname and not hostname.startswith("[") else hostname
-    port = f":{parsed.port}" if parsed.port else ""
+    is_default_port = (parsed.scheme == "https" and parsed.port == 443) or (
+        parsed.scheme == "http" and parsed.port == 80
+    )
+    port = f":{parsed.port}" if parsed.port and not is_default_port else ""
     origin = f"{parsed.scheme.lower()}://{host}{port}"
     base = f"{origin}{parsed.path.rstrip('/')}"
 
