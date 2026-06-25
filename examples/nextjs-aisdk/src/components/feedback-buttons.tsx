@@ -2,6 +2,8 @@
 
 import { useState } from "react";
 
+const exampleApiToken = process.env.NEXT_PUBLIC_TCC_EXAMPLE_API_TOKEN;
+
 type FeedbackButtonsProps = {
   runId: string; // TCC: Unique ID linking feedback to specific AI response
 };
@@ -27,6 +29,9 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(exampleApiToken
+            ? { "x-tcc-example-token": exampleApiToken }
+            : {}),
         },
         body: JSON.stringify({ runId, score }),
       });
@@ -53,6 +58,9 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          ...(exampleApiToken
+            ? { "x-tcc-example-token": exampleApiToken }
+            : {}),
         },
         body: JSON.stringify({
           runId, // TCC: Links comment to specific AI response
@@ -76,15 +84,15 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
 
   return (
     <>
-      <div className="flex items-center gap-2 mt-2">
+      <div className="mt-2 flex items-center gap-2">
         <button
           onClick={() => handleFeedback("thumbs_up")}
           disabled={isSubmitting}
-          className={`p-1.5 rounded-md transition-colors ${
+          className={`rounded-md p-1.5 transition-colors ${
             selectedScore === "thumbs_up"
-              ? "bg-green-100 dark:bg-green-900 text-green-700 dark:text-green-300"
-              : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+              ? "bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-300"
+              : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          } disabled:cursor-not-allowed disabled:opacity-50`}
           aria-label="Thumbs up"
           title="Good response"
         >
@@ -93,11 +101,11 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
         <button
           onClick={() => handleFeedback("thumbs_down")}
           disabled={isSubmitting}
-          className={`p-1.5 rounded-md transition-colors ${
+          className={`rounded-md p-1.5 transition-colors ${
             selectedScore === "thumbs_down"
-              ? "bg-red-100 dark:bg-red-900 text-red-700 dark:text-red-300"
-              : "hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-500 dark:text-zinc-400"
-          } disabled:opacity-50 disabled:cursor-not-allowed`}
+              ? "bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300"
+              : "text-zinc-500 hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
+          } disabled:cursor-not-allowed disabled:opacity-50`}
           aria-label="Thumbs down"
           title="Bad response"
         >
@@ -105,7 +113,7 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
         </button>
         <button
           onClick={() => setShowCommentModal(true)}
-          className="p-1.5 px-3 rounded-md transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800 text-zinc-600 dark:text-zinc-400 text-sm"
+          className="rounded-md p-1.5 px-3 text-sm text-zinc-600 transition-colors hover:bg-zinc-100 dark:text-zinc-400 dark:hover:bg-zinc-800"
           title="Add comment"
         >
           💬 Comment
@@ -113,23 +121,23 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
       </div>
 
       {showCommentModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-          <div className="bg-white dark:bg-zinc-900 p-6 rounded-lg shadow-xl max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4 text-zinc-900 dark:text-zinc-100">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
+          <div className="mx-4 w-full max-w-md rounded-lg bg-white p-6 shadow-xl dark:bg-zinc-900">
+            <h3 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
               Add Feedback Comment
             </h3>
             <textarea
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Share your thoughts about this response..."
-              className="w-full p-3 border border-zinc-300 dark:border-zinc-700 rounded-md bg-white dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full rounded-md border border-zinc-300 bg-white p-3 text-zinc-900 focus:ring-2 focus:ring-blue-500 focus:outline-none dark:border-zinc-700 dark:bg-zinc-800 dark:text-zinc-100"
               rows={4}
             />
-            <div className="flex gap-2 mt-4">
+            <div className="mt-4 flex gap-2">
               <button
                 onClick={handleCommentSubmit}
                 disabled={!comment.trim() || isSubmittingComment}
-                className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex-1 rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 {isSubmittingComment ? "Submitting..." : "Submit"}
               </button>
@@ -138,7 +146,7 @@ export function FeedbackButtons({ runId }: FeedbackButtonsProps) {
                   setShowCommentModal(false);
                   setComment("");
                 }}
-                className="flex-1 px-4 py-2 bg-zinc-200 dark:bg-zinc-700 text-zinc-900 dark:text-zinc-100 rounded-md hover:bg-zinc-300 dark:hover:bg-zinc-600 transition-colors"
+                className="flex-1 rounded-md bg-zinc-200 px-4 py-2 text-zinc-900 transition-colors hover:bg-zinc-300 dark:bg-zinc-700 dark:text-zinc-100 dark:hover:bg-zinc-600"
               >
                 Cancel
               </button>

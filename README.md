@@ -5,6 +5,7 @@
 Observatory is a monorepo containing core packages for AI agent observability across TypeScript and Python:
 
 **TypeScript:**
+
 - **[@contextcompany/otel](./packages/ts/otel)** - OpenTelemetry integration for instrumenting AI SDK calls
 - **[@contextcompany/widget](./packages/ts/widget)** - Local-first UI overlay for visualizing AI agent traces in real-time
 - **[@contextcompany/claude](./packages/ts/claude)** - Instrumentation for Claude Agent SDK
@@ -16,6 +17,7 @@ Observatory is a monorepo containing core packages for AI agent observability ac
 - **[@contextcompany/api](./packages/ts/api)** - Shared API utilities (feedback, configuration)
 
 **Python:**
+
 - **[contextcompany](./packages/python)** - Python SDK with built-in integrations for LangChain, CrewAI, Agno, and LiteLLM
 
 ## Local mode (AI SDK + Next.js)
@@ -69,7 +71,8 @@ export default function RootLayout({
         {/* add The Context Company widget */}
         <Script
           crossOrigin="anonymous"
-          src="//unpkg.com/@contextcompany/widget/dist/auto.global.js"
+          integrity="sha384-ryHylpN8vggwpf+rjl5Z7CGgpVWrEAXn6WTY/Kv2RhlixzrdTMCP3/DPS3RMtNCg"
+          src="https://unpkg.com/@contextcompany/widget@1.0.8/dist/auto.global.js"
         />
         {/* other scripts */}
       </head>
@@ -100,20 +103,20 @@ const result = generateText({
 
 Check out the [examples/](./examples) directory for working demos across all supported frameworks:
 
-| Example | Framework | Language |
-|---------|-----------|----------|
-| [nextjs-widget](./examples/nextjs-widget) | AI SDK + Local Widget | TypeScript |
-| [nextjs-aisdk](./examples/nextjs-aisdk) | AI SDK + Cloud Mode | TypeScript |
-| [claude-agent-sdk](./examples/claude-agent-sdk) | Claude Agent SDK | TypeScript |
-| [langchain-ts](./examples/langchain-ts) | LangChain / LangGraph | TypeScript |
-| [mastra](./examples/mastra) | Mastra | TypeScript |
-| [custom-ts](./examples/custom-ts) | Custom Instrumentation | TypeScript |
-| [openclaw](./packages/ts/openclaw) | OpenClaw (OTLP Collector) | TypeScript |
-| [pi](./packages/ts/pi) | Pi Agent SDK | TypeScript |
-| [langchain](./examples/langchain) | LangChain | Python |
-| [crewai](./examples/crewai) | CrewAI | Python |
-| [agno](./examples/agno) | Agno | Python |
-| [custom-python](./examples/custom-python) | Custom Instrumentation | Python |
+| Example                                         | Framework                 | Language   |
+| ----------------------------------------------- | ------------------------- | ---------- |
+| [nextjs-widget](./examples/nextjs-widget)       | AI SDK + Local Widget     | TypeScript |
+| [nextjs-aisdk](./examples/nextjs-aisdk)         | AI SDK + Cloud Mode       | TypeScript |
+| [claude-agent-sdk](./examples/claude-agent-sdk) | Claude Agent SDK          | TypeScript |
+| [langchain-ts](./examples/langchain-ts)         | LangChain / LangGraph     | TypeScript |
+| [mastra](./examples/mastra)                     | Mastra                    | TypeScript |
+| [custom-ts](./examples/custom-ts)               | Custom Instrumentation    | TypeScript |
+| [openclaw](./packages/ts/openclaw)              | OpenClaw (OTLP Collector) | TypeScript |
+| [pi](./packages/ts/pi)                          | Pi Agent SDK              | TypeScript |
+| [langchain](./examples/langchain)               | LangChain                 | Python     |
+| [crewai](./examples/crewai)                     | CrewAI                    | Python     |
+| [agno](./examples/agno)                         | Agno                      | Python     |
+| [custom-python](./examples/custom-python)       | Custom Instrumentation    | Python     |
 
 ### Contributing
 

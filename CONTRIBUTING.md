@@ -115,10 +115,12 @@ Unified Python SDK with built-in framework integrations for CrewAI, Agno, LangCh
 Each TypeScript package supports two development modes:
 
 `pnpm dev`:
+
 - **Watch mode only** - Automatically rebuilds when you save files
 - Output goes to the `dist/` folder
 
 `pnpm dev:all`:
+
 - **Watch mode + local HTTP server**
 - Automatically rebuilds AND serves the built files on port 3001 or 3002
 - Lets you use URL imports for testing your local changes outside of the workspace
@@ -173,7 +175,7 @@ We don't have a comprehensive test suite yet (contributions welcome!). For now, 
 
    ```tsx
    {
-     /* <script src="https://unpkg.com/@contextcompany/widget/dist/auto.global.js" async /> */
+     /* <script src="https://unpkg.com/@contextcompany/widget@1.0.8/dist/auto.global.js" async /> */
    }
    <script src="http://localhost:3001/auto.global.js" async />;
    ```
@@ -262,12 +264,12 @@ Now you can make changes to the widget package and see them reflected in real-ti
 3. **Add instrumentation** to your Pi session:
 
    ```typescript
-   import { createAgentSession } from '@mariozechner/pi-coding-agent';
-   import { instrumentPiSession } from '@contextcompany/pi';
+   import { instrumentPiSession } from "@contextcompany/pi";
+   import { createAgentSession } from "@mariozechner/pi-coding-agent";
 
    const { session } = await createAgentSession();
    instrumentPiSession(session, { debug: true });
-   await session.prompt('Hello');
+   await session.prompt("Hello");
    ```
 
 4. Verify debug logs show events being captured and sent.
@@ -299,13 +301,13 @@ Every commit message must follow this format: `type(scope): description`
 
 Commit messages control version bumps and changelogs automatically. CI reads your commit type to decide whether to publish a patch, minor, or major release.
 
-| Prefix | Version bump |
-|--------|-------------|
-| `fix(scope):` | patch |
-| `perf(scope):` | patch |
-| `feat(scope):` | minor |
-| `feat(scope)!:` | major |
-| `docs:` `chore:` `refactor:` `test:` `ci:` `style:` | no release |
+| Prefix                                              | Version bump |
+| --------------------------------------------------- | ------------ |
+| `fix(scope):`                                       | patch        |
+| `perf(scope):`                                      | patch        |
+| `feat(scope):`                                      | minor        |
+| `feat(scope)!:`                                     | major        |
+| `docs:` `chore:` `refactor:` `test:` `ci:` `style:` | no release   |
 
 Scopes: `otel`, `widget`, `claude`, `mastra`, `custom`, `openclaw`, `pi`, `langchain`, `api`, `python`
 
