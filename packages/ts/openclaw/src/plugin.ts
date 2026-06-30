@@ -10,7 +10,7 @@
  * All parsing/transformation happens server-side.
  */
 
-import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
+import { assertSafeTCCUrl, getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import type {
   ActiveSession,
   OpenClawHandle,
@@ -138,6 +138,21 @@ function registerHooks(
       ? pluginConfig.endpoint
       : null) ??
     getTCCUrl("/v1/openclaw", apiKey);
+
+  try {
+    // Never attach the API key / send runs to a non-TCC origin, even if the
+    // endpoint was overridden via config or a hijacked env var.
+    assertSafeTCCUrl(url);
+  } catch (err) {
+    log.warn(err instanceof Error ? err.message : String(err));
+    return {
+      getRunId: () => null,
+      getRunIdForSession: () => null,
+      setRunId: () => {},
+      setMetadata: () => {},
+      setRunContext: () => {},
+    };
+  }
 
   log.info(`exporting runs to ${url}`);
 

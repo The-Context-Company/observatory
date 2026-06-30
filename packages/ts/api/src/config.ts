@@ -13,6 +13,14 @@ function isLocalhostOrigin(origin: string): boolean {
   return /^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin);
 }
 
+/**
+ * Whether `origin` is a TCC-controlled origin the SDK may send the API key and
+ * telemetry to without an explicit opt-in.
+ */
+function isAllowedTCCOrigin(origin: string): boolean {
+  return ALLOWED_REMOTE_ORIGINS.has(origin) || isLocalhostOrigin(origin);
+}
+
 export function normalizeTCCBaseUrl(url: string): string {
   let parsed: URL;
   try {
@@ -22,19 +30,40 @@ export function normalizeTCCBaseUrl(url: string): string {
   }
 
   const base = parsed.origin + parsed.pathname.replace(/\/+$/, "");
-  if (
-    ALLOWED_REMOTE_ORIGINS.has(parsed.origin) ||
-    isLocalhostOrigin(parsed.origin)
-  ) {
-    return base;
-  }
-
-  if (isUnsafeBaseUrlAllowed()) {
+  if (isAllowedTCCOrigin(parsed.origin) || isUnsafeBaseUrlAllowed()) {
     return base;
   }
 
   throw new Error(
     `[TCC] Refusing unsafe TCC base URL (${base}). Use ${PROD_BASE}, ${DEV_BASE}, localhost, or set TCC_ALLOW_UNSAFE_BASE_URL=1 for self-hosted testing.`
+  );
+}
+
+/**
+ * Defense-in-depth guard for the network sinks that attach the API key
+ * (`Authorization: Bearer …`) and ship telemetry. Throws unless `url` targets
+ * an allowed TCC origin (prod/dev/localhost) or the operator explicitly opted
+ * into self-hosting via `TCC_ALLOW_UNSAFE_BASE_URL=1`.
+ *
+ * This complements {@link normalizeTCCBaseUrl}: even if an endpoint reaches a
+ * sink without passing through base-URL normalization (e.g. an explicit
+ * endpoint override, or a hijacked `TCC_BASE_URL` / `TCC_FEEDBACK_URL`), the
+ * API key and trace data are never sent to an untrusted host.
+ */
+export function assertSafeTCCUrl(url: string): void {
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error(`[TCC] Invalid TCC URL: ${url}`);
+  }
+
+  if (isAllowedTCCOrigin(parsed.origin) || isUnsafeBaseUrlAllowed()) {
+    return;
+  }
+
+  throw new Error(
+    `[TCC] Refusing to send credentials to unsafe URL (${parsed.origin}). Use ${PROD_BASE}, ${DEV_BASE}, localhost, or set TCC_ALLOW_UNSAFE_BASE_URL=1 for self-hosted testing.`
   );
 }
 

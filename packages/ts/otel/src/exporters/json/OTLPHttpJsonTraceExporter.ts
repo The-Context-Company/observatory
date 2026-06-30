@@ -5,6 +5,7 @@ import type { ExportResult } from "@opentelemetry/core";
 import { type ReadableSpan, SpanExporter } from "@opentelemetry/sdk-trace-base";
 import { JsonTraceSerializer } from "@opentelemetry/otlp-transformer/build/src/trace/json/trace";
 import { diag } from "@opentelemetry/api";
+import { assertSafeTCCUrl } from "@contextcompany/api";
 import { debug } from "../../internal/logger";
 
 type OTLPExporterConfig = {
@@ -22,6 +23,10 @@ export class OTLPHttpJsonTraceExporter implements SpanExporter {
   private _shutdownOnce = { isCalled: false };
 
   constructor(config: OTLPExporterConfig) {
+    // Refuse to ship spans (and the bearer token in `headers`) to an origin
+    // that isn't TCC-controlled, so a hijacked endpoint can't exfiltrate the
+    // API key or trace data.
+    assertSafeTCCUrl(config.url);
     this._url = config.url;
     this._headers = config.headers;
   }

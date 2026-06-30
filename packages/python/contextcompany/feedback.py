@@ -22,7 +22,7 @@ def submit_feedback(
         )
 
     # Get API key
-    from .config import get_url
+    from .config import assert_safe_url, get_url
     api_key = api_key or os.getenv("TCC_API_KEY")
     if not api_key:
         print("[TCC] Cannot submit feedback: TCC_API_KEY environment variable is not set")
@@ -34,6 +34,14 @@ def submit_feedback(
         or os.getenv("TCC_FEEDBACK_URL")
         or get_url("/v1/feedback", api_key=api_key)
     )
+
+    # Never attach the API key / send feedback to a non-TCC origin, even if the
+    # endpoint was overridden via tcc_url or a hijacked TCC_FEEDBACK_URL env var.
+    try:
+        assert_safe_url(feedback_url)
+    except ValueError as e:
+        print(f"[TCC] Cannot submit feedback: {e}")
+        return False
 
     # Prepare request
     payload: dict = {"runId": run_id}
