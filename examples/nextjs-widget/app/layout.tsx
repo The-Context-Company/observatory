@@ -26,7 +26,16 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
-        {/* add The Context Company widget when running locally */}
+        {/*
+          Add The Context Company widget when running locally.
+
+          The script is pinned to an exact version and guarded with a
+          Subresource Integrity (SRI) hash + crossOrigin so a compromised or
+          MITM'd CDN response cannot inject arbitrary JavaScript. When bumping
+          the version, regenerate the integrity hash and update both together:
+            curl -fsSL https://unpkg.com/@contextcompany/widget@<version>/dist/auto.global.js \
+              | openssl dgst -sha384 -binary | openssl base64 -A
+        */}
         {process.env.NODE_ENV === "development" && (
           <Script
             crossOrigin="anonymous"
