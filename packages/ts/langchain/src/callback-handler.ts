@@ -1,4 +1,4 @@
-import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
+import { assertSafeTCCUrl, getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import type { AgentAction, AgentFinish } from "@langchain/core/agents";
 import {
   BaseCallbackHandler,
@@ -466,6 +466,8 @@ export class TCCCallbackHandler
     this.endpoint =
       config.endpoint ||
       getTCCUrl("/v1/custom", apiKey);
+    // Refuse a non-TCC endpoint so the API key / telemetry can't be exfiltrated.
+    assertSafeTCCUrl(this.endpoint);
     this.fixedRunId = config.runId;
     this.sessionId = config.sessionId;
     this.conversational = config.conversational ?? false;

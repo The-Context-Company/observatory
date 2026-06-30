@@ -1,4 +1,4 @@
-import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
+import { assertSafeTCCUrl, getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import { debug } from "./logger";
 
 const MAX_RETRIES = 2;
@@ -45,6 +45,16 @@ export function createSender(
   }
 
   const url = resolveUrl(config, apiKey);
+
+  try {
+    // Never attach the API key / send telemetry to a non-TCC origin, even if
+    // the endpoint was overridden via config or a hijacked env var.
+    assertSafeTCCUrl(url);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    return async () => {};
+  }
+
   debug(`TCC endpoint: ${url}`);
 
   return async (payload: unknown): Promise<void> => {

@@ -6,7 +6,7 @@ import {
   TracingConfig,
 } from "@mastra/core/ai-tracing";
 import { randomUUID } from "crypto";
-import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
+import { assertSafeTCCUrl, getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import type { TCCMastraExporterConfig } from "./types";
 
 export class TCCMastraExporter implements AITracingExporter {
@@ -30,6 +30,8 @@ export class TCCMastraExporter implements AITracingExporter {
     this.endpoint =
       config.endpoint ||
       getTCCUrl("/v1/mastra", apiKey);
+    // Refuse a non-TCC endpoint so the API key / telemetry can't be exfiltrated.
+    assertSafeTCCUrl(this.endpoint);
     this.debug = config.debug || false;
   }
 

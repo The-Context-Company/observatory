@@ -171,7 +171,9 @@ async function sendToAuthTagger(payload: {
   sessionId?: string | null;
   userPrompt?: string | null;
 }): Promise<void> {
-  const { getTCCApiKey, getTCCUrl } = await import("@contextcompany/api");
+  const { assertSafeTCCUrl, getTCCApiKey, getTCCUrl } = await import(
+    "@contextcompany/api"
+  );
 
   const apiKey = getTCCApiKey();
 
@@ -181,6 +183,14 @@ async function sendToAuthTagger(payload: {
   }
 
   const endpoint = getTCCUrl("/v1/claude", apiKey);
+
+  try {
+    // Never attach the API key / send telemetry to a non-TCC origin.
+    assertSafeTCCUrl(endpoint);
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error));
+    return;
+  }
 
   if (DEBUG_ENABLED) {
     console.log("[TCC Debug] Payload:", JSON.stringify(payload, null, 2));

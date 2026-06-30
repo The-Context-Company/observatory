@@ -1,4 +1,4 @@
-import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
+import { assertSafeTCCUrl, getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import { getConfig } from "./config";
 
 function resolveApiKey(): string | undefined {
@@ -58,6 +58,15 @@ export async function send(payload: Record<string, unknown>): Promise<void> {
   }
 
   const url = resolveUrl(apiKey);
+  try {
+    // Never attach the API key / send payloads to a non-TCC origin, even if the
+    // endpoint was overridden via config or a hijacked env var.
+    assertSafeTCCUrl(url);
+  } catch (err) {
+    console.error(err instanceof Error ? err.message : String(err));
+    return;
+  }
+
   const body = JSON.stringify(payload);
   debug("Sending payload to", url);
   debug("Payload:", payload);
