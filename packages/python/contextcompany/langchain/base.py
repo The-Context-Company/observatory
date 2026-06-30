@@ -7,6 +7,7 @@ from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExport
 from ..otel import RunIdSpanProcessor, TraceBatchSpanProcessor
 from .exporter import RunIdFixingExporter
 from .._utils import _debug
+from ..config import assert_safe_url
 
 
 def create_tracer_provider(resource_attributes: Optional[dict] = None) -> TracerProvider:
@@ -15,6 +16,8 @@ def create_tracer_provider(resource_attributes: Optional[dict] = None) -> Tracer
 
 
 def create_otlp_exporter(endpoint: str, api_key: str, headers: Optional[dict] = None) -> OTLPSpanExporter:
+    # Never attach the API key / send telemetry to a non-TCC origin.
+    assert_safe_url(endpoint)
     exporter_headers = {"Authorization": f"Bearer {api_key}"}
     if headers:
         exporter_headers.update(headers)

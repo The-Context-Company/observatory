@@ -31,7 +31,7 @@ def _send_payload(
     api_key: Optional[str] = None,
     tcc_url: Optional[str] = None,
 ) -> None:
-    from .config import get_api_key, get_url
+    from .config import assert_safe_url, get_api_key, get_url
 
     _debug(f"Sending {label}...")
     _debug("Payload:", payload)
@@ -39,6 +39,8 @@ def _send_payload(
     try:
         api_key = get_api_key(api_key)
         endpoint = tcc_url or get_url("/v1/custom", api_key=api_key)
+        # Never attach the API key / send payloads to a non-TCC origin.
+        assert_safe_url(endpoint)
 
         resp = requests.post(
             endpoint,

@@ -28,10 +28,12 @@ class TCCCallback(CustomLogger):
     """Exports each LLM call to TCC as an OTEL span with metadata.tcc.runId."""
 
     def __init__(self, api_key=None, endpoint=None, service_name="litellm"):
-        from ..config import get_api_key, get_url
+        from ..config import assert_safe_url, get_api_key, get_url
 
         api_key = get_api_key(api_key)
         endpoint = endpoint or get_url("/v1/otel-steps", api_key=api_key)
+        # Never attach the API key / send telemetry to a non-TCC origin.
+        assert_safe_url(endpoint)
 
         exporter = OTLPSpanExporter(
             endpoint=endpoint,

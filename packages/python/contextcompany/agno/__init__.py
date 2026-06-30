@@ -24,7 +24,7 @@ from opentelemetry.sdk.resources import Resource
 from opentelemetry.exporter.otlp.proto.http.trace_exporter import OTLPSpanExporter
 
 from ..otel import RunIdSpanProcessor, TraceBatchSpanProcessor
-from ..config import get_api_key, get_url
+from ..config import assert_safe_url, get_api_key, get_url
 from .._utils import _debug
 from .exporter import MetadataFixingExporter
 
@@ -60,6 +60,8 @@ def instrument_agno(
 
     resolved_api_key = get_api_key(api_key)
     resolved_endpoint = tcc_url or get_url("/v1/traces", api_key=resolved_api_key)
+    # Never attach the API key / send telemetry to a non-TCC origin.
+    assert_safe_url(resolved_endpoint)
 
     _debug("Initializing Agno instrumentation")
     _debug(f"Endpoint: {resolved_endpoint}")

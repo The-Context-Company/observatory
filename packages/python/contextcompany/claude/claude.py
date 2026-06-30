@@ -45,7 +45,7 @@ from typing import Any, AsyncIterator, Dict, List, Optional
 
 import requests
 
-from ..config import get_api_key, get_url
+from ..config import assert_safe_url, get_api_key, get_url
 
 
 # Per-call debug scope.  Using a ContextVar (not ``os.environ``) so concurrent
@@ -326,6 +326,8 @@ def _send_to_tcc(
     try:
         resolved_key = get_api_key(api_key)
         endpoint = tcc_url or get_url("/v1/claude", api_key=resolved_key)
+        # Never attach the API key / send telemetry to a non-TCC origin.
+        assert_safe_url(endpoint)
         resp = requests.post(
             endpoint,
             json=payload,
