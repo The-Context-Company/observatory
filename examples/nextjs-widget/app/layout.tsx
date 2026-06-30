@@ -1,7 +1,6 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import Script from "next/script";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,22 +26,27 @@ export default function RootLayout({
     <html lang="en">
       <head>
         {/*
-          Add The Context Company widget when running locally.
+          The Context Company widget is intentionally NOT loaded here. This
+          example pulls no third-party JavaScript from a CDN at runtime, which
+          avoids the supply-chain / MITM risk of remote scripts entirely.
 
-          The script is pinned to an exact version and guarded with a
-          Subresource Integrity (SRI) hash + crossOrigin so a compromised or
-          MITM'd CDN response cannot inject arbitrary JavaScript. When bumping
-          the version, regenerate the integrity hash and update both together:
+          If you want the widget, add `import Script from "next/script"` at the
+          top of this file and render it below (dev only). Pin an exact version
+          and add a Subresource Integrity hash + crossOrigin so a compromised or
+          MITM'd CDN response cannot inject arbitrary JavaScript:
+
+            {process.env.NODE_ENV === "development" && (
+              <Script
+                crossOrigin="anonymous"
+                integrity="sha384-ryHylpN8vggwpf+rjl5Z7CGgpVWrEAXn6WTY/Kv2RhlixzrdTMCP3/DPS3RMtNCg"
+                src="https://unpkg.com/@contextcompany/widget@1.0.8/dist/auto.global.js"
+              />
+            )}
+
+          Regenerate the integrity hash whenever you change the version:
             curl -fsSL https://unpkg.com/@contextcompany/widget@<version>/dist/auto.global.js \
               | openssl dgst -sha384 -binary | openssl base64 -A
         */}
-        {process.env.NODE_ENV === "development" && (
-          <Script
-            crossOrigin="anonymous"
-            integrity="sha384-ryHylpN8vggwpf+rjl5Z7CGgpVWrEAXn6WTY/Kv2RhlixzrdTMCP3/DPS3RMtNCg"
-            src="https://unpkg.com/@contextcompany/widget@1.0.8/dist/auto.global.js"
-          />
-        )}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
