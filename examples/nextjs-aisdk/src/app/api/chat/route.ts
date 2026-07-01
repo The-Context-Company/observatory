@@ -1,7 +1,9 @@
 import { randomUUID } from "crypto";
+import { NextResponse } from "next/server";
 import { openai } from "@ai-sdk/openai";
 import { convertToModelMessages, stepCountIs, streamText } from "ai";
 import { authorizeExampleRequest } from "../_example-auth";
+import { enforceExampleRateLimit, readChatRequest } from "../_example-guard";
 import { weatherTools } from "./agent";
 
 export const maxDuration = 60;
@@ -10,16 +12,32 @@ export async function POST(req: Request) {
   const unauthorized = authorizeExampleRequest(req);
   if (unauthorized) return unauthorized;
 
-  const body = await req.json();
-  const { messages } = body;
+  const rateLimited = enforceExampleRateLimit(req, "chat");
+  if (rateLimited) return rateLimited;
+
+  const parsed = await readChatRequest(req);
+  if (!parsed.ok) return parsed.response;
+  const { messages, sessionId: clientSessionId } = parsed.data;
+
+  let modelMessages;
+  try {
+    modelMessages = await convertToModelMessages(messages);
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid messages payload" },
+      { status: 400 }
+    );
+  }
 
   // TCC tracking IDs
-  const sessionId = body.sessionId; // Track conversation session across requests
+  // Fall back to a server-generated id when the client omits or sends an
+  // invalid sessionId, so untrusted input never lands in telemetry unchecked.
+  const sessionId = clientSessionId ?? randomUUID(); // Track conversation session across requests
   const runId = randomUUID(); // Track this specific AI call
 
   const result = streamText({
     model: openai("gpt-4o"),
-    messages: await convertToModelMessages(messages),
+    messages: modelMessages,
     system: `You are a helpful weather assistant. Use getLocation to suggest a city, or getWeather to check the weather for a specific location.`,
     tools: weatherTools,
     stopWhen: stepCountIs(10),

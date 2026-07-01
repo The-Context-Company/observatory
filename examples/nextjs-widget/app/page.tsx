@@ -1,11 +1,27 @@
 "use client";
 
+import { useMemo, useState } from "react";
 import { useChat } from "@ai-sdk/react";
-import { useState } from "react";
+import { DefaultChatTransport } from "ai";
+
+const exampleApiToken = process.env.NEXT_PUBLIC_TCC_EXAMPLE_API_TOKEN;
 
 export default function Chat() {
   const [input, setInput] = useState("");
-  const { messages, sendMessage } = useChat();
+
+  // Send the example API token so the protected /api/chat route accepts the
+  // request. Omitted automatically for local-only demos that bypass the gate.
+  const transport = useMemo(
+    () =>
+      new DefaultChatTransport({
+        headers: exampleApiToken
+          ? { "x-tcc-example-token": exampleApiToken }
+          : undefined,
+      }),
+    []
+  );
+
+  const { messages, sendMessage } = useChat({ transport });
   return (
     <div className="flex flex-col w-full max-w-md py-24 mx-auto stretch">
       {messages.map((message) => (
