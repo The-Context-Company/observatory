@@ -1,12 +1,9 @@
+import { NextResponse } from "next/server";
 import { openai } from "@ai-sdk/openai";
-import {
-  streamText,
-  UIMessage,
-  convertToModelMessages,
-  tool,
-  stepCountIs,
-} from "ai";
+import { convertToModelMessages, stepCountIs, streamText, tool } from "ai";
 import { z } from "zod";
+import { authorizeExampleRequest } from "../_example-auth";
+import { enforceExampleRateLimit, readChatRequest } from "../_example-guard";
 
 const getWeather = tool({
   description: "Get the weather for a given city",
@@ -34,11 +31,28 @@ const createTicket = tool({
 export const maxDuration = 30;
 
 export async function POST(req: Request) {
-  const { messages }: { messages: UIMessage[] } = await req.json();
+  const unauthorized = authorizeExampleRequest(req);
+  if (unauthorized) return unauthorized;
+
+  const rateLimited = enforceExampleRateLimit(req, "chat");
+  if (rateLimited) return rateLimited;
+
+  const parsed = await readChatRequest(req);
+  if (!parsed.ok) return parsed.response;
+
+  let modelMessages;
+  try {
+    modelMessages = convertToModelMessages(parsed.data.messages);
+  } catch {
+    return NextResponse.json(
+      { error: "Invalid messages payload" },
+      { status: 400 }
+    );
+  }
 
   const result = streamText({
     model: openai("gpt-4o"),
-    messages: convertToModelMessages(messages),
+    messages: modelMessages,
     tools: { getWeather, createTicket },
     stopWhen: stepCountIs(10),
     experimental_telemetry: { isEnabled: true },

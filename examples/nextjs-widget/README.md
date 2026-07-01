@@ -53,11 +53,19 @@ yarn install
 cp .env.example .env
 ```
 
-Edit `.env` and add your OpenAI API key:
+Edit `.env` and add your OpenAI API key. The `/api/chat` route is protected by
+default so it can't be used to spend your OpenAI key without authorization, so
+also set a demo token (used by both the server and the browser):
 
 ```env
 OPENAI_API_KEY=your_openai_api_key_here
+TCC_EXAMPLE_API_TOKEN=choose_a_local_demo_token
+NEXT_PUBLIC_TCC_EXAMPLE_API_TOKEN=choose_a_local_demo_token
 ```
+
+For a throwaway local-only demo you can instead bypass the token gate with
+`TCC_ALLOW_UNAUTHENTICATED_EXAMPLE_APIS=1`; do not use that setting for a
+deployed example.
 
 4. **Run the development server:**
 
@@ -143,6 +151,24 @@ registerOTelTCC({ local: true });
 ```
 
 The `local: true` option configures telemetry to work with the local widget instead of sending data to a remote server.
+
+## API Route Security
+
+The `/api/chat` route calls OpenAI with your server-side `OPENAI_API_KEY`, so it
+is guarded to prevent unauthenticated abuse and unexpected spend:
+
+- **Authentication** (`app/api/_example-auth.ts`): requests must send the
+  `x-tcc-example-token` header matching `TCC_EXAMPLE_API_TOKEN`. If no token is
+  configured the route returns `403` (set `TCC_ALLOW_UNAUTHENTICATED_EXAMPLE_APIS=1`
+  for throwaway local demos). Tokens are compared with `timingSafeEqual`.
+- **Rate limiting + input validation** (`app/api/_example-guard.ts`): a
+  best-effort per-client fixed-window rate limiter (defaults to 20 requests /
+  60s, tunable via `TCC_EXAMPLE_RATE_LIMIT_MAX` / `TCC_EXAMPLE_RATE_LIMIT_WINDOW_MS`),
+  plus a request-body size cap and a bound on the number of messages.
+
+These controls are intentionally simple and meant for an example. For production,
+front the endpoint with real authentication and enforce limits in a durable,
+shared store (e.g. Upstash/Redis) keyed by an authenticated user.
 
 ## Learn More
 
