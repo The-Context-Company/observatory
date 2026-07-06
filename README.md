@@ -1,6 +1,6 @@
 # <img src="./.github/assets/tcc-logo.svg" width="70" align="center" /> Observatory
 
-[The Context Company](https://thecontext.company/) does agent observability. **We care deeply about DX; it's our single biggest priority.**
+[The Context Company](https://thecontextcompany.com/) does agent observability. **We care deeply about DX; it's our single biggest priority.**
 
 Observatory is a monorepo containing core packages for AI agent observability across TypeScript and Python:
 
