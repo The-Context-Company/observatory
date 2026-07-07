@@ -209,6 +209,12 @@ export class RunBatchSpanProcessor implements SpanProcessor {
     }
 
     debug(`RunBatchSpanProcessor: Sending batch ${runId} to exporter`);
-    this.exporter.export(batch, (_result) => {});
+    this.exporter.export(batch, (result) => {
+      if (result.code !== 0) {
+        debug(
+          `RunBatchSpanProcessor: Failed to export batch ${runId}: ${result.error}`
+        );
+      }
+    });
   }
 }
