@@ -1,4 +1,5 @@
 import { Context } from "@opentelemetry/api";
+import { ExportResultCode } from "@opentelemetry/core";
 import {
   SpanProcessor,
   type ReadableSpan,
@@ -210,7 +211,7 @@ export class RunBatchSpanProcessor implements SpanProcessor {
 
     debug(`RunBatchSpanProcessor: Sending batch ${runId} to exporter`);
     this.exporter.export(batch, (result) => {
-      if (result.code !== 0) {
+      if (result.code !== ExportResultCode.SUCCESS) {
         debug(
           `RunBatchSpanProcessor: Failed to export batch ${runId}: ${result.error}`
         );

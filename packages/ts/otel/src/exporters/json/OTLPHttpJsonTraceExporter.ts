@@ -77,16 +77,20 @@ export class OTLPHttpJsonTraceExporter implements SpanExporter {
         "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.46.0",
       },
     })
-      .then((res) => {
-        // drain the body so the connection can be reused
-        void res.arrayBuffer().catch(() => undefined);
+      .then(async (res) => {
         if (!res.ok) {
-          const message = `Failed to export ${spans.length} spans: HTTP ${res.status}`;
+          const errorBody = await res
+            .text()
+            .then((text) => text.slice(0, 1024))
+            .catch(() => "");
+          const message = `Failed to export ${spans.length} spans: HTTP ${res.status}${errorBody ? ` ${errorBody}` : ""}`;
           debug(message);
           diag.error(`@contextcompany/otel: ${message}`);
           onError(new Error(message) as OTLPExporterError);
           return;
         }
+        // drain the body so the connection can be reused
+        void res.arrayBuffer().catch(() => undefined);
         debug(`Successfully exported ${spans.length} spans`);
         onSuccess();
       })
