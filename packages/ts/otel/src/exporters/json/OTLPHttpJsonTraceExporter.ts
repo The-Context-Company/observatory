@@ -6,6 +6,7 @@ import { type ReadableSpan, SpanExporter } from "@opentelemetry/sdk-trace-base";
 import { JsonTraceSerializer } from "@opentelemetry/otlp-transformer/build/src/trace/json/trace";
 import { diag } from "@opentelemetry/api";
 import { debug } from "../../internal/logger";
+import { waitUntil } from "../../internal/waitUntil";
 
 type OTLPExporterConfig = {
   url: string;
@@ -76,13 +77,26 @@ export class OTLPHttpJsonTraceExporter implements SpanExporter {
         "User-Agent": "OTel-OTLP-Exporter-JavaScript/0.46.0",
       },
     })
-      .then((res) => {
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorBody = await res
+            .text()
+            .then((text) => text.slice(0, 1024))
+            .catch(() => "");
+          const message = `Failed to export ${spans.length} spans: HTTP ${res.status}${errorBody ? ` ${errorBody}` : ""}`;
+          debug(message);
+          diag.error(`@contextcompany/otel: ${message}`);
+          onError(new Error(message) as OTLPExporterError);
+          return;
+        }
+        // drain the body so the connection can be reused
+        void res.arrayBuffer().catch(() => undefined);
         debug(`Successfully exported ${spans.length} spans`);
         onSuccess();
-        void res.arrayBuffer().catch(() => undefined);
       })
       .catch((err) => {
         debug(`Error exporting ${spans.length} spans: ${err}`);
+        diag.error(`@contextcompany/otel: failed to export spans: ${err}`);
         onError(err as OTLPExporterError);
       })
       .finally(() => {
@@ -93,5 +107,12 @@ export class OTLPHttpJsonTraceExporter implements SpanExporter {
 
     // add to _sendingPromises so we can wait for them to complete in case shutdown() is called
     this._sendingPromises.push(promise);
+
+    // On serverless runtimes (Vercel), the instance can be frozen the moment
+    // the HTTP response closes — which is typically right when the run span
+    // ends and this export fires. Register the export with the platform's
+    // waitUntil so the invocation stays alive until delivery completes.
+    // No-op outside a serverless request context.
+    waitUntil(promise);
   }
 }
