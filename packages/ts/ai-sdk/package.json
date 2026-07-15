@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/ai-sdk",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "The Context Company observability integration for Vercel AI SDK 7",
   "type": "module",
   "files": [

@@ -1,5 +1,11 @@
 # @contextcompany/liftoff
 
+## 0.1.2
+
+### Patch Changes
+
+- 3766d09: Update published package homepage and documentation links to the current The Context Company domains.
+
 ## 0.1.1
 
 ### Patch Changes

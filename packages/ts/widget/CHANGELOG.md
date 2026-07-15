@@ -1,5 +1,11 @@
 # @contextcompany/widget
 
+## 1.0.9
+
+### Patch Changes
+
+- 3766d09: Update published package homepage and documentation links to the current The Context Company domains.
+
 ## 1.0.8
 
 ### Patch Changes

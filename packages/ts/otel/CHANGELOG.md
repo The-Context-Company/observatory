@@ -1,5 +1,11 @@
 # @contextcompany/otel
 
+## 1.1.1
+
+### Patch Changes
+
+- 3766d09: Update published package homepage and documentation links to the current The Context Company domains.
+
 ## 1.1.0
 
 ### Minor Changes

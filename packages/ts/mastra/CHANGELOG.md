@@ -1,5 +1,11 @@
 # @contextcompany/mastra
 
+## 1.0.3
+
+### Patch Changes
+
+- 3766d09: Update published package homepage and documentation links to the current The Context Company domains.
+
 ## 1.0.2
 
 ### Patch Changes

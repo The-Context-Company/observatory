@@ -1,5 +1,12 @@
 # nextjs-aisdk
 
+## 0.1.6
+
+### Patch Changes
+
+- Updated dependencies [3766d09]
+  - @contextcompany/ai-sdk@1.0.1
+
 ## 0.1.5
 
 ### Patch Changes

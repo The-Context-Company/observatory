@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/liftoff",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "The Context Company CLI — zero-friction AI agent observability setup",
   "type": "module",
   "bin": {

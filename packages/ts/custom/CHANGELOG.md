@@ -1,5 +1,11 @@
 # @contextcompany/custom
 
+## 1.2.2
+
+### Patch Changes
+
+- 3766d09: Update published package homepage and documentation links to the current The Context Company domains.
+
 ## 1.2.1
 
 ### Patch Changes
