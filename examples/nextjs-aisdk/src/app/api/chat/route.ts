@@ -1,6 +1,7 @@
 import { randomUUID } from "crypto";
 import { openai } from "@ai-sdk/openai";
-import { convertToModelMessages, stepCountIs, streamText } from "ai";
+import { tccTelemetry } from "@contextcompany/ai-sdk/nextjs";
+import { convertToModelMessages, isStepCount, streamText } from "ai";
 import { authorizeExampleRequest } from "../_example-auth";
 import { weatherTools } from "./agent";
 
@@ -16,30 +17,27 @@ export async function POST(req: Request) {
   // TCC tracking IDs
   const sessionId = body.sessionId; // Track conversation session across requests
   const runId = randomUUID(); // Track this specific AI call
-
   const result = streamText({
     model: openai("gpt-4o"),
     messages: await convertToModelMessages(messages),
-    system: `You are a helpful weather assistant. Use getLocation to suggest a city, or getWeather to check the weather for a specific location.`,
+    instructions: `You are a helpful weather assistant. Use getLocation to suggest a city, or getWeather to check the weather for a specific location.`,
     tools: weatherTools,
-    stopWhen: stepCountIs(10),
-    // TCC: Enable telemetry to track this AI interaction
-    experimental_telemetry: {
-      isEnabled: true,
+    stopWhen: isStepCount(10),
+    ...tccTelemetry({
+      runId,
+      sessionId,
+      userId: "1234567890",
+      userName: "John Doe",
+      orgId: "178943",
+      orgName: "Acme Inc",
+      agent: "weather-assistant",
       metadata: {
-        "tcc.runId": runId, // TCC: Special Unique ID for this AI call
-        "tcc.sessionId": sessionId, // TCC: Special Unique ID for conversation tracking
-        "tcc.userId": "1234567890", // TCC: Unique ID for the user
-        "tcc.userName": "John Doe", // TCC: Name of the user
-        "tcc.orgId": "178943", // TCC: Organization ID
-        "tcc.orgName": "Acme Inc", // TCC: Organization Name
-        "tcc.agent": "weather-assistant", // TCC: Agent name
-
-        // TCC: Add your own metadata here (to filter and group events in dashboard)
+        version: "AI SDK 7 (new)",
+        aiSdkVersion: "7",
         yourCustomMetadata: "yourCustomValue",
         yourCustomMetadata2: "yourCustomValue2",
       },
-    },
+    }),
   });
 
   return result.toUIMessageStreamResponse({

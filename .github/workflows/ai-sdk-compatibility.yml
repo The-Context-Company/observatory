@@ -1,0 +1,69 @@
+name: AI SDK compatibility
+
+on:
+  pull_request:
+    paths:
+      - "packages/ts/otel/**"
+      - "packages/ts/ai-sdk/**"
+      - "examples/nextjs-aisdk/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/ai-sdk-compatibility.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/ts/otel/**"
+      - "packages/ts/ai-sdk/**"
+      - "examples/nextjs-aisdk/**"
+      - "pnpm-lock.yaml"
+
+jobs:
+  legacy:
+    name: AI SDK ${{ matrix.ai-sdk }} on Node 20
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ai-sdk: ["5", "6"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @contextcompany/api build
+      - run: pnpm --filter @contextcompany/otel build
+      - run: pnpm --filter @contextcompany/otel test
+        env:
+          AI_SDK_TEST_VERSION: ${{ matrix.ai-sdk }}
+
+  current:
+    name: AI SDK ${{ matrix.ai-sdk }} on Node 22
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        ai-sdk: ["7-min", "7"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @contextcompany/api build
+      - run: pnpm --filter @contextcompany/otel build
+      - run: pnpm --filter @contextcompany/otel test
+        env:
+          AI_SDK_TEST_VERSION: ${{ matrix.ai-sdk }}
+      - run: pnpm --filter @contextcompany/ai-sdk test
+      - run: pnpm --filter @contextcompany/ai-sdk build
+      - run: pnpm --filter nextjs-aisdk exec tsc --noEmit --pretty false
+      - run: pnpm --filter nextjs-aisdk lint
+      - run: pnpm --filter nextjs-aisdk build

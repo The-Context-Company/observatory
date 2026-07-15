@@ -1,0 +1,67 @@
+{
+  "name": "@contextcompany/ai-sdk",
+  "version": "0.0.0",
+  "description": "The Context Company observability integration for Vercel AI SDK 7",
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "main": "dist/index.cjs",
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./nextjs": {
+      "types": "./dist/nextjs/index.d.ts",
+      "import": "./dist/nextjs/index.js",
+      "require": "./dist/nextjs/index.cjs"
+    }
+  },
+  "scripts": {
+    "build": "tsup",
+    "test": "vitest run --config vitest.config.ts"
+  },
+  "sideEffects": false,
+  "keywords": [
+    "ai-sdk",
+    "vercel",
+    "opentelemetry",
+    "observability",
+    "tracing"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/The-Context-Company/observatory",
+    "directory": "packages/ts/ai-sdk"
+  },
+  "license": "MIT",
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.0.0"
+  },
+  "peerDependencies": {
+    "@opentelemetry/api": ">=1.9.0 <2.0.0",
+    "ai": "^7.0.0"
+  },
+  "dependencies": {
+    "@ai-sdk/otel": "^1.0.0",
+    "@contextcompany/otel": "workspace:*",
+    "@opentelemetry/sdk-node": "^0.203.0",
+    "@vercel/otel": "^2.0.1"
+  },
+  "devDependencies": {
+    "@opentelemetry/api": "^1.9.0",
+    "@opentelemetry/sdk-trace-base": "^2.2.0",
+    "@types/node": "^22.0.0",
+    "ai": "^7.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
+  }
+}

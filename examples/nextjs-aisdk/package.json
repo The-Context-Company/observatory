@@ -9,12 +9,12 @@
     "lint": "eslint"
   },
   "dependencies": {
-    "@ai-sdk/openai": "^3.0.0",
-    "@ai-sdk/react": "^3.0.0",
-    "@contextcompany/otel": "workspace:*",
+    "@ai-sdk/openai": "^4.0.0",
+    "@ai-sdk/react": "^4.0.0",
+    "@contextcompany/ai-sdk": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "@vercel/otel": "^2.0.1",
-    "ai": "^6.0.0",
+    "ai": "^7.0.0",
     "next": "15.5.4",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",

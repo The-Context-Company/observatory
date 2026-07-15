@@ -24,6 +24,7 @@
   "scripts": {
     "build": "tsup",
     "dev": "pnpm build --watch",
+    "test": "vitest run --config vitest.config.ts",
     "serve": "npx serve dist -p 3002 --cors",
     "dev:all": "concurrently \"pnpm build --watch\" \"pnpm serve\""
   },
@@ -66,6 +67,7 @@
     "posthog-node": "^5.11.2"
   },
   "devDependencies": {
+    "@ai-sdk/otel": "^1.0.0",
     "@contextcompany/api": "workspace:*",
     "@opentelemetry/api": "^1.9.0",
     "@opentelemetry/core": "^2.2.0",
@@ -75,8 +77,13 @@
     "@types/node": "^20",
     "@types/ws": "^8.18.1",
     "@vercel/otel": "^2.0.1",
+    "ai-v5": "npm:ai@^5.0.0",
+    "ai-v6": "npm:ai@^6.0.0",
+    "ai-v7": "npm:ai@^7.0.0",
+    "ai-v7-min": "npm:ai@7.0.0",
     "concurrently": "^9.2.1",
     "tsup": "^8.5.0",
-    "typescript": "^5.9.3"
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.0"
   }
 }

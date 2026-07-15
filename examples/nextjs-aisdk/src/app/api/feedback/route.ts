@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { submitFeedback } from "@contextcompany/otel";
+import { submitFeedback } from "@contextcompany/ai-sdk/nextjs";
 import { authorizeExampleRequest } from "../_example-auth";
 
 export async function POST(request: NextRequest) {
