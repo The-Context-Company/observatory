@@ -23,8 +23,10 @@ describe("AI SDK 7 integration", () => {
     registerAISDKTelemetry({ tracer: provider.getTracer("gen_ai") });
 
     const tracking = tccTelemetry({
-      runId: "00000000-0000-4000-8000-000000000001",
-      sessionId: "session-1",
+      metadata: {
+        "tcc.runId": "00000000-0000-4000-8000-000000000001",
+        "tcc.sessionId": "session-1",
+      },
     });
     await generateText({
       model: {
@@ -59,6 +61,11 @@ describe("AI SDK 7 integration", () => {
         ({ attributes }) => attributes["tcc.span.type"] === "operation"
       )?.attributes["ai.settings.context.tcc.runId"]
     ).toBe("00000000-0000-4000-8000-000000000001");
+    expect(
+      spans.find(
+        ({ attributes }) => attributes["tcc.span.type"] === "operation"
+      )?.attributes["ai.settings.context.tcc.sessionId"]
+    ).toBe("session-1");
 
     await provider.shutdown();
   });

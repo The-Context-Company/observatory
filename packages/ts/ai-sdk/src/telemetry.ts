@@ -11,8 +11,7 @@ export type MetadataValue =
   | undefined
   | Record<string, unknown>;
 
-export type TCCTelemetryOptions = {
-  runId: string;
+type LegacyTCCFields = {
   sessionId?: string;
   conversational?: boolean;
   agent?: string;
@@ -20,8 +19,30 @@ export type TCCTelemetryOptions = {
   userName?: string;
   orgId?: string;
   orgName?: string;
-  metadata?: Record<string, MetadataValue>;
 };
+
+export type TCCTelemetryMetadata = Record<string, MetadataValue> & {
+  "tcc.runId"?: string;
+  "tcc.sessionId"?: string;
+  "tcc.conversational"?: boolean | string;
+  "tcc.agent"?: string;
+  "tcc.userId"?: string;
+  "tcc.userName"?: string;
+  "tcc.orgId"?: string;
+  "tcc.orgName"?: string;
+};
+
+export type TCCTelemetryOptions = LegacyTCCFields &
+  (
+    | {
+        runId: string;
+        metadata?: TCCTelemetryMetadata;
+      }
+    | {
+        runId?: string;
+        metadata: TCCTelemetryMetadata & { "tcc.runId": string };
+      }
+  );
 
 export type TCCTelemetryConfig = {
   runtimeContext: Record<string, unknown>;
@@ -38,20 +59,32 @@ export type TCCTelemetryIntegrationOptions = Omit<
 const UUID_PATTERN =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
+const TCC_METADATA_KEYS = new Set([
+  "tcc.runId",
+  "tcc.sessionId",
+  "tcc.conversational",
+  "tcc.agent",
+  "tcc.userId",
+  "tcc.userName",
+  "tcc.orgId",
+  "tcc.orgName",
+]);
+
 export function tccTelemetry(options: TCCTelemetryOptions): TCCTelemetryConfig {
-  if (!UUID_PATTERN.test(options.runId)) {
-    throw new Error("TCC: runId must be a valid UUID");
+  for (const key of Object.keys(options.metadata ?? {})) {
+    if (key.startsWith("tcc.") && !TCC_METADATA_KEYS.has(key)) {
+      throw new Error(`TCC: unsupported metadata key ${key}`);
+    }
   }
 
-  for (const key of Object.keys(options.metadata ?? {})) {
-    if (key.startsWith("tcc.")) {
-      throw new Error(`TCC: metadata key ${key} is reserved`);
-    }
+  const runId = options.metadata?.["tcc.runId"] ?? options.runId;
+  if (typeof runId !== "string" || !UUID_PATTERN.test(runId)) {
+    throw new Error("TCC: metadata tcc.runId must be a valid UUID");
   }
 
   const runtimeContext: Record<string, unknown> = {
     ...(options.metadata ?? {}),
-    "tcc.runId": options.runId,
+    "tcc.runId": runId,
   };
   const fields = {
     "tcc.sessionId": options.sessionId,
@@ -63,7 +96,9 @@ export function tccTelemetry(options: TCCTelemetryOptions): TCCTelemetryConfig {
     "tcc.orgName": options.orgName,
   };
   for (const [key, value] of Object.entries(fields)) {
-    if (value !== undefined) runtimeContext[key] = value;
+    if (!(key in runtimeContext) && value !== undefined) {
+      runtimeContext[key] = value;
+    }
   }
 
   return {
