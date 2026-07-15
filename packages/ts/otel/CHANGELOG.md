@@ -1,5 +1,11 @@
 # @contextcompany/otel
 
+## 1.1.0
+
+### Minor Changes
+
+- 47b006b: Add first-class Vercel AI SDK 7 telemetry support while preserving AI SDK 5 and 6 compatibility.
+
 ## 1.0.18
 
 ### Patch Changes

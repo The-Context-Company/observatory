@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/otel",
-  "version": "1.0.18",
+  "version": "1.1.0",
   "description": "The Context Company integration for OpenTelemetry",
   "type": "module",
   "files": [
