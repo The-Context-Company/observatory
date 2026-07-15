@@ -61,4 +61,21 @@ describe("local AI SDK 7 conversion", () => {
       toolResult: '{"temperature":68}',
     });
   });
+
+  it("preserves native messages with string content", () => {
+    const run = span("invoke_agent model", {
+      "gen_ai.operation.name": "invoke_agent",
+      "gen_ai.input.messages": JSON.stringify([
+        { role: "user", content: "Hello as a string" },
+      ]),
+      "gen_ai.output.messages": JSON.stringify([
+        { role: "assistant", content: "Hi as a string" },
+      ]),
+    });
+
+    expect(convertSpanToRun(run)).toMatchObject({
+      prompt: "Hello as a string",
+      response: "Hi as a string",
+    });
+  });
 });

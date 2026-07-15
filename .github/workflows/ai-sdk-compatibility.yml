@@ -34,6 +34,8 @@ jobs:
           node-version: 20
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @contextcompany/api build
+      - run: pnpm --filter @contextcompany/otel build
       - run: pnpm --filter @contextcompany/otel test
         env:
           AI_SDK_TEST_VERSION: ${{ matrix.ai-sdk }}
@@ -55,11 +57,12 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @contextcompany/api build
+      - run: pnpm --filter @contextcompany/otel build
       - run: pnpm --filter @contextcompany/otel test
         env:
           AI_SDK_TEST_VERSION: ${{ matrix.ai-sdk }}
       - run: pnpm --filter @contextcompany/ai-sdk test
-      - run: pnpm --filter @contextcompany/otel build
       - run: pnpm --filter @contextcompany/ai-sdk build
       - run: pnpm --filter nextjs-aisdk exec tsc --noEmit --pretty false
       - run: pnpm --filter nextjs-aisdk lint

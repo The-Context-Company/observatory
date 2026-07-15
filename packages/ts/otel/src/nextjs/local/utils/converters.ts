@@ -12,7 +12,13 @@ const parseText = (value: AttributeValue | undefined): string => {
     const messages = JSON.parse(value);
     if (!Array.isArray(messages)) return value;
     return messages
-      .flatMap((message: any) => message.parts ?? message.content ?? [])
+      .flatMap((message: any) => {
+        const content = message.parts ?? message.content ?? [];
+        if (typeof content === "string") {
+          return [{ type: "text", content }];
+        }
+        return Array.isArray(content) ? content : [];
+      })
       .filter((part: any) => part?.type === "text")
       .map((part: any) => part.content ?? part.text ?? "")
       .join("");

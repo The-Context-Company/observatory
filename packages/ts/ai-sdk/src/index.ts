@@ -37,12 +37,10 @@ export function registerTCC(options: RegisterTCCOptions = {}): TCCRegistration {
   sdk.start();
   registerAISDKTelemetry(telemetry);
 
+  let shutdownPromise: Promise<void> | undefined;
   const registration: TCCRegistration = {
     forceFlush: () => processor.forceFlush(),
-    async shutdown() {
-      await sdk.shutdown();
-      delete state[NODE_REGISTRATION_KEY];
-    },
+    shutdown: () => (shutdownPromise ??= sdk.shutdown()),
   };
   state[NODE_REGISTRATION_KEY] = registration;
   return registration;
