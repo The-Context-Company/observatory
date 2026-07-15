@@ -57,21 +57,12 @@ export const getUserPromptFromPrompt = (prompt: string): string => {
       const lastMessage = userMessages.at(-1) ?? parsed.at(-1);
       return parseText(JSON.stringify([lastMessage]));
     }
-    if ("messages" in parsed) {
-      const messages = parsed.messages;
-      const lastMessage = messages.at(-1);
-      if ("content" in lastMessage) {
-        if (Array.isArray(lastMessage.content)) {
-          return lastMessage.content
-            .map((message: any) =>
-              message.type === "text" ? message.text : ""
-            )
-            .join("\n");
-        }
-        if (typeof lastMessage.content === "string") {
-          return lastMessage.content;
-        }
-      }
+    if ("messages" in parsed && Array.isArray(parsed.messages)) {
+      const userMessages = parsed.messages.filter(
+        (message: any) => message.role === "user"
+      );
+      const lastMessage = userMessages.at(-1) ?? parsed.messages.at(-1);
+      if (lastMessage) return parseText(JSON.stringify([lastMessage]));
     }
     return prompt;
   } catch (error) {

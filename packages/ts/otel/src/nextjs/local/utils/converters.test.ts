@@ -78,4 +78,22 @@ describe("local AI SDK 7 conversion", () => {
       response: "Hi as a string",
     });
   });
+
+  it("extracts text parts from wrapped native messages", () => {
+    const run = span("invoke_agent model", {
+      "gen_ai.operation.name": "invoke_agent",
+      "gen_ai.input.messages": JSON.stringify({
+        messages: [
+          {
+            role: "user",
+            parts: [{ type: "text", content: "Hello from wrapped parts" }],
+          },
+        ],
+      }),
+    });
+
+    expect(convertSpanToRun(run)).toMatchObject({
+      prompt: "Hello from wrapped parts",
+    });
+  });
 });
