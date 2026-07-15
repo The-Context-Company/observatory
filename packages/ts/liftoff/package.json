@@ -21,6 +21,7 @@
     "setup",
     "instrumentation"
   ],
+  "homepage": "https://docs.thecontextcompany.com",
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",

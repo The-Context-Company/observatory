@@ -36,7 +36,7 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     id: "nextjs-aisdk",
     name: "Vercel AI SDK",
     description: "Instrument AI SDK calls in your Next.js app",
-    docsUrl: "https://docs.thecontext.company/frameworks/ai-sdk/setup",
+    docsUrl: "https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk",
     language: "typescript",
   },
   {
@@ -44,35 +44,36 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     name: "Claude Agent SDK",
     description: "Instrument Claude Agent SDK agents",
     docsUrl:
-      "https://docs.thecontext.company/frameworks/claude-agent-sdk#typescript",
+      "https://docs.thecontextcompany.com/frameworks/claude-agent-sdk#typescript",
     language: "typescript",
   },
   {
     id: "langchain-ts",
     name: "LangChain / LangGraph",
     description: "Instrument LangChain.js and LangGraph agents",
-    docsUrl: "https://docs.thecontext.company/frameworks/langchain-langgraph",
+    docsUrl:
+      "https://docs.thecontextcompany.com/frameworks/langchain-langgraph",
     language: "typescript",
   },
   {
     id: "mastra",
     name: "Mastra",
     description: "Instrument Mastra agents and workflows",
-    docsUrl: "https://docs.thecontext.company/frameworks/mastra/setup",
+    docsUrl: "https://docs.thecontextcompany.com/frameworks/mastra",
     language: "typescript",
   },
   {
     id: "pi-mono",
     name: "Pi-Mono",
     description: "Instrument Pi coding agent",
-    docsUrl: "https://docs.thecontext.company/frameworks/pi-mono",
+    docsUrl: "https://docs.thecontextcompany.com/frameworks/pi-mono",
     language: "typescript",
   },
   {
     id: "openclaw",
     name: "OpenClaw",
     description: "Instrument OpenClaw agents",
-    docsUrl: "https://docs.thecontext.company/frameworks/openclaw",
+    docsUrl: "https://docs.thecontextcompany.com/frameworks/openclaw",
     language: "typescript",
   },
   {
@@ -80,14 +81,15 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     name: "Custom",
     description: "Manual instrumentation for custom agents",
     docsUrl:
-      "https://docs.thecontext.company/frameworks/custom-instrumentation/typescript/setup",
+      "https://docs.thecontextcompany.com/frameworks/custom-instrumentation/typescript/setup",
     language: "typescript",
   },
   {
     id: "langchain-python",
     name: "LangChain / LangGraph",
     description: "Instrument LangChain and LangGraph agents",
-    docsUrl: "https://docs.thecontext.company/frameworks/langchain-langgraph",
+    docsUrl:
+      "https://docs.thecontextcompany.com/frameworks/langchain-langgraph",
     language: "python",
   },
   {
@@ -95,21 +97,21 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     name: "Claude Agent SDK",
     description: "Instrument Claude Agent SDK agents",
     docsUrl:
-      "https://docs.thecontext.company/frameworks/claude-agent-sdk#python",
+      "https://docs.thecontextcompany.com/frameworks/claude-agent-sdk#python",
     language: "python",
   },
   {
     id: "crewai",
     name: "CrewAI",
     description: "Instrument CrewAI agents",
-    docsUrl: "https://docs.thecontext.company/frameworks/crewai",
+    docsUrl: "https://docs.thecontextcompany.com/frameworks/crewai",
     language: "python",
   },
   {
     id: "agno",
     name: "Agno",
     description: "Instrument Agno agents",
-    docsUrl: "https://docs.thecontext.company/frameworks/agno",
+    docsUrl: "https://docs.thecontextcompany.com/frameworks/agno",
     language: "python",
   },
   {
@@ -117,7 +119,7 @@ export const FRAMEWORKS: FrameworkInfo[] = [
     name: "Custom",
     description: "Manual instrumentation for custom agents",
     docsUrl:
-      "https://docs.thecontext.company/frameworks/custom-instrumentation/python/setup",
+      "https://docs.thecontextcompany.com/frameworks/custom-instrumentation/python/setup",
     language: "python",
   },
 ];

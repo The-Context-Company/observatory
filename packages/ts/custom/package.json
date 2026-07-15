@@ -30,7 +30,7 @@
     "custom-instrumentation",
     "context-company"
   ],
-  "homepage": "https://github.com/The-Context-Company/observatory/tree/main/packages/ts/custom#readme",
+  "homepage": "https://docs.thecontextcompany.com/frameworks/custom-instrumentation/typescript/setup",
   "bugs": {
     "url": "https://github.com/The-Context-Company/observatory/issues"
   },

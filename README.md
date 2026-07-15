@@ -22,7 +22,7 @@ Observatory is a monorepo containing core packages for AI agent observability ac
 
 ## Local mode (AI SDK + Next.js)
 
-Local mode allows you to run The Context Company in a local-first way. This is 100% open-source and requires **no account or API key**. To set up local mode, refer to the guide below or [our documentation](https://docs.thecontext.company/frameworks/ai-sdk/local).
+Local mode allows you to run The Context Company in a local-first way. This is 100% open-source and requires **no account or API key**. To set up local mode, refer to the guide below or [our documentation](https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk#local-mode).
 
 **Local mode currently only supports Vercel AI SDK on Next.js**.
 
@@ -97,7 +97,7 @@ const result = generateText({
 ```
 
 > [!NOTE]
-> By default, The Context Company collects limited anonymous usage data when running local mode. **No sensitive or personally identifiable information is ever collected**. You can view exactly which events and values are tracked [here](https://github.com/The-Context-Company/observatory/blob/main/packages/ts/otel/src/nextjs/telemetry/events.ts). To disable anonymous telemetry, set the `TCC_DISABLE_ANONYMOUS_TELEMETRY` environment variable to `true` in your Next.js project. Learn more about this in our [documentation](https://docs.thecontext.company/frameworks/ai-sdk/local#anonymous-telemetry).
+> By default, The Context Company collects limited anonymous usage data when running local mode. **No sensitive or personally identifiable information is ever collected**. You can view exactly which events and values are tracked [here](https://github.com/The-Context-Company/observatory/blob/main/packages/ts/otel/src/nextjs/telemetry/events.ts). To disable anonymous telemetry, set the `TCC_DISABLE_ANONYMOUS_TELEMETRY` environment variable to `true` in your Next.js project. Learn more about this in our [documentation](https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk#local-mode).
 
 ## Examples
 

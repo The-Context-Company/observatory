@@ -101,5 +101,5 @@ After sending a prompt that invokes a tool, confirm the TCC dashboard shows:
 
 ## Documentation
 
-- [TCC AI SDK 7 guide](https://docs.thecontext.company/frameworks/vercel-ai-sdk)
+- [TCC AI SDK 7 guide](https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk)
 - [Vercel AI SDK documentation](https://ai-sdk.dev/docs)

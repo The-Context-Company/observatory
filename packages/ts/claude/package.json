@@ -31,6 +31,7 @@
     "monitoring",
     "context-company"
   ],
+  "homepage": "https://docs.thecontextcompany.com/frameworks/claude-agent-sdk",
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",

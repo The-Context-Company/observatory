@@ -39,4 +39,4 @@ const result = streamText({
 
 TCC-specific metadata always uses the `tcc.*` namespace inside `metadata`. Custom application metadata remains unprefixed.
 
-Set `TCC_API_KEY` before starting your application. See the full guide at https://docs.thecontext.company/frameworks/vercel-ai-sdk.
+Set `TCC_API_KEY` before starting your application. See the full guide at https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk.

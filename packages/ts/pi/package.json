@@ -42,6 +42,7 @@
     "context-company",
     "pi-package"
   ],
+  "homepage": "https://docs.thecontextcompany.com/frameworks/pi-mono",
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",

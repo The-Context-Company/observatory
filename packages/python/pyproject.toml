@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.9"
 license = {text = "MIT"}
 authors = [
-    {name = "The Context Company", email = "support@thecontext.company"},
+    {name = "The Context Company", email = "support@thecontextcompany.com"},
 ]
 keywords = ["observability", "ai", "agents", "llm", "tracing", "monitoring"]
 classifiers = [
@@ -57,8 +57,8 @@ claude = [
 ]
 
 [project.urls]
-Homepage = "https://thecontext.company"
-Documentation = "https://docs.thecontext.company"
+Homepage = "https://www.thecontextcompany.com"
+Documentation = "https://docs.thecontextcompany.com"
 Repository = "https://github.com/The-Context-Company/observatory"
 Issues = "https://github.com/The-Context-Company/observatory/issues"
 Changelog = "https://github.com/The-Context-Company/observatory/blob/main/packages/python/CHANGELOG.md"

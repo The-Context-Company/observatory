@@ -146,7 +146,7 @@ The `local: true` option configures telemetry to work with the local widget inst
 
 ## Learn More
 
-- [The Context Company Widget Documentation](https://docs.thecontext.company/frameworks/ai-sdk/local)
+- [The Context Company Widget Documentation](https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk#local-mode)
 - [OpenTelemetry](https://opentelemetry.io/)
 
 ## License

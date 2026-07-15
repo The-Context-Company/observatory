@@ -33,6 +33,7 @@
     "observability",
     "tracing"
   ],
+  "homepage": "https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk",
   "repository": {
     "type": "git",
     "url": "https://github.com/The-Context-Company/observatory",

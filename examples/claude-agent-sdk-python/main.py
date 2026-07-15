@@ -257,7 +257,7 @@ async def main() -> None:
 
     if not os.getenv("TCC_API_KEY"):
         print("Error: TCC_API_KEY environment variable is not set")
-        print("Get your API key from: https://thecontext.company")
+        print("Get your API key from: https://www.thecontextcompany.com")
         sys.exit(1)
 
     if len(sys.argv) > 1:
