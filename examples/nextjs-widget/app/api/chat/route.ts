@@ -41,7 +41,13 @@ export async function POST(req: Request) {
     messages: convertToModelMessages(messages),
     tools: { getWeather, createTicket },
     stopWhen: stepCountIs(10),
-    experimental_telemetry: { isEnabled: true },
+    experimental_telemetry: {
+      isEnabled: true,
+      metadata: {
+        version: "AI SDK 5 (old)",
+        aiSdkVersion: "5",
+      },
+    },
   });
 
   return result.toUIMessageStreamResponse();

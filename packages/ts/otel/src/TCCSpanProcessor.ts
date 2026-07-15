@@ -1,15 +1,16 @@
+import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import type { Context } from "@opentelemetry/api";
 import {
-  type SpanProcessor,
   type ReadableSpan,
   type Span,
+  type SpanProcessor,
 } from "@opentelemetry/sdk-trace-base";
-import { getTCCApiKey, getTCCUrl } from "@contextcompany/api";
 import { OTLPHttpJsonTraceExporter } from "./exporters/json/OTLPHttpJsonTraceExporter";
 import { debug, setDebug } from "./internal/logger";
 import { RunBatchSpanProcessor } from "./RunBatchSpanProcessor";
+import { isAISDKSpan } from "./utils";
 
-type TCCSpanProcessorOptions = {
+export type TCCSpanProcessorOptions = {
   apiKey?: string;
   otlpUrl?: string;
   baseProcessor?: SpanProcessor;
@@ -64,14 +65,27 @@ export class AISDKSpanProcessor implements SpanProcessor {
   constructor(private readonly processor: SpanProcessor) {}
 
   onStart(span: Span, parentContext: Context): void {
-    if (span.name.startsWith("ai.")) {
+    if (isAISDKSpan(span)) {
+      // AI SDK 7 replaces telemetry metadata with explicitly included runtime
+      // context. Mirror those attributes to the existing metadata namespace so
+      // downstream TCC metadata handling remains backwards compatible.
+      for (const [key, value] of Object.entries(span.attributes)) {
+        const prefix = "ai.settings.context.";
+        if (key.startsWith(prefix) && value !== undefined) {
+          span.setAttribute(
+            `ai.telemetry.metadata.${key.slice(prefix.length)}`,
+            value
+          );
+        }
+      }
+
       debug(`Began AI SDK span: ${span.name}`);
       this.processor.onStart(span, parentContext);
     }
   }
 
   onEnd(span: ReadableSpan): void {
-    if (span && span.name.startsWith("ai.")) {
+    if (span && isAISDKSpan(span)) {
       debug(`Ended AI SDK span: ${span.name}`);
       this.processor.onEnd(span);
     }
