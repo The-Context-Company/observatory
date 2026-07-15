@@ -1,5 +1,11 @@
 # @contextcompany/liftoff
 
+## 0.1.3
+
+### Patch Changes
+
+- 7556830: Include package READMEs with installation, setup, metadata, and CLI usage guidance.
+
 ## 0.1.2
 
 ### Patch Changes

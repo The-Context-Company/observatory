@@ -1,5 +1,11 @@
 # @contextcompany/langchain
 
+## 1.2.4
+
+### Patch Changes
+
+- 7556830: Include package READMEs with installation, setup, metadata, and CLI usage guidance.
+
 ## 1.2.3
 
 ### Patch Changes
