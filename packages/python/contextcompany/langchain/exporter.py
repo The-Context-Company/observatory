@@ -2,6 +2,7 @@ from typing import Sequence
 from opentelemetry.sdk.trace.export import SpanExporter, SpanExportResult
 from opentelemetry.sdk.trace import ReadableSpan
 from .._utils import _debug
+from ..otel.span_copy import copy_span_with_attributes
 
 
 class RunIdFixingExporter(SpanExporter):
@@ -12,6 +13,7 @@ class RunIdFixingExporter(SpanExporter):
 
     def export(self, spans: Sequence[ReadableSpan]) -> SpanExportResult:
         traces = {}
+        attribute_updates: dict[int, dict[str, str]] = {}
         for span in spans:
             trace_id = span.context.trace_id
             if trace_id not in traces:
@@ -34,11 +36,17 @@ class RunIdFixingExporter(SpanExporter):
             if user_run_id:
                 _debug(f"Fixing runId for trace {trace_id}: {user_run_id}")
                 for span in trace_spans:
-                    if hasattr(span, '_attributes'):
-                        span._attributes["tcc.runId"] = user_run_id
+                    attribute_updates[id(span)] = {"tcc.runId": user_run_id}
 
-        _debug(f"Exporting {len(spans)} spans")
-        return self.wrapped_exporter.export(spans)
+        export_spans = [
+            copy_span_with_attributes(span, attribute_updates[id(span)])
+            if id(span) in attribute_updates
+            else span
+            for span in spans
+        ]
+
+        _debug(f"Exporting {len(export_spans)} spans")
+        return self.wrapped_exporter.export(export_spans)
 
     def shutdown(self) -> None:
         return self.wrapped_exporter.shutdown()
