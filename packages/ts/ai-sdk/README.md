@@ -27,8 +27,16 @@ const runId = crypto.randomUUID();
 const result = streamText({
   model,
   prompt: "Hello",
-  ...tccTelemetry({ runId, agent: "support-agent" }),
+  ...tccTelemetry({
+    metadata: {
+      "tcc.runId": runId,
+      "tcc.agent": "support-agent",
+      environment: "production",
+    },
+  }),
 });
 ```
+
+TCC-specific metadata always uses the `tcc.*` namespace inside `metadata`. Custom application metadata remains unprefixed.
 
 Set `TCC_API_KEY` before starting your application. See the full guide at https://docs.thecontext.company/frameworks/vercel-ai-sdk.
