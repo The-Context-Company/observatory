@@ -36,7 +36,7 @@ class RunIdFixingExporter(SpanExporter):
             if user_run_id:
                 _debug(f"Fixing runId for trace {trace_id}: {user_run_id}")
                 for span in trace_spans:
-                    attribute_updates[id(span)] = {"tcc.runId": user_run_id}
+                    attribute_updates.setdefault(id(span), {})["tcc.runId"] = user_run_id
 
         export_spans = [
             copy_span_with_attributes(span, attribute_updates[id(span)])

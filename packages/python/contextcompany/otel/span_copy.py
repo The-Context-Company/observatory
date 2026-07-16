@@ -29,7 +29,6 @@ def copy_span_with_attributes(
         events=span.events,
         links=span.links,
         kind=span.kind,
-        instrumentation_info=getattr(span, "_instrumentation_info", None),
         status=span.status,
         start_time=span.start_time,
         end_time=span.end_time,
