@@ -1,9 +1,12 @@
 {
   "plugins": {
-    "allow": ["@contextcompany/openclaw"],
+    "allow": ["openclaw"],
     "entries": {
-      "@contextcompany/openclaw": {
+      "openclaw": {
         "enabled": true,
+        "hooks": {
+          "allowConversationAccess": true
+        },
         "config": {
           "apiKey": "${TCC_API_KEY}",
           "sessionId": "my-session-123",

@@ -1,10 +1,10 @@
 /**
- * @contextcompany/openclaw — OpenClaw plugin for The Context Company
+ * @contextcompany/openclaw: OpenClaw plugin for The Context Company
  *
  * Thin forwarder: collects raw hook events during an agent run,
  * then sends them all as one batch on agent_end.
  *
- * Per-session state is keyed by ctx.sessionKey — safe under concurrent
+ * Per-session state is keyed by ctx.sessionKey, so it is safe under concurrent
  * runs (e.g. multiple Slack threads served by the same gateway).
  *
  * All parsing/transformation happens server-side.
@@ -98,7 +98,7 @@ function registerHooks(
   configOverrides?: OpenClawPluginConfig,
 ): OpenClawHandle {
   const activeSessions = new Map<string, ActiveSession>();
-  // Per-session pending overrides applied at the next before_agent_start.
+  // Per-session pending overrides applied at the next before_prompt_build.
   const pendingOverrides = new Map<
     string,
     { runId?: string; sessionId?: string; metadata?: Record<string, string> }
@@ -155,7 +155,7 @@ function registerHooks(
   const onRunEnd = pluginConfig.onRunEnd;
 
   // -------------------------------------------------------------------
-  // Stale session cleanup — flush sessions that never got an agent_end
+  // Stale session cleanup: flush sessions that never got an agent_end
   // -------------------------------------------------------------------
   const STALE_SESSION_MS = 30 * 60 * 1000; // 30 minutes
 
@@ -230,7 +230,7 @@ function registerHooks(
 
     // sessionId resolution order:
     //   1. user config `sessionId` (static or function)
-    //   2. ctx.sessionKey — OpenClaw's internal session key, which is
+    //   2. ctx.sessionKey, OpenClaw's internal session key, which is
     //      thread-scoped for channel integrations with threads enabled
     //      (verified via live data: Slack threads in the same channel get
     //      distinct sessionKeys).
@@ -280,14 +280,15 @@ function registerHooks(
   // Hooks
   // -------------------------------------------------------------------
 
-  api.on("before_agent_start", async (event: any, ctx: any) => {
+  api.on("before_prompt_build", async (event: any, ctx: any) => {
     const runCtx = toRunContext(ctx);
     const sessionKey = runCtx.sessionKey;
     if (!sessionKey) return;
 
     const session = ensureSession(sessionKey, runCtx);
 
-    if (onRunStart) {
+    if (onRunStart && !session.onRunStartCalled) {
+      session.onRunStartCalled = true;
       const mutators = {
         setRunId: (id: string) => {
           session.runId = id;
@@ -368,7 +369,7 @@ function registerHooks(
 
       if (debug)
         log.info(
-          `agent_end — sending ${session.events.length} events (runId: ${session.runId})`,
+          `agent_end: sending ${session.events.length} events (runId: ${session.runId})`,
         );
 
       const payload = buildPayload(session, false);
@@ -432,14 +433,14 @@ function registerHooks(
 }
 
 /**
- * Full OpenClaw plugin object — install via `openclaw plugins install`
+ * Full OpenClaw plugin object. Install via `openclaw plugins install`.
  * and configure in `openclaw.json` under `plugins.entries`.
  */
 const plugin = {
   id: "openclaw",
   name: "The Context Company",
   description:
-    "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
+    "AI agent observability that finds patterns in production and helps teams improve their agents",
   register(api: any) {
     registerHooks(api);
   },

@@ -13,10 +13,13 @@ Then add to your `~/.openclaw/openclaw.json`:
 ```json5
 {
   "plugins": {
-    "allow": ["@contextcompany/openclaw"],
+    "allow": ["openclaw"],
     "entries": {
-      "@contextcompany/openclaw": {
+      "openclaw": {
         "enabled": true,
+        "hooks": {
+          "allowConversationAccess": true
+        },
         "config": {
           "apiKey": "${TCC_API_KEY}",
           "sessionId": "my-session-123",
@@ -30,6 +33,8 @@ Then add to your `~/.openclaw/openclaw.json`:
   }
 }
 ```
+
+OpenClaw requires `allowConversationAccess` before a non-bundled plugin can observe LLM input, output, and agent lifecycle events.
 
 Restart the gateway:
 

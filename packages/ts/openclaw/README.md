@@ -1,6 +1,6 @@
 # @contextcompany/openclaw
 
-The Context Company observability plugin for [OpenClaw](https://openclaw.ai).
+[The Context Company](https://www.thecontextcompany.com) observability plugin for [OpenClaw](https://openclaw.ai).
 
 Captures LLM calls, tool executions, and agent lifecycle events from OpenClaw's plugin hook system, then exports them to The Context Company for visualization and analysis.
 
@@ -19,10 +19,13 @@ Add to your `openclaw.json`:
 ```json
 {
   "plugins": {
-    "allow": ["@contextcompany/openclaw"],
+    "allow": ["openclaw"],
     "entries": {
-      "@contextcompany/openclaw": {
+      "openclaw": {
         "enabled": true,
+        "hooks": {
+          "allowConversationAccess": true
+        },
         "config": {
           "apiKey": "${TCC_API_KEY}"
         }
@@ -31,6 +34,8 @@ Add to your `openclaw.json`:
   }
 }
 ```
+
+`allowConversationAccess` lets the plugin observe the prompts and responses needed to build complete traces. OpenClaw requires this explicit permission for non-bundled plugins.
 
 ### 3. Restart
 
@@ -90,12 +95,12 @@ handle.setMetadata({ userId: "u_abc", environment: "staging" });
 
 | Option | Env Var | Default | Description |
 |--------|---------|---------|-------------|
-| `apiKey` | `TCC_API_KEY` | — | Your Context Company API key |
+| `apiKey` | `TCC_API_KEY` | Not set | Your Context Company API key |
 | `endpoint` | `TCC_URL` | Auto-detected from key | Ingestion endpoint URL |
 | `debug` | `TCC_DEBUG` | `false` | Enable debug logging |
-| `runId` | — | Random UUID | Explicit run ID for the first run |
-| `sessionId` | — | — | Session ID to group related runs |
-| `metadata` | — | — | Key-value metadata attached to runs |
+| `runId` | Not set | Random UUID | Explicit run ID for the first run |
+| `sessionId` | Not set | Not set | Session ID to group related runs |
+| `metadata` | Not set | Not set | Key-value metadata attached to runs |
 
 ## How It Works
 
@@ -103,10 +108,10 @@ The plugin hooks into OpenClaw's agent lifecycle events:
 
 | Hook | What it captures |
 |------|-----------------|
-| `llm_input` | LLM call start — model, prompt, system prompt, history |
-| `llm_output` | LLM call end — response, token usage, cost |
-| `before_tool_call` | Tool execution start — tool name, arguments |
-| `after_tool_call` | Tool execution end — result, errors, duration |
-| `agent_end` | Run complete — success/failure, full message history |
+| `llm_input` | LLM call start: model, prompt, system prompt, history |
+| `llm_output` | LLM call end: response, token usage, cost |
+| `before_tool_call` | Tool execution start: tool name, arguments |
+| `after_tool_call` | Tool execution end: result, errors, duration |
+| `agent_end` | Run complete: success or failure, full message history |
 
 All events are collected during the agent run and sent as a single batch when the run completes. Sessions that never receive an `agent_end` are flushed after 30 minutes.

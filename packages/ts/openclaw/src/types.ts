@@ -24,6 +24,7 @@ export type ActiveSession = {
   sessionId?: string;
   metadata: Record<string, string>;
   turnCacheRunId?: string;
+  onRunStartCalled?: boolean;
 };
 
 /** Mutation API passed into onRunStart. Changes apply to this run only. */
@@ -36,7 +37,7 @@ export type OpenClawRunMutators = {
   setMetadata: (meta: Record<string, string>) => void;
 };
 
-/** Called at before_agent_start with the run context and mutation API. */
+/** Called at before_prompt_build with the run context and mutation API. */
 export type OpenClawRunStartHandler = (info: {
   runId: string;
   ctx: OpenClawRunContext;
@@ -79,7 +80,7 @@ export type OpenClawPluginConfig = {
   /** Default metadata merged into every run. */
   metadata?: OpenClawDefaultMetadata;
 
-  /** Called at before_agent_start; lets you override runId/sessionId/metadata per run. */
+  /** Called at before_prompt_build; lets you override runId/sessionId/metadata per run. */
   onRunStart?: OpenClawRunStartHandler;
   /** Called at agent_end; lets you attach feedback / log the runId. */
   onRunEnd?: OpenClawRunEndHandler;

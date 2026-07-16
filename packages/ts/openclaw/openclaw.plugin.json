@@ -1,7 +1,10 @@
 {
   "id": "openclaw",
   "name": "The Context Company",
-  "description": "Agent observability — captures LLM calls, tool executions, and agent lifecycle events",
+  "description": "AI agent observability that finds patterns in production and helps teams improve their agents",
+  "activation": {
+    "onStartup": true
+  },
   "configSchema": {
     "type": "object",
     "additionalProperties": false,
