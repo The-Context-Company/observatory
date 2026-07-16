@@ -1,5 +1,11 @@
 # @contextcompany/langchain
 
+## 1.2.5
+
+### Patch Changes
+
+- 4832cfe: Install the shared API runtime dependency with the LangChain package.
+
 ## 1.2.4
 
 ### Patch Changes

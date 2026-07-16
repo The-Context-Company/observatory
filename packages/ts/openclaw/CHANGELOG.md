@@ -1,5 +1,11 @@
 # @contextcompany/openclaw
 
+## 2.0.0
+
+### Major Changes
+
+- 4832cfe: Support current OpenClaw hooks and ClawHub package contracts.
+
 ## 1.1.4
 
 ### Patch Changes
