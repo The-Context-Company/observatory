@@ -1,0 +1,33 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "tcc-otel"
+version = "0.1.1"
+description = "Deprecated: renamed to `contextcompany`. The Context Company AI Agent Observability SDK for Python."
+readme = "README.md"
+requires-python = ">=3.9"
+license = {text = "MIT"}
+authors = [
+    {name = "The Context Company", email = "support@thecontextcompany.com"},
+]
+keywords = ["observability", "ai", "agents", "llm", "tracing", "monitoring"]
+classifiers = [
+    "Development Status :: 7 - Inactive",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+]
+dependencies = [
+    "contextcompany",
+]
+
+[project.urls]
+Homepage = "https://www.thecontextcompany.com"
+Documentation = "https://docs.thecontextcompany.com"
+Repository = "https://github.com/The-Context-Company/observatory"
+Issues = "https://github.com/The-Context-Company/observatory/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["tcc_otel"]
