@@ -20,6 +20,38 @@ Observatory is a monorepo containing core packages for AI agent observability ac
 
 - **[contextcompany](./packages/python)** - Python SDK with built-in integrations for LangChain, CrewAI, Agno, and LiteLLM
 
+## MCP server
+
+The Context Company ships a remote [MCP](https://modelcontextprotocol.io) server so coding agents and developer tools can query your production agent data directly — no dashboard round-trips. It is listed in the [official MCP registry](https://registry.modelcontextprotocol.io) as `io.github.The-Context-Company/context-company`.
+
+```
+https://api.thecontext.company/mcp
+```
+
+Ask questions like "what failed in production this week?", "which tool calls are creating bad outcomes?", or "which traces should become evals?" and get answers backed by the actual runs.
+
+**Tools include:**
+
+- `insight_search` - natural-language questions over your production traces, sessions, and patterns
+- `get_agent_runs` / `get_agent_run` - list and inspect runs with full step and tool-call detail
+- `get_agent_sessions` / `get_agent_session` - conversation-level views
+- `list_agent_patterns` / `list_agent_topics` - recurring behavior patterns and auto-detected topics
+- Config tools for managing tracked patterns, scheduled recaps, memories, and skills (OAuth)
+
+**Connect from Cursor, Claude Code, or any MCP client** (transport is streamable HTTP; authenticate with OAuth or an API key as a bearer token):
+
+```json
+{
+  "mcpServers": {
+    "context-company": {
+      "url": "https://api.thecontext.company/mcp"
+    }
+  }
+}
+```
+
+See the [MCP documentation](https://docs.thecontextcompany.com/access-data/mcp) for authentication details and the full tool reference.
+
 ## Local mode (AI SDK + Next.js)
 
 Local mode allows you to run The Context Company in a local-first way. This is 100% open-source and requires **no account or API key**. To set up local mode, refer to the guide below or [our documentation](https://docs.thecontextcompany.com/frameworks/vercel-ai-sdk#local-mode).
