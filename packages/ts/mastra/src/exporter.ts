@@ -172,7 +172,7 @@ export class TCCMastraExporter implements ObservabilityExporter {
    */
   async flush(): Promise<void> {
     for (const traceId of [...this.traces.keys()]) {
-      await this.exportTrace(traceId);
+      void this.exportTrace(traceId); // tracked in `inflight`
     }
     await Promise.all([...this.inflight]);
   }
