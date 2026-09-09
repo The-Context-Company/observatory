@@ -17,7 +17,8 @@
     "node": ">=22.13.0"
   },
   "dependencies": {
-    "@mastra/core": "^0.24.6",
+    "@mastra/core": "^1.64.0",
+    "@mastra/observability": "^1.17.5",
     "@contextcompany/mastra": "workspace:*",
     "dotenv": "^16.4.7",
     "zod": "^3.23.8"
