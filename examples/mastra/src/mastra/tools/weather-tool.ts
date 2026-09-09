@@ -47,8 +47,8 @@ export const getWeatherTool = createTool({
     condition: z.string(),
     humidity: z.number(),
   }),
-  execute: async ({ context }) => {
-    const weather = mockWeather[context.location];
+  execute: async ({ location }) => {
+    const weather = mockWeather[location];
 
     if (!weather) {
       throw new Error(
@@ -57,7 +57,7 @@ export const getWeatherTool = createTool({
     }
 
     return {
-      location: context.location,
+      location,
       ...weather,
     };
   },

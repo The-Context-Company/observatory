@@ -5,6 +5,8 @@ export default defineConfig({
     projects: [
       "packages/ts/api/vitest.config.ts",
       "packages/ts/liftoff/vitest.config.ts",
+      "packages/ts/mastra/vitest.config.ts",
+      "packages/ts/mastra/vitest.config.ts",
       "packages/ts/widget/vitest.config.ts",
     ],
   },
