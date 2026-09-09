@@ -42,11 +42,11 @@
     "node": ">=18.0.0"
   },
   "peerDependencies": {
-    "@mastra/core": "^0.24.0"
+    "@mastra/core": ">=1.0.0 <2.0.0"
   },
   "devDependencies": {
     "@contextcompany/api": "workspace:*",
-    "@mastra/core": "^0.24.6",
+    "@mastra/core": "^1.64.0",
     "@types/node": "^20",
     "tsup": "^8.5.0",
     "typescript": "^5.9.3",

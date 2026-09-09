@@ -5,7 +5,7 @@ export type TCCMastraExporterConfig = {
   apiKey?: string;
 
   /**
-   * TCC endpoint URL. Defaults to https://api.thecontext.company/v1/traces
+   * TCC endpoint URL. Defaults to https://api.thecontext.company/v1/mastra
    */
   endpoint?: string;
 
