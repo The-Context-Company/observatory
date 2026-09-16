@@ -1,5 +1,12 @@
 # mastra
 
+## 1.0.4
+
+### Patch Changes
+
+- Updated dependencies [64d68c6]
+  - @contextcompany/mastra@2.0.0
+
 ## 1.0.3
 
 ### Patch Changes
