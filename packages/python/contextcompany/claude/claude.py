@@ -173,12 +173,16 @@ def _message_to_dict(message: Any) -> Dict[str, Any]:
     """
     from claude_agent_sdk import (
         AssistantMessage,
+        ConversationResetMessage,
         RateLimitEvent,
         ResultMessage,
         StreamEvent,
         SystemMessage,
         UserMessage,
     )
+
+    if isinstance(message, ConversationResetMessage):
+        return {"type": "conversation_reset", **dataclasses.asdict(message)}
 
     if isinstance(message, AssistantMessage):
         inner: Dict[str, Any] = {
@@ -211,6 +215,8 @@ def _message_to_dict(message: Any) -> Dict[str, Any]:
         out = {"type": "user", "message": {"content": content}}
         if message.parent_tool_use_id is not None:
             out["parent_tool_use_id"] = message.parent_tool_use_id
+        if message.origin is not None:
+            out["origin"] = message.origin
         if message.tool_use_result is not None:
             out["tool_use_result"] = message.tool_use_result
         if message.uuid is not None:
@@ -232,6 +238,10 @@ def _message_to_dict(message: Any) -> Dict[str, Any]:
             "num_turns": message.num_turns,
             "session_id": message.session_id,
         }
+        for name in ("api_error_status", "terminal_reason", "origin", "deferred_tool_use"):
+            value = getattr(message, name, None)
+            if value is not None:
+                out[name] = dataclasses.asdict(value) if dataclasses.is_dataclass(value) else value
         if message.stop_reason is not None:
             out["stop_reason"] = message.stop_reason
         if message.total_cost_usd is not None:
@@ -266,7 +276,8 @@ def _message_to_dict(message: Any) -> Dict[str, Any]:
 
     if isinstance(message, RateLimitEvent):
         info = message.rate_limit_info
-        info_dict: Dict[str, Any] = {"status": info.status}
+        info_dict: Dict[str, Any] = dict(getattr(info, "raw", None) or {})
+        info_dict["status"] = info.status
         if info.resets_at is not None:
             info_dict["resetsAt"] = info.resets_at
         if info.rate_limit_type is not None:
@@ -358,6 +369,12 @@ def _send_to_tcc(
 _pending_telemetry_tasks: set = set()
 
 
+async def flush_claude_telemetry() -> None:
+    """Wait for pending telemetry before shutting down the event loop."""
+    if _pending_telemetry_tasks:
+        await asyncio.gather(*list(_pending_telemetry_tasks))
+
+
 class InstrumentedClaudeAgent:
     """Wrapped Claude Agent SDK with TCC telemetry collection.
 
@@ -395,25 +412,45 @@ class InstrumentedClaudeAgent:
 
         config = tcc_config or TCCConfig()
 
-        run_id = config.run_id or str(uuid.uuid4())
-        session_id = config.session_id
         metadata = dict(config.metadata) if config.metadata else {}
+        run_id = config.run_id or metadata.get("tcc.runId") or str(uuid.uuid4())
+        session_id = config.session_id or metadata.get("tcc.sessionId")
         if config.conversational is not None:
             metadata["tcc.conversational"] = config.conversational
 
-        debug_token = _claude_debug.set(config.debug)
+        def _log(*args: Any) -> None:
+            token = _claude_debug.set(config.debug)
+            try:
+                _debug(*args)
+            finally:
+                _claude_debug.reset(token)
 
-        try:
-            _debug("Claude query wrapper called")
-            _debug("runId:", run_id)
-            _debug("sessionId:", session_id)
-            _debug("metadata:", metadata)
+        _log("Claude query wrapper called")
+        _log("runId:", run_id)
+        _log("sessionId:", session_id)
+        _log("metadata:", metadata)
 
-            messages: List[Dict[str, Any]] = []
-            user_prompt = prompt if isinstance(prompt, str) else None
+        messages: List[Dict[str, Any]] = []
+        user_prompt = prompt if isinstance(prompt, str) else None
+        query_prompt = prompt
+        if not isinstance(prompt, str) and hasattr(prompt, "__aiter__"):
+            async def capture_input():
+                nonlocal user_prompt
+                texts = []
+                async for item in prompt:
+                    content = item.get("message", {}).get("content")
+                    if isinstance(content, str):
+                        texts.append(content)
+                    elif isinstance(content, list):
+                        texts.extend(b["text"] for b in content if b.get("type") == "text")
+                    user_prompt = "\n".join(texts) or None
+                    yield item
+            query_prompt = capture_input()
 
-            def _fire_telemetry() -> None:
-                """Schedule a fire-and-forget telemetry POST (mirrors TS)."""
+        async def _fire_telemetry() -> None:
+            """Finish the bounded POST before a short-lived caller exits."""
+            token = _claude_debug.set(config.debug)
+            try:
                 task = asyncio.create_task(
                     asyncio.to_thread(
                         _send_to_tcc,
@@ -426,42 +463,48 @@ class InstrumentedClaudeAgent:
                         tcc_url=self._tcc_url,
                     )
                 )
-                _pending_telemetry_tasks.add(task)
-                task.add_done_callback(_pending_telemetry_tasks.discard)
-
-            try:
-                _debug("Starting to collect messages")
-
-                async for message in claude_query(
-                    prompt=prompt,
-                    options=options,
-                    **({"transport": transport} if transport is not None else {}),
-                ):
-                    msg_dict = _message_to_dict(message)
-                    msg_dict["receivedAtMs"] = int(time.time() * 1000)
-                    msg_dict["tccMetadata"] = {
-                        "runId": run_id,
-                        "sessionId": session_id,
-                    }
-                    messages.append(msg_dict)
-
-                    _debug(
-                        f"Collected message type: "
-                        f"{msg_dict.get('type', 'unknown')}, "
-                        f"total: {len(messages)}"
-                    )
-
-                    yield message
             finally:
-                # Covers normal completion, Exception, GeneratorExit (consumer
-                # break / aclose), and CancelledError. GeneratorExit is a
-                # BaseException so an `except Exception` clause would miss it,
-                # dropping every collected message.
-                if messages:
-                    _debug(f"Firing telemetry with {len(messages)} messages")
-                    _fire_telemetry()
+                _claude_debug.reset(token)
+            _pending_telemetry_tasks.add(task)
+            task.add_done_callback(_pending_telemetry_tasks.discard)
+            await asyncio.shield(task)
+
+        stream = claude_query(
+            prompt=query_prompt,
+            options=options,
+            **({"transport": transport} if transport is not None else {}),
+        )
+        try:
+            _log("Starting to collect messages")
+
+            async for message in stream:
+                msg_dict = _message_to_dict(message)
+                msg_dict["receivedAtMs"] = int(time.time() * 1000)
+                msg_dict["tccMetadata"] = {
+                    "runId": run_id,
+                    "sessionId": session_id,
+                }
+                messages.append(msg_dict)
+
+                _log(
+                    f"Collected message type: "
+                    f"{msg_dict.get('type', 'unknown')}, "
+                    f"total: {len(messages)}"
+                )
+
+                yield message
         finally:
-            _claude_debug.reset(debug_token)
+            # Covers normal completion, Exception, GeneratorExit (consumer
+            # break / aclose), and CancelledError. GeneratorExit is a
+            # BaseException so an `except Exception` clause would miss it,
+            # dropping every collected message.
+            try:
+                if hasattr(stream, "aclose"):
+                    await stream.aclose()
+            finally:
+                if messages:
+                    _log(f"Sending telemetry with {len(messages)} messages")
+                    await _fire_telemetry()
 
 
 # ---------------------------------------------------------------------------

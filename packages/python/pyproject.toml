@@ -53,7 +53,7 @@ crewai = [
     "wrapt>=1.14.0",
 ]
 claude = [
-    "claude-agent-sdk>=0.1.0",
+    "claude-agent-sdk>=0.2.153,<0.3",
 ]
 
 [project.urls]

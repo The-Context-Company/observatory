@@ -127,7 +127,9 @@ async def run_single_query(query: str) -> None:
     options = ClaudeAgentOptions(
         system_prompt=SYSTEM_PROMPT,
         mcp_servers={"users": user_mcp_server},
-        permission_mode="bypassPermissions",
+        tools=[],
+        allowed_tools=["mcp__users__get_user_info"],
+        setting_sources=[],
         max_turns=5,
     )
 
@@ -137,6 +139,7 @@ async def run_single_query(query: str) -> None:
             options=options,
             tcc_config=TCCConfig(
                 run_id=run_id,
+                conversational=True,
                 metadata={"environment": "development"},
             ),
         ):
@@ -214,7 +217,9 @@ async def run_interactive() -> None:
             options = ClaudeAgentOptions(
                 system_prompt=SYSTEM_PROMPT,
                 mcp_servers={"users": user_mcp_server},
-                permission_mode="bypassPermissions",
+                tools=[],
+                allowed_tools=["mcp__users__get_user_info"],
+                setting_sources=[],
                 max_turns=5,
             )
 
@@ -224,6 +229,7 @@ async def run_interactive() -> None:
                 options=options,
                 tcc_config=TCCConfig(
                     run_id=current_run_id,
+                    conversational=True,
                     session_id=session_id,
                     metadata={
                         "environment": "development",
