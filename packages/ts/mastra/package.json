@@ -1,6 +1,6 @@
 {
   "name": "@contextcompany/mastra",
-  "version": "1.0.3",
+  "version": "2.0.0",
   "description": "The Context Company integration for Mastra",
   "type": "module",
   "files": [
