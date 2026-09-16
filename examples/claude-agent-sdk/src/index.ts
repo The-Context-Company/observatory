@@ -1,9 +1,9 @@
-import { config } from "dotenv";
-import { z } from "zod";
-import * as readline from "readline";
 import { randomUUID } from "crypto";
+import * as readline from "readline";
 import * as claudeSDK from "@anthropic-ai/claude-agent-sdk";
 import { instrumentClaudeAgent, submitFeedback } from "@contextcompany/claude";
+import { config } from "dotenv";
+import { z } from "zod";
 
 config();
 
@@ -12,9 +12,17 @@ const { query, tool, createSdkMcpServer } = instrumentClaudeAgent(claudeSDK);
 
 // Mock user database
 const USERS = {
-  "user-001": { name: "Alice Johnson", email: "alice@example.com", plan: "pro" },
+  "user-001": {
+    name: "Alice Johnson",
+    email: "alice@example.com",
+    plan: "pro",
+  },
   "user-002": { name: "Bob Smith", email: "bob@example.com", plan: "free" },
-  "user-003": { name: "Carol White", email: "carol@example.com", plan: "enterprise" },
+  "user-003": {
+    name: "Carol White",
+    email: "carol@example.com",
+    plan: "enterprise",
+  },
 };
 
 // Define tool to get user information
@@ -33,7 +41,10 @@ const getUserInfo = tool(
 
     return {
       content: [
-        { type: "text", text: `User: ${user.name}\nEmail: ${user.email}\nPlan: ${user.plan}` },
+        {
+          type: "text",
+          text: `User: ${user.name}\nEmail: ${user.email}\nPlan: ${user.plan}`,
+        },
       ],
     };
   }
@@ -80,11 +91,18 @@ async function main() {
         continue;
       }
 
-      const score = trimmed.toLowerCase() === "up" ? "thumbs_up" : "thumbs_down";
-      console.log(`\n${score === "thumbs_up" ? "👍" : "👎"} Submitting feedback...`);
+      const score =
+        trimmed.toLowerCase() === "up" ? "thumbs_up" : "thumbs_down";
+      console.log(
+        `\n${score === "thumbs_up" ? "👍" : "👎"} Submitting feedback...`
+      );
 
       const response = await submitFeedback({ runId: previousRunId, score });
-      console.log(response?.ok ? "✅ Feedback submitted!\n" : "❌ Failed to submit feedback\n");
+      console.log(
+        response?.ok
+          ? "✅ Feedback submitted!\n"
+          : "❌ Failed to submit feedback\n"
+      );
       continue;
     }
 
@@ -95,16 +113,19 @@ async function main() {
       const result = query({
         prompt: trimmed,
         options: {
-          systemPrompt: "You are a helpful assistant. Use the get_user_info tool to answer questions about users. Available users are user-001, user-002, user-003.",
+          systemPrompt:
+            "You are a helpful assistant. Use the get_user_info tool to answer questions about users. Available users are user-001, user-002, user-003.",
           mcpServers: { users: server },
           settingSources: [],
-          permissionMode: "bypassPermissions",
+          tools: [],
+          allowedTools: ["mcp__users__get_user_info"],
         },
         tcc: {
           runId: currentRunId,
+          conversational: true,
           sessionId: sessionId,
           metadata: {
-            userId: "1234567890"
+            userId: "1234567890",
           },
         },
       });

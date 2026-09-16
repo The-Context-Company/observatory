@@ -14,6 +14,8 @@ A simple example demonstrating the Claude Agent SDK with The Context Company tel
 1. **Install dependencies**:
    ```bash
    pnpm install
+   pnpm --filter @contextcompany/api build
+   pnpm --filter @contextcompany/claude build
    ```
 
 2. **Configure environment**:
@@ -54,3 +56,7 @@ The example shows how to:
 3. Submit user feedback with `submitFeedback()`
 
 Each conversation has a unique `sessionId`, and each query has a unique `runId` for tracking in TCC.
+
+## Compatibility
+
+Verified with Claude Agent SDK `0.3.273` and Zod 4. This workspace example uses the local `@contextcompany/claude` package. TCC session IDs group traces; pass the SDK resume option if you want Claude to retain conversation context between `query()` calls.
