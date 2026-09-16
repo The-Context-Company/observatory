@@ -1,0 +1,49 @@
+name: Claude Agent SDK compatibility
+on:
+  pull_request:
+    paths:
+      - "packages/ts/claude/**"
+      - "packages/python/**"
+      - "examples/claude-agent-sdk*/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/claude-sdk-compatibility.yml"
+  push:
+    branches: [main]
+    paths:
+      - "packages/ts/claude/**"
+      - "packages/python/**"
+      - "pnpm-lock.yaml"
+  workflow_dispatch:
+jobs:
+  typescript:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node: [20, 22]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.8.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @contextcompany/api build
+      - run: pnpm --filter @contextcompany/claude test
+      - run: pnpm --filter @contextcompany/claude typecheck
+      - run: pnpm --filter @contextcompany/claude build
+      - run: pnpm --filter claude-agent-sdk-example exec tsc --noEmit
+  python:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ["3.10", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      - run: pip install -e './packages/python[claude]' 'claude-agent-sdk==0.2.153'
+      - run: python -m unittest discover -s packages/python/tests -p test_claude.py

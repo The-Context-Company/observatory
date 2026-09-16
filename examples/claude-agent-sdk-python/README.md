@@ -77,3 +77,29 @@ Or pass `debug=True` in the `TCCConfig`:
 ```python
 tcc_config=TCCConfig(run_id="...", debug=True)
 ```
+
+## Verified SDK version
+
+This example pins `claude-agent-sdk==0.2.153` and installs the local TCC package. Use Python 3.10 or newer. The TCC package's `claude` extra installs the compatible SDK automatically.
+
+## Stateful ClaudeSDKClient
+
+Run `python client.py` for a two-turn conversation that retains context. Wrap the client before connecting:
+
+```python
+from claude_agent_sdk import ClaudeSDKClient, ClaudeAgentOptions
+from contextcompany.claude import instrument_claude_client, TCCConfig
+
+async with instrument_claude_client(
+    ClaudeSDKClient(options=ClaudeAgentOptions(model="haiku"))
+) as client:
+    await client.query("Hello", tcc_config=TCCConfig(conversational=True))
+    async for message in client.receive_response():
+        print(message)
+```
+
+Each completed response is a separate run. Turns share an automatically generated TCC session ID unless you supply one. Session-level SDK cost counters are converted to per-turn deltas. `receive_messages()`, `connect(prompt=...)`, `interrupt()`, and other SDK controls remain available. For predictable per-turn metadata, send a query and consume its response before sending the next query.
+
+Use the async context manager or call `await client.disconnect()` to flush partial responses. For the stateless wrapper, use `contextlib.aclosing(agent.query(...))` when breaking out early. Normal completed iteration waits for the telemetry request. Delivery is best effort with a 10-second request timeout.
+
+A `TCCConfig.session_id` groups runs in TCC. It does not resume a Claude conversation. Use the stateful client for conversation memory, or pass the SDK's resume option to stateless queries.

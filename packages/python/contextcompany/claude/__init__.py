@@ -21,6 +21,10 @@ Usage:
     submit_feedback(run_id="my-run", score="thumbs_up")
 """
 
-from .claude import instrument_claude_agent, TCCConfig, InstrumentedClaudeAgent
+from .claude import instrument_claude_agent, TCCConfig, InstrumentedClaudeAgent, flush_claude_telemetry
 
-__all__ = ["instrument_claude_agent", "TCCConfig", "InstrumentedClaudeAgent"]
+__all__ = ["instrument_claude_agent", "TCCConfig", "InstrumentedClaudeAgent", "flush_claude_telemetry"]
+
+from .client import instrument_claude_client, InstrumentedClaudeClient
+
+__all__ += ["instrument_claude_client", "InstrumentedClaudeClient"]
