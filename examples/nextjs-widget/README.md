@@ -120,7 +120,14 @@ examples/nextjs-widget/
 
 #### Widget Integration
 
-Located in `app/layout.tsx:30-32`:
+The widget is **not loaded by default**. `app/layout.tsx` ships without the
+script so the example never pulls third-party JavaScript from a CDN at runtime
+(avoiding supply-chain / MITM risk). The file contains a comment with the exact
+snippet to enable it.
+
+To add the widget, put `import Script from "next/script"` at the top of
+`app/layout.tsx` and render it in `<head>` (dev only), pinned to an exact
+version with a Subresource Integrity hash:
 
 ```typescript
 {process.env.NODE_ENV === "development" && (
@@ -132,7 +139,7 @@ Located in `app/layout.tsx:30-32`:
 )}
 ```
 
-This conditionally loads the widget only in development mode, keeping your production bundle clean.
+The `process.env.NODE_ENV === "development"` guard keeps the widget out of production builds. Regenerate the integrity hash with `curl -fsSL <url> | openssl dgst -sha384 -binary | openssl base64 -A` whenever you change the version.
 
 #### Local Mode Telemetry
 
